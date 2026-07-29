@@ -1,0 +1,197 @@
+/**
+ * Admin authentication — security modals, ban screen, reCAPTCHA
+ */
+
+/* Warning modal */
+.auth-warning-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.auth-warning-modal.is-active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.auth-warning-modal__panel {
+    width: min(520px, 100%);
+    padding: 36px 32px;
+    border-radius: 20px;
+    text-align: center;
+    background: linear-gradient(145deg, rgba(30, 10, 10, 0.95), rgba(15, 8, 8, 0.98));
+    border: 2px solid rgba(239, 68, 68, 0.6);
+    box-shadow: 0 0 60px rgba(239, 68, 68, 0.25), 0 24px 48px rgba(0, 0, 0, 0.5);
+    animation: authWarningPulse 0.6s ease;
+}
+
+@keyframes authWarningPulse {
+    0% { transform: scale(0.85); opacity: 0; }
+    60% { transform: scale(1.03); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.auth-warning-modal__icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.15);
+    border: 2px solid rgba(239, 68, 68, 0.5);
+    animation: authWarningShake 0.5s ease 0.2s;
+}
+
+@keyframes authWarningShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-6px); }
+    80% { transform: translateX(6px); }
+}
+
+.auth-warning-modal__title {
+    font-family: var(--auth-display, 'Poppins', sans-serif);
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #fca5a5;
+    margin-bottom: 12px;
+}
+
+.auth-warning-modal__message {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #fecaca;
+    margin-bottom: 24px;
+}
+
+.auth-warning-modal__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: #fff;
+    background: linear-gradient(135deg, #dc2626, #991b1b);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-warning-modal__btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(220, 38, 38, 0.35);
+}
+
+/* Ban screen */
+.auth-ban-screen {
+    text-align: center;
+    padding: 12px 0;
+}
+
+.auth-ban-screen__icon {
+    width: 88px;
+    height: 88px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.4rem;
+    color: #f87171;
+    background: rgba(248, 113, 113, 0.12);
+    border: 2px solid rgba(248, 113, 113, 0.4);
+}
+
+.auth-ban-screen__title {
+    font-family: var(--auth-display, 'Poppins', sans-serif);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #fca5a5;
+    margin-bottom: 12px;
+}
+
+.auth-ban-screen__message {
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: var(--auth-text-muted, #94a3b8);
+    margin-bottom: 20px;
+}
+
+.auth-ban-screen__countdown {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--auth-gold, #fbfe06);
+    background: rgba(251, 254, 6, 0.1);
+    border: 1px solid rgba(251, 254, 6, 0.25);
+}
+
+/* Form error */
+.auth-form-error {
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    color: #fca5a5;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.auth-form-notice {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+}
+
+.auth-form-notice--warning {
+    color: #fde68a;
+    background: rgba(251, 191, 36, 0.12);
+    border: 1px solid rgba(251, 191, 36, 0.28);
+}
+
+.auth-recaptcha-wrap {
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: center;
+}
+
+@media (max-width: 640px) {
+    .auth-warning-modal__panel {
+        padding: 28px 20px;
+    }
+
+    .auth-warning-modal__title {
+        font-size: 1.15rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .auth-warning-modal__panel,
+    .auth-warning-modal__icon {
+        animation: none;
+    }
+}

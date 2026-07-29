@@ -1,0 +1,114 @@
+/* SEO UI Components — FAQ, internal linking, trust signals */
+
+.seo-faq {
+    padding: 3rem 0;
+    max-width: 100%;
+    overflow-x: clip;
+}
+
+.seo-faq__title {
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.seo-faq__item {
+    border: 1px solid rgba(26, 43, 92, 0.1);
+    border-radius: 10px;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+    background: #fff;
+}
+
+.seo-faq__item summary {
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+}
+
+.seo-faq__item summary::-webkit-details-marker {
+    display: none;
+}
+
+.seo-faq__item summary::after {
+    content: "+";
+    float: right;
+    font-weight: 700;
+    color: var(--bs-primary, #fbfe06);
+}
+
+.seo-faq__item[open] summary::after {
+    content: "−";
+}
+
+.seo-faq__answer {
+    padding: 0 1.25rem 1rem;
+    color: #555;
+    line-height: 1.7;
+}
+
+.seo-internal-nav {
+    padding: 2rem 0;
+    border-top: 1px solid rgba(26, 43, 92, 0.08);
+    max-width: 100%;
+    overflow-x: clip;
+}
+
+.seo-internal-nav h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.seo-internal-nav__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.5rem;
+}
+
+.seo-internal-nav a {
+    display: block;
+    padding: 0.6rem 0.85rem;
+    border-radius: 8px;
+    background: rgba(251, 254, 6, 0.08);
+    color: inherit;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: background 0.2s ease;
+}
+
+.seo-internal-nav a:hover {
+    background: rgba(251, 254, 6, 0.18);
+    color: var(--bs-primary, #fbfe06);
+}
+
+/* SDTG dark theme variant */
+.sdtg-dark .seo-faq__item,
+body:not(.donate-page) .sdgt-section .seo-faq__item {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(251, 254, 6, 0.15);
+}
+
+.sdtg-dark .seo-faq__answer {
+    color: #a89bb8;
+}
+
+.sdtg-dark .seo-internal-nav a {
+    background: rgba(251, 254, 6, 0.08);
+    color: #e8e0d4;
+}
+
+.sdtg-dark .seo-internal-nav a:hover {
+    background: rgba(251, 254, 6, 0.18);
+    color: #fbfe06;
+}
+
+.nap-block address {
+    font-style: normal;
+    line-height: 1.8;
+}
+
+.nap-block a {
+    text-decoration: none;
+}

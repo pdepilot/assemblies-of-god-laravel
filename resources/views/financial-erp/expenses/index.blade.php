@@ -1,0 +1,7 @@
+<x-app-layout>
+    <x-slot name="header"><div class="flex justify-between"><h2 class="font-semibold text-xl">ERP Expenses</h2>@if($canManage)<a href="{{ route('financial-erp.expenses.create') }}" class="px-4 py-2 text-sm font-semibold rounded-md bg-indigo-600 text-white">Record expense</a>@endif</div></x-slot>
+    <div class="py-10"><div class="max-w-7xl mx-auto sm:px-6 lg:px-8"><div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
+        <table class="min-w-full divide-y"><thead><tr><th class="px-3 py-2 text-left text-xs">Voucher</th><th class="px-3 py-2 text-left text-xs">Date</th><th class="px-3 py-2 text-left text-xs">Category</th><th class="px-3 py-2 text-left text-xs">Amount</th><th class="px-3 py-2 text-left text-xs">Status</th><th class="px-3 py-2 text-left text-xs">Actions</th></tr></thead>
+        <tbody>@forelse($items as $item)<tr><td class="px-3 py-2 text-sm font-mono">{{ $item['voucher_no'] }}</td><td class="px-3 py-2 text-sm">{{ $item['expense_date'] }}</td><td class="px-3 py-2 text-sm">{{ $item['category_name'] }}</td><td class="px-3 py-2 text-sm">₦{{ number_format($item['amount'], 2) }}</td><td class="px-3 py-2 text-sm">{{ ucfirst($item['approval_status']) }}</td><td class="px-3 py-2 text-sm"><a href="{{ route('financial-erp.expenses.show', $item['id']) }}" class="text-indigo-600">View</a></td></tr>@empty<tr><td colspan="6" class="px-3 py-6 text-center text-sm text-gray-500">No expenses.</td></tr>@endforelse</tbody></table>
+    </div></div></div>
+</x-app-layout>

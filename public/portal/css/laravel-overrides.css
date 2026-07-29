@@ -1,0 +1,380 @@
+/**
+ * Soft-theme Laravel Blade utilities inside the CMS shell.
+ * Tailwind is NOT loaded — these rules prevent unstyled white/gray Breeze markup.
+ */
+.portal-module-content {
+    padding: 0 0 2rem;
+}
+
+.portal-module-content .max-w-7xl,
+.portal-module-content .max-w-6xl,
+.portal-module-content .max-w-5xl,
+.portal-module-content .max-w-4xl {
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    width: 100% !important;
+}
+
+.portal-module-content .py-10,
+.portal-module-content .py-12,
+.portal-module-content .py-8,
+.portal-module-content .py-6 {
+    padding-top: 0 !important;
+    padding-bottom: 1rem !important;
+}
+
+.portal-module-content .bg-white,
+.portal-module-content .dark\:bg-gray-800,
+.portal-module-content .bg-gray-50,
+.portal-module-content .dark\:bg-gray-900,
+.portal-module-content .bg-indigo-50,
+.portal-module-content .dark\:bg-indigo-900\/30 {
+    background: var(--cms-glass) !important;
+    border: 1px solid var(--cms-glass-border) !important;
+    border-radius: var(--cms-radius-lg) !important;
+    box-shadow: var(--cms-shadow) !important;
+    color: var(--cms-text) !important;
+    backdrop-filter: blur(18px);
+}
+
+.portal-module-content .shadow-sm,
+.portal-module-content .shadow,
+.portal-module-content .shadow-md {
+    box-shadow: var(--cms-shadow) !important;
+}
+
+.portal-module-content .sm\:rounded-lg,
+.portal-module-content .rounded-lg,
+.portal-module-content .rounded-md {
+    border-radius: var(--cms-radius) !important;
+}
+
+.portal-module-content .text-gray-900,
+.portal-module-content .dark\:text-gray-100,
+.portal-module-content .text-gray-800,
+.portal-module-content .dark\:text-gray-200,
+.portal-module-content .text-indigo-800,
+.portal-module-content .dark\:text-indigo-200 {
+    color: var(--cms-text) !important;
+}
+
+.portal-module-content .text-gray-600,
+.portal-module-content .dark\:text-gray-400,
+.portal-module-content .text-gray-500,
+.portal-module-content .text-gray-700,
+.portal-module-content .dark\:text-gray-300 {
+    color: var(--cms-text-muted) !important;
+}
+
+.portal-module-content .border-gray-200,
+.portal-module-content .dark\:border-gray-700,
+.portal-module-content .border-gray-300,
+.portal-module-content .dark\:border-gray-600,
+.portal-module-content .border-indigo-300,
+.portal-module-content .dark\:border-indigo-600 {
+    border-color: var(--cms-glass-border) !important;
+}
+
+.portal-module-content a.inline-flex,
+.portal-module-content button.inline-flex,
+.portal-module-content .bg-indigo-600 {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.45rem !important;
+    padding: 0.55rem 1rem !important;
+    border-radius: 999px !important;
+    border: 1px solid rgba(251, 254, 6, 0.35) !important;
+    background: linear-gradient(135deg, rgba(251, 254, 6, 0.18), rgba(251, 254, 6, 0.05)) !important;
+    color: var(--cms-gold-light) !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+}
+
+.portal-module-content a.inline-flex:hover,
+.portal-module-content button.inline-flex:hover,
+.portal-module-content .bg-indigo-600:hover,
+.portal-module-content .hover\:bg-indigo-700:hover {
+    background: rgba(251, 254, 6, 0.22) !important;
+    color: #fff !important;
+}
+
+.portal-module-content input:not(.cms-field input),
+.portal-module-content .cms-filters input,
+.portal-module-content select:not(.cms-field select):not(.ss-tab-select),
+.portal-module-content .cms-filters select,
+.portal-module-content textarea:not(.cms-field textarea) {
+    background: rgba(7, 11, 22, 0.65) !important;
+    border: 1px solid var(--cms-glass-border) !important;
+    color: var(--cms-text) !important;
+    border-radius: 10px !important;
+    padding: 0.65rem 0.85rem !important;
+}
+
+.portal-module-content table:not(.cms-table) {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.portal-module-content table:not(.cms-table) th,
+.portal-module-content table:not(.cms-table) td {
+    border-bottom: 1px solid var(--cms-glass-border);
+    padding: 0.75rem 0.5rem;
+    color: var(--cms-text);
+    text-align: left;
+}
+
+.portal-module-content table:not(.cms-table) th {
+    color: var(--cms-text-muted);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.cms-meta-list {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.cms-meta-list > div {
+    display: grid;
+    gap: 0.2rem;
+}
+
+.cms-meta-list dt {
+    font-size: 0.75rem;
+    color: var(--cms-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.cms-meta-list dd {
+    font-weight: 600;
+    color: var(--cms-text);
+}
+
+.cms-grid--2 {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 900px) {
+    .cms-grid--2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Sidebar active indicator — keep gold bar aligned inside padded links */
+.cms-nav-item.is-active a {
+    overflow: visible;
+}
+
+.cms-nav-item.is-active a::before {
+    left: 0 !important;
+    width: 3px !important;
+    height: 60% !important;
+    border-radius: 0 3px 3px 0 !important;
+    background: var(--cms-gold) !important;
+}
+
+#cmsSignOutBtn {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    color: var(--cms-danger, #ef4444);
+    text-align: left;
+}
+
+#cmsSignOutBtn:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* Member profile photo — fixed circle, never stretch */
+.member-profile {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 1.25rem;
+    align-items: center;
+}
+
+.member-profile__photo {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--cms-navy-light, #132038);
+    border: 3px solid rgba(251, 254, 6, 0.25);
+    position: relative;
+}
+
+.member-profile__photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+.member-profile__photo.is-clickable {
+    cursor: zoom-in;
+}
+
+.member-profile__photo.is-clickable:hover {
+    border-color: rgba(251, 254, 6, 0.55);
+}
+
+.member-profile__photo.is-clickable::after {
+    content: '\f00e';
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free';
+    font-weight: 900;
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(10, 15, 31, 0.78);
+    color: #fbfe06;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.cms-photo-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 12000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(5, 8, 18, 0.88);
+    backdrop-filter: blur(4px);
+}
+
+.cms-photo-lightbox.is-open {
+    display: flex;
+}
+
+.cms-photo-lightbox img {
+    max-width: min(920px, 96vw);
+    max-height: 88vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+    background: #0a0f1f;
+}
+
+.cms-photo-lightbox__close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 1.75rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.cms-photo-lightbox__close:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+body.cms-modal-open {
+    overflow: hidden;
+}
+
+/* Sunday School overview — tab links (anchors use same cms-tab look as buttons) */
+.cms-app--sunday-school a.cms-tab {
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font: inherit;
+}
+
+.cms-app--sunday-school .cms-tabs {
+    margin-bottom: 24px;
+}
+
+.cms-app--sunday-school .cms-page__body {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.cms-app--sunday-school .cms-tab-panel.is-active {
+    display: block;
+}
+
+.cms-app--sunday-school form.inline {
+    display: inline;
+}
+.member-profile__initials {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--cms-gold, #fbfe06);
+}
+
+.member-profile__name {
+    margin: 0 0 0.35rem;
+    font-size: 1.35rem;
+    color: var(--cms-text, #f5f7ff);
+}
+
+.member-profile__meta {
+    margin: 0;
+    color: var(--cms-text-muted, #9aa4bf);
+    font-size: 0.9rem;
+}
+
+.member-profile-thumb {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--cms-navy-light, #132038);
+    border: 2px solid rgba(251, 254, 6, 0.2);
+    vertical-align: middle;
+    margin-right: 0.5rem;
+}
+
+.member-profile-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+@media (max-width: 640px) {
+    .member-profile {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+    }
+}
+
+

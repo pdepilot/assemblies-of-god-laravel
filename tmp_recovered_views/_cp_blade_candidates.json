@@ -1,0 +1,18 @@
+[
+  {
+    "file": "C:\\Users\\ADMIN\\AppData\\Roaming\\Cursor\\User\\globalStorage\\anysphere.cursor-commits\\checkpoints\\02e58876-a88e-4caf-8a6a-ab7515824a9e\\diffs\\93d8a3b9-bbba-4977-adbb-4c4b89ee05d7",
+    "size": 13663,
+    "matchedContent": [
+      "Media Library"
+    ],
+    "isBlade": false,
+    "preview": "{\"fsPath\":\"c:\\\\Laravel-Projects\\\\assemblies-of-god-laravel\\\\resources\\\\views\\\\sdtg\\\\media-library\\\\index.blade.php\",\"fileUuid\":\"93d8a3b9-bbba-4977-adbb-4c4b89ee05d7\",\"fileSizeBytes\":11436,\"numLines\":175,\"diffChanges\":[{\"originalStartLineNumberOneInde"
+  },
+  {
+    "file": "C:\\Users\\ADMIN\\AppData\\Roaming\\Cursor\\User\\globalStorage\\anysphere.cursor-commits\\checkpoints\\8ef2c331-db77-427b-89df-9882235aae83\\files\\02952d7d-f0c4-4c13-bd23-84780a2fe6e4",
+    "size": 25632,
+    "matchedContent": [],
+    "isBlade": true,
+    "preview": "@php\r |     $tab = $activeTab ?: 'overview';\r |     $validTabs = collect($tabs)->pluck('id')->all();\r |     if (! in_array($tab, $validTabs, true)) {\r |         $tab = 'overview';\r |     }\r | @endphp\r | \r | <x-app-layout>\r |     <x-slot name=\"header\">\r |         <div>\r | "
+  }
+]

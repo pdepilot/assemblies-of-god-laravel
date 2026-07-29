@@ -1,0 +1,217 @@
+/* Public church blog */
+.ag-blog-section {
+    background: linear-gradient(180deg, #f8fafc 0%, #fff 40%);
+}
+
+.ag-blog-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    justify-content: center;
+}
+
+.ag-blog-filter {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.45rem 1rem;
+    border: 1px solid rgba(26, 43, 92, 0.15);
+    color: #1A2B5C;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.ag-blog-filter:hover,
+.ag-blog-filter.is-active {
+    background: #1A2B5C;
+    border-color: #1A2B5C;
+    color: #fff;
+}
+
+.hero-header--blog-post .display-1 {
+    font-size: clamp(2.2rem, 4vw, 3.4rem);
+}
+
+.hero-header--blog-post .breadcrumb-item {
+    max-width: 28rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ag-blog-article {
+    background: linear-gradient(180deg, #f8fafc 0%, #ffffff 35%);
+}
+
+.ag-blog-article__card {
+    background: #fff;
+    padding: clamp(1.5rem, 3vw, 2.75rem);
+    box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
+    border: 1px solid rgba(26, 43, 92, 0.06);
+}
+
+.ag-blog-badge {
+    display: inline-block;
+    padding: 0.35rem 0.85rem;
+    background: rgba(26, 43, 92, 0.08);
+    color: #1A2B5C;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.ag-blog-article__title {
+    font-size: clamp(1.75rem, 3.2vw, 2.6rem);
+    line-height: 1.25;
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.ag-blog-meta {
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+.ag-blog-article__figure {
+    margin: 0;
+    overflow: hidden;
+    background: #e2e8f0;
+}
+
+.ag-blog-article__figure img {
+    width: 100%;
+    max-height: 420px;
+    object-fit: cover;
+    display: block;
+}
+
+.ag-blog-article__body {
+    font-size: 1.08rem;
+    line-height: 1.85;
+    color: #334155;
+}
+
+.ag-blog-article__body > *:first-child {
+    margin-top: 0;
+}
+
+.ag-blog-article__body p {
+    margin-bottom: 1.25rem;
+}
+
+.ag-blog-article__body h2,
+.ag-blog-article__body h3,
+.ag-blog-article__body h4 {
+    color: #1A2B5C;
+    margin-top: 1.75rem;
+    margin-bottom: 0.85rem;
+    font-weight: 700;
+}
+
+.ag-blog-article__body ul,
+.ag-blog-article__body ol {
+    margin-bottom: 1.25rem;
+    padding-left: 1.35rem;
+}
+
+.ag-blog-article__body li {
+    margin-bottom: 0.4rem;
+}
+
+.ag-blog-article__body a {
+    color: #1A2B5C;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.ag-blog-article__body em,
+.ag-blog-article__body blockquote {
+    color: #1A2B5C;
+}
+
+.ag-blog-article__body blockquote {
+    margin: 1.5rem 0;
+    padding: 1rem 1.25rem;
+    border-left: 4px solid var(--bs-primary, #c9a227);
+    background: rgba(26, 43, 92, 0.04);
+    font-style: italic;
+}
+
+.ag-blog-article__body img {
+    max-width: 100%;
+    height: auto;
+    margin: 1.25rem 0;
+}
+
+.ag-blog-article__foot {
+    border-top: 1px solid rgba(148, 163, 184, 0.35);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.blog-item {
+    background: #fff;
+    height: 100%;
+    box-shadow: 0 0 45px rgba(0, 0, 0, 0.08);
+    transition: transform 0.25s ease;
+}
+
+.blog-item:hover {
+    transform: translateY(-4px);
+}
+
+.blog-item .blog-img {
+    overflow: hidden;
+}
+
+.blog-item .blog-img img {
+    height: 220px;
+    object-fit: cover;
+    transition: transform 0.45s ease;
+}
+
+.blog-item:hover .blog-img img {
+    transform: scale(1.08);
+}
+
+.blog-item h4 a {
+    text-decoration: none;
+}
+
+.blog-item h4 a:hover {
+    color: var(--bs-primary, #c9a227) !important;
+}
+
+.blog-item .blog-meta {
+    font-size: 0.82rem;
+    color: #64748b;
+}
+
+.blog-item .blog-meta a {
+    color: #1A2B5C;
+    text-decoration: none;
+}
+
+.blog-item .blog-meta a:hover {
+    color: var(--bs-primary, #c9a227);
+}
+
+@media (max-width: 575.98px) {
+    .ag-blog-article__card {
+        padding: 1.25rem;
+        box-shadow: none;
+        border: 0;
+        background: transparent;
+    }
+
+    .ag-blog-article__foot .btn {
+        width: 100%;
+    }
+
+    .ag-blog-article__foot .ms-2 {
+        margin-left: 0 !important;
+    }
+}

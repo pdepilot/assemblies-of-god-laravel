@@ -1,0 +1,752 @@
+/* Member Giving Portal — public site */
+.member-portal-page {
+  min-height: 100vh;
+  background: linear-gradient(160deg, #f4f7fb 0%, #eef5f1 45%, #faf8f0 100%);
+}
+
+.member-portal-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 1rem 2rem;
+}
+
+.member-portal-card {
+  width: 100%;
+  max-width: 460px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.12);
+  padding: 2rem 1.75rem;
+  border: 1px solid rgba(11, 92, 69, 0.12);
+}
+
+.member-portal-card--wide {
+  max-width: 760px;
+}
+
+.member-portal-auth-tabs {
+  margin: 0 0 1.25rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.member-portal-auth-tabs .member-portal-tab {
+  border: 1px solid rgba(26, 43, 92, 0.14);
+  background: #f8fafc;
+  color: #64748b;
+  border-radius: 999px;
+  padding: 0.7rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.member-portal-auth-tabs .member-portal-tab.is-active {
+  background: linear-gradient(135deg, #0b5c45, #1a2b5c);
+  border-color: transparent;
+  color: #fff;
+}
+
+/* Public join form — light theme (same field layout as portal Members) */
+.member-portal-join-form {
+  text-align: left;
+  max-height: min(70vh, 820px);
+  overflow-y: auto;
+  padding-right: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.member-portal-join-form .cms-form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.85rem 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.member-portal-join-form .cms-field {
+  margin-bottom: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  text-align: left;
+}
+
+.member-portal-join-form .cms-field label {
+  display: block;
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1a2b5c;
+}
+
+.member-portal-join-form .cms-field--required label::after {
+  content: ' *';
+  color: #b42318;
+}
+
+.member-portal-join-form .cms-req {
+  color: #b42318;
+}
+
+.member-portal-join-form .cms-field input,
+.member-portal-join-form .cms-field select,
+.member-portal-join-form .cms-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid rgba(26, 43, 92, 0.16);
+  border-radius: 10px;
+  background: #fff;
+  color: #1a2b5c;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.member-portal-join-form .cms-field input:focus,
+.member-portal-join-form .cms-field select:focus,
+.member-portal-join-form .cms-field textarea:focus {
+  outline: none;
+  border-color: #0b5c45;
+  box-shadow: 0 0 0 3px rgba(11, 92, 69, 0.15);
+}
+
+.member-portal-join-form .cms-field input[readonly] {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.member-portal-join-form .cms-field select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 2rem;
+}
+
+.member-portal-join-form .cms-field textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+.member-portal-join-form .cms-field__hint {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.member-portal-join-form .cms-section-label {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 1.15rem 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0b5c45;
+}
+
+.member-portal-join-form .cms-section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(26, 43, 92, 0.12);
+}
+
+.member-portal-join-form .cms-photo-upload {
+  display: grid;
+  grid-template-columns: 104px 1fr;
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 1.15rem;
+  text-align: left;
+}
+
+.member-portal-join-form .cms-photo-upload__preview {
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  border: 2px dashed rgba(11, 92, 69, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.member-portal-join-form .cms-photo-upload__preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.member-portal-join-form .cms-photo-upload__placeholder {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.7rem;
+  padding: 0.5rem;
+}
+
+.member-portal-join-form .cms-photo-upload__placeholder i {
+  display: block;
+  font-size: 1.4rem;
+  margin-bottom: 0.35rem;
+  color: #0b5c45;
+}
+
+.member-portal-join-form .cms-photo-drop {
+  display: block;
+  border: 1px dashed rgba(26, 43, 92, 0.22);
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  background: #f8fafc;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.member-portal-join-form .cms-photo-drop:hover {
+  border-color: #0b5c45;
+  background: rgba(11, 92, 69, 0.05);
+}
+
+.member-portal-join-form .cms-photo-upload--required .cms-photo-drop__title {
+  color: #1a2b5c;
+}
+
+.member-portal-join-form .cms-photo-drop.is-required-error {
+  border-color: #b42318;
+  background: rgba(180, 35, 24, 0.06);
+  box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.1);
+}
+
+.member-portal-join-form .cms-photo-drop input[type="file"] {
+  display: none;
+}
+
+.member-portal-join-form .cms-photo-drop__title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1a2b5c;
+  margin-bottom: 0.25rem;
+}
+
+.member-portal-join-form .cms-photo-drop__hint {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.member-portal-join-form .cms-photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+}
+
+.member-portal-join-form .cms-btn {
+  border: 1px solid rgba(26, 43, 92, 0.18);
+  background: #fff;
+  color: #1a2b5c;
+  border-radius: 8px;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.member-portal-join-form .cms-btn:hover {
+  border-color: #0b5c45;
+  color: #0b5c45;
+}
+
+.member-portal-join-form .member-portal-btn {
+  margin-top: 0.35rem;
+}
+
+/* Camera capture modal on public Join */
+.cms-camera-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.cms-camera-modal.is-open {
+  display: flex;
+}
+
+.cms-camera-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.cms-camera-modal__dialog {
+  position: relative;
+  width: min(520px, 100%);
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(11, 92, 69, 0.2);
+  background: #fff;
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.28);
+}
+
+.cms-camera-modal__head,
+.cms-camera-modal__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 16px;
+}
+
+.cms-camera-modal__head {
+  border-bottom: 1px solid rgba(26, 43, 92, 0.1);
+}
+
+.cms-camera-modal__head h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #1a2b5c;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cms-camera-modal .cms-modal__close {
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  font-size: 1.1rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0.25rem;
+}
+
+.cms-camera-modal .cms-modal__close:hover {
+  color: #1a2b5c;
+}
+
+.cms-camera-modal__body {
+  padding: 16px;
+}
+
+.cms-camera-modal__video {
+  display: block;
+  width: 100%;
+  max-height: 360px;
+  border-radius: 14px;
+  background: #0f172a;
+  object-fit: cover;
+}
+
+.cms-camera-modal__hint {
+  margin: 10px 0 0;
+  font-size: 0.82rem;
+  color: #64748b;
+  text-align: center;
+}
+
+.cms-camera-modal__foot {
+  border-top: 1px solid rgba(26, 43, 92, 0.1);
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.cms-camera-modal .cms-btn {
+  border: 1px solid rgba(26, 43, 92, 0.16);
+  background: #fff;
+  color: #1a2b5c;
+  border-radius: 8px;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.88rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.cms-camera-modal .cms-btn--primary {
+  background: linear-gradient(135deg, #0b5c45, #1a2b5c);
+  border-color: transparent;
+  color: #fff;
+}
+
+.cms-camera-modal .cms-btn--ghost:hover {
+  border-color: #0b5c45;
+  color: #0b5c45;
+}
+
+.member-portal-join-success {
+  text-align: center;
+  padding: 0.5rem 0 0.25rem;
+}
+
+.member-portal-join-success__icon {
+  font-size: 2.2rem;
+  color: #0b5c45;
+  margin-bottom: 0.4rem;
+}
+
+.member-portal-join-success h2 {
+  margin: 0 0 0.35rem;
+  color: #1a2b5c;
+  font-size: 1.35rem;
+}
+
+.member-portal-join-success__meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  text-align: left;
+  margin: 1.1rem 0 1.25rem;
+}
+
+.member-portal-join-success__meta dt {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.member-portal-join-success__meta dd {
+  margin: 0.15rem 0 0;
+  font-weight: 700;
+  color: #1a2b5c;
+}
+
+.ag-hp-trap {
+  position: absolute !important;
+  left: -9999px !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+}
+
+@media (max-width: 640px) {
+  .member-portal-card--wide {
+    max-width: 100%;
+  }
+
+  .member-portal-join-form {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .member-portal-join-form .cms-photo-upload {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .member-portal-join-form .cms-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .member-portal-join-success__meta {
+    grid-template-columns: 1fr;
+  }
+}
+
+.member-portal-card__brand {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.member-portal-card__brand i {
+  font-size: 2rem;
+  color: #0b5c45;
+  margin-bottom: 0.5rem;
+}
+
+.member-portal-card__brand h1 {
+  font-size: 1.45rem;
+  margin: 0 0 0.35rem;
+  color: #1a2b5c;
+}
+
+.member-portal-card__brand p,
+.member-portal-muted,
+.member-portal-hint,
+.member-portal-footnote {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.member-portal-field {
+  margin-bottom: 1rem;
+}
+
+.member-portal-field label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  color: #1e293b;
+}
+
+.member-portal-field input,
+.member-portal-select {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+}
+
+.member-portal-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  background: #0b5c45;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.member-portal-btn:hover {
+  background: #094a38;
+  color: #fff;
+}
+
+.member-portal-btn--ghost {
+  width: auto;
+  background: transparent;
+  color: #0b5c45;
+  border: 1px solid rgba(11, 92, 69, 0.35);
+}
+
+.member-portal-text-btn {
+  border: 0;
+  background: transparent;
+  color: #0b5c45;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.member-portal-setup-banner {
+  background: rgba(11, 92, 69, 0.08);
+  border: 1px solid rgba(11, 92, 69, 0.18);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.member-portal-setup-banner strong {
+  display: block;
+  color: #0b5c45;
+  margin-bottom: 0.25rem;
+}
+
+.member-portal-setup-banner p {
+  margin: 0;
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.member-portal-status.is-error { color: #b91c1c; }
+.member-portal-status.is-success { color: #0b5c45; }
+
+.member-portal-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: #fff;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+}
+
+.member-portal-topbar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0;
+}
+
+.member-portal-topbar__home {
+  color: #1a2b5c;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.member-portal-topbar__user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.member-portal-dashboard__head h1 {
+  color: #1a2b5c;
+  margin-bottom: 0.25rem;
+}
+
+.member-portal-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.85rem;
+  margin: 1.25rem 0 1.5rem;
+}
+
+.member-portal-stat {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.member-portal-stat__label {
+  display: block;
+  font-size: 0.78rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.member-portal-stat__value {
+  display: block;
+  font-size: 1.25rem;
+  color: #0b5c45;
+  margin-top: 0.25rem;
+}
+
+.member-portal-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.member-portal-tab {
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+  font-size: 0.88rem;
+}
+
+.member-portal-tab.is-active {
+  background: #0b5c45;
+  color: #fff;
+  border-color: #0b5c45;
+}
+
+.member-portal-panel {
+  background: #fff;
+  border-radius: 14px;
+  padding: 1.25rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.member-portal-table-wrap {
+  overflow-x: auto;
+}
+
+.member-portal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.member-portal-table th,
+.member-portal-table td {
+  padding: 0.65rem 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+.member-portal-table th {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.member-portal-link {
+  color: #0b5c45;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.member-portal-tax-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: end;
+  max-width: 520px;
+}
+
+.member-portal-tax-tools label {
+  display: block;
+  width: 100%;
+  font-weight: 600;
+}
+
+.member-portal-password-panel {
+  margin: 0 0 1.25rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid rgba(26, 43, 92, 0.1);
+}
+
+.member-portal-password-panel summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #1a2b5c;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.member-portal-password-panel summary::-webkit-details-marker {
+  display: none;
+}
+
+.member-portal-form--inline {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.75rem;
+  max-width: 420px;
+}
+
+.btn-member-portal {
+  background: #fff;
+  color: #1a2b5c;
+  border: 1px solid rgba(26, 43, 92, 0.2);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+
+.btn-member-portal:hover {
+  background: #1a2b5c;
+  color: #fff;
+  border-color: #1a2b5c;
+}
+
+@media (max-width: 640px) {
+  .member-portal-topbar__user span {
+    display: none;
+  }
+}

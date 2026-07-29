@@ -1,0 +1,410 @@
+<?php
+
+namespace App\Services\Portal;
+
+use App\Models\Admin;
+use App\Services\Auth\RbacNavAccessService;
+use Illuminate\Support\Facades\Route;
+
+final class PortalNavService
+{
+    public function __construct(
+        private readonly RbacNavAccessService $navAccess,
+    ) {}
+
+    /** @return array<string, mixed> */
+    public function cmsConfig(?Admin $admin = null): array
+    {
+        return [
+            'brand' => config('portal.brand'),
+            'nav' => $this->navForAdmin($admin),
+            'notifications' => config('portal.notifications'),
+        ];
+    }
+
+    /**
+     * Preferred landing href when a scoped admin logs in or is bounced from a denied page.
+     */
+    public function homeHrefForAdmin(?Admin $admin): string
+    {
+        $dashboard = $this->route('dashboard');
+        if ($admin === null || ! $this->navAccess->isScoped($admin)) {
+            return $dashboard;
+        }
+
+        $homeNavId = $this->navAccess->preferredHomeNavId($admin);
+        if ($homeNavId !== 'dashboard') {
+            $href = $this->navAccess->hrefForNavId($homeNavId);
+            if ($href !== '#' && $this->navAccess->canShowNavItem($admin, $homeNavId)) {
+                return $href;
+            }
+        }
+
+        foreach ($this->navForAdmin($admin) as $item) {
+            if (($item['type'] ?? null) === 'group') {
+                foreach ($item['children'] ?? [] as $child) {
+                    $id = (string) ($child['id'] ?? '');
+                    if ($id === 'dashboard') {
+                        continue;
+                    }
+                    $href = (string) ($child['href'] ?? '');
+                    if ($href !== '' && $href !== '#') {
+                        return $href;
+                    }
+                }
+                continue;
+            }
+
+            $id = (string) ($item['id'] ?? '');
+            if ($id === 'dashboard') {
+                continue;
+            }
+            $href = (string) ($item['href'] ?? '');
+            if ($href !== '' && $href !== '#') {
+                return $href;
+            }
+        }
+
+        return $dashboard;
+    }
+
+    /**
+     * Sidebar tree filtered by the admin's roles when RBAC enforcement is on.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function navForAdmin(?Admin $admin): array
+    {
+        $nav = $this->fullNav();
+        if ($admin === null
+            || ! $this->navAccess->isEnforcementEnabled()
+            || $this->navAccess->shouldBypass($admin)) {
+            return $nav;
+        }
+
+        $filtered = [];
+        foreach ($nav as $item) {
+            if (($item['type'] ?? null) === 'group') {
+                $children = [];
+                foreach ($item['children'] ?? [] as $child) {
+                    if ($this->navAccess->canShowNavItem($admin, (string) ($child['id'] ?? ''))) {
+                        $children[] = $child;
+                    }
+                }
+                if ($children === []) {
+                    continue;
+                }
+                $item['children'] = $children;
+                $filtered[] = $item;
+                continue;
+            }
+
+            if ($this->navAccess->canShowNavItem($admin, (string) ($item['id'] ?? ''))) {
+                $filtered[] = $item;
+            }
+        }
+
+        return $filtered;
+    }
+
+    public function resolveActivePage(?string $path = null): string
+    {
+        $path = trim((string) ($path ?? request()->path()), '/');
+
+        if ($path === '' || $path === 'dashboard' || $path === 'admin/dashboard' || $path === 'admin') {
+            return 'dashboard';
+        }
+
+        $bestId = null;
+        $bestLength = -1;
+
+        foreach ($this->fullNav() as $item) {
+            if (($item['type'] ?? null) === 'group') {
+                foreach ($item['children'] ?? [] as $child) {
+                    $length = $this->hrefMatchLength($child['href'] ?? '', $path);
+                    if ($length > $bestLength) {
+                        $bestLength = $length;
+                        $bestId = (string) $child['id'];
+                    }
+                }
+                continue;
+            }
+
+            $length = $this->hrefMatchLength($item['href'] ?? '', $path);
+            if ($length > $bestLength) {
+                $bestLength = $length;
+                $bestId = (string) $item['id'];
+            }
+        }
+
+        if ($bestId !== null) {
+            return $bestId;
+        }
+
+        return $this->aliasActivePage($path) ?? 'dashboard';
+    }
+
+    private function hrefMatches(string $href, string $path): bool
+    {
+        return $this->hrefMatchLength($href, $path) >= 0;
+    }
+
+    private function hrefMatchLength(string $href, string $path): int
+    {
+        if ($href === '' || $href === '#') {
+            return -1;
+        }
+
+        $hrefPath = str_starts_with($href, 'http')
+            ? trim((string) parse_url($href, PHP_URL_PATH), '/')
+            : trim($href, '/');
+
+        if ($hrefPath === '') {
+            return -1;
+        }
+
+        if ($hrefPath === $path || str_starts_with($path, $hrefPath.'/')) {
+            return strlen($hrefPath);
+        }
+
+        return -1;
+    }
+
+    private function aliasActivePage(string $path): ?string
+    {
+        $aliases = [
+            'admin/sunday-school/attendance' => 'attendance',
+            'admin/sunday-school' => 'sunday-school',
+            'sunday-school' => 'sunday-school',
+            'members' => 'members',
+            'visitors' => 'visitors',
+            'events' => 'events',
+            'donations' => 'donations',
+            'commitments' => 'recurring-donations',
+            'pledges' => 'partnerships',
+            'contact' => 'contact',
+            'newsletter-subscribers' => 'newsletter-subscribers',
+            'admin/testimonies' => 'ag-testimonies',
+            'sermons' => 'sermons',
+            'sdtg/gallery' => 'gallery',
+            'sdtg' => 'speakers',
+            'financial-erp' => 'erp-launch',
+            'registration-portals' => 'rp-portals',
+            'website' => 'pages',
+            'communication-hub/email-center' => 'ch-email',
+            'communication-hub/automation' => 'ch-automation',
+            'communication-hub/campaigns' => 'ch-campaigns',
+            'communication-hub/scheduled' => 'ch-scheduled',
+            'communication-hub/queue' => 'ch-queue',
+            'communication-hub/recipients' => 'ch-recipients',
+            'communication-hub/analytics' => 'ch-analytics',
+            'communication-hub/ai-assistant' => 'ch-ai',
+            'communication-hub' => 'ch-dashboard',
+            'analytics/site-traffic' => 'site-traffic',
+            'analytics/reports' => 'reports',
+            'admin/analytics/reports' => 'reports',
+            'admin/reports' => 'reports',
+            'analytics/cutover' => 'cutover',
+            'settings' => 'settings',
+            'admin/settings' => 'settings',
+            'security/bans' => 'security-bans',
+            'security/activity-logs' => 'activity-logs',
+            'ministries/settings' => 'ministry-settings',
+            'ministries/children' => 'children',
+            'ministries/teens' => 'teens',
+            'ministries/youths' => 'youths',
+            'ministries/men' => 'men',
+            'ministries/women' => 'women',
+            'ministries/widowers' => 'widowers',
+            'ministries/widows' => 'widows',
+            'ministries/music' => 'music',
+            'ministries/choir' => 'choir',
+            'ministries/ushers' => 'ushers',
+            'ministries/media' => 'media',
+        ];
+
+        foreach ($aliases as $prefix => $id) {
+            if ($path === $prefix || str_starts_with($path, $prefix.'/')) {
+                return $id;
+            }
+        }
+
+        return null;
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function fullNav(): array
+    {
+        return [
+            ['id' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'fa-gauge-high', 'href' => $this->route('dashboard')],
+            [
+                'id' => 'ag',
+                'label' => 'AGC IKENEGBU',
+                'type' => 'group',
+                'children' => [
+                    $this->item('members', 'Members', 'fa-users', 'members.index'),
+                    $this->item('ministry-settings', 'Ministry Settings', 'fa-sliders', 'ministries.settings.index'),
+                    $this->ministry('children', 'Children Ministry', 'fa-child', 'children'),
+                    $this->item('sunday-school', 'Sunday School', 'fa-book-open', 'ss.analytics.index'),
+                    $this->ministry('teens', 'Teen Ministry', 'fa-user-graduate', 'teens'),
+                    $this->ministry('youths', 'Youth Ministry', 'fa-people-group', 'youths'),
+                    $this->ministry('men', "Men's Ministry", 'fa-person', 'men'),
+                    $this->ministry('women', "Women's Ministry", 'fa-person-dress', 'women'),
+                    $this->ministry('widowers', 'Widowers Ministry', 'fa-person', 'widowers'),
+                    $this->ministry('widows', 'Widows Ministry', 'fa-person-dress', 'widows'),
+                    $this->ministry('music', 'Music', 'fa-music', 'music'),
+                    $this->ministry('choir', 'Choir', 'fa-users-line', 'choir'),
+                    $this->ministry('ushers', 'Ushering', 'fa-door-open', 'ushers'),
+                    $this->ministry('media', 'Media Team', 'fa-video', 'media'),
+                    $this->item('visitors', 'Visitors', 'fa-handshake', 'visitors.index'),
+                    $this->item('attendance', 'Attendance', 'fa-clipboard-check', 'ss.attendance.index'),
+                    $this->legacy('departments', 'Departments', 'fa-sitemap', 'departments'),
+                    $this->item('events', 'Events', 'fa-calendar-days', 'events.index'),
+                    $this->item('sermons', 'Sermons & Live', 'fa-book-bible', 'sermon.dashboard'),
+                    $this->item('donations', 'Donations', 'fa-hand-holding-heart', 'donations.index'),
+                    $this->item('recurring-donations', 'Recurring Giving', 'fa-rotate', 'commitments.index'),
+                    $this->item('partnerships', 'Kingdom Partnership', 'fa-handshake-angle', 'pledges.index'),
+                    $this->item('stewardship', 'Stewardship', 'fa-chart-line', 'donations.index'),
+                    $this->item('contact', 'Contact Inbox', 'fa-envelope-open-text', 'contact.submissions.index'),
+                    $this->item('newsletter-subscribers', 'Newsletter Subscribers', 'fa-at', 'newsletter-subscribers.index'),
+                    $this->item('ag-testimonies', 'Testimonies', 'fa-quote-left', 'testimonies.index'),
+                    $this->item('reports', 'Reports', 'fa-chart-pie', 'analytics.reports.index'),
+                    $this->item('messages', 'Send Emails', 'fa-envelope', 'communication-hub.dashboard'),
+                ],
+            ],
+            [
+                'id' => 'communication-hub',
+                'label' => 'COMMUNICATION HUB',
+                'type' => 'group',
+                'children' => [
+                    $this->item('ch-dashboard', 'Communication Dashboard', 'fa-gauge-high', 'communication-hub.dashboard'),
+                    $this->item('ch-birthdays', 'Birthday Calendar', 'fa-cake-candles', 'communication-hub.birthdays.index'),
+                    $this->item('ch-email', 'Email Center', 'fa-envelope-open-text', 'communication-hub.email-center.index'),
+                    $this->item('ch-sms', 'SMS Center', 'fa-comment-sms', 'communication-hub.sms-center.index'),
+                    $this->item('ch-templates', 'Templates', 'fa-file-lines', 'communication-hub.templates.index'),
+                    $this->item('ch-automation', 'Automation Rules', 'fa-robot', 'communication-hub.automation.index'),
+                    $this->item('ch-newsletter', 'Newsletter Builder', 'fa-newspaper', 'communication-hub.newsletter-drafts.index'),
+                    $this->item('ch-campaigns', 'Campaign Manager', 'fa-bullhorn', 'communication-hub.campaigns.index'),
+                    $this->item('ch-scheduled', 'Scheduled Messages', 'fa-clock', 'communication-hub.scheduled.index'),
+                    $this->item('ch-queue', 'Communication Queue', 'fa-list-check', 'communication-hub.queue.index'),
+                    $this->item('ch-recipients', 'Recipient Groups', 'fa-user-group', 'communication-hub.recipients.index'),
+                    $this->item('ch-logs', 'Communication Logs', 'fa-clipboard-list', 'communication-hub.logs.index'),
+                    $this->item('ch-analytics', 'Analytics', 'fa-chart-line', 'communication-hub.analytics.index'),
+                    $this->item('ch-notifications', 'Notification Center', 'fa-bell', 'communication-hub.notifications.index'),
+                    $this->item('ch-ai', 'AI Message Assistant', 'fa-wand-magic-sparkles', 'communication-hub.ai-assistant.index'),
+                ],
+            ],
+            [
+                'id' => 'sdtg',
+                'label' => 'SEND DOWN THY GLORY',
+                'type' => 'group',
+                'sdtg' => true,
+                'children' => [
+                    $this->item('speakers', 'Speakers', 'fa-microphone', 'sdtg.speakers.index'),
+                    $this->item('registrations', 'Registrations', 'fa-ticket', 'sdtg.registrations.index'),
+                    $this->item('gallery', 'Gallery', 'fa-images', 'sdtg.gallery.index'),
+                    $this->item('announcements', 'Announcements', 'fa-bullhorn', 'sdtg.announcements.index'),
+                    $this->item('sdtg-content', 'Page Content', 'fa-pen-ruler', 'sdtg.content.index'),
+                    $this->legacy('sdtg-sponsors', 'Partners & Sponsors', 'fa-handshake', 'sdtg/sponsors'),
+                    $this->item('livestream', 'Livestream', 'fa-tower-broadcast', 'sdtg.livestream.index'),
+                    $this->legacy('volunteers', 'Volunteers', 'fa-hands-helping', 'sdtg/volunteers'),
+                    $this->item('testimonies', 'Testimonies', 'fa-quote-left', 'sdtg.community.index'),
+                    $this->item('prayer-requests', 'Prayer Requests', 'fa-pray', 'sdtg.community.index'),
+                    $this->legacy('memory-submissions', 'Memory Submissions', 'fa-cloud-upload-alt', 'sdtg/memory-submissions'),
+                    $this->legacy('sdtg-donations', 'Donate Page', 'fa-coins', 'sdtg/donations'),
+                    $this->item('sdtg-media-library', 'Media Library', 'fa-photo-film', 'sdtg.media-library.index'),
+                ],
+            ],
+            [
+                'id' => 'financial-erp',
+                'label' => 'FINANCIAL ERP',
+                'type' => 'group',
+                'children' => [
+                    $this->item('erp-launch', 'Open Financial ERP', 'fa-chart-line', 'financial-erp.launch'),
+                ],
+            ],
+            [
+                'id' => 'registration-portals',
+                'label' => 'REGISTRATION PORTALS',
+                'type' => 'group',
+                'children' => [
+                    $this->item('rp-portals', 'All Portals', 'fa-door-open', 'registration-portals.index'),
+                    $this->item('rp-create', 'Create Portal', 'fa-plus-circle', 'registration-portals.create'),
+                ],
+            ],
+            [
+                'id' => 'website',
+                'label' => 'WEBSITE MANAGEMENT',
+                'type' => 'group',
+                'children' => [
+                    $this->item('pages', 'Pages', 'fa-file-lines', 'website.pages.index'),
+                    $this->item('blog', 'Blog', 'fa-newspaper', 'website.blog.index'),
+                    $this->item('about-content', 'About Content', 'fa-church', 'website.about.edit'),
+                    $this->item('team-section', 'Team Sections', 'fa-people-group', 'website.team.index'),
+                    $this->item('media-library', 'Media Library', 'fa-folder-open', 'website.media.index'),
+                    $this->item('seo', 'SEO Manager', 'fa-magnifying-glass-chart', 'website.seo.index'),
+                    $this->item('site-traffic', 'Site Traffic', 'fa-chart-area', 'analytics.site-traffic.index'),
+                ],
+            ],
+            [
+                'id' => 'system',
+                'label' => 'SYSTEM',
+                'type' => 'group',
+                'children' => [
+                    $this->item('cutover', 'Migration Cutover', 'fa-route', 'analytics.cutover.index'),
+                    $this->item('settings', 'Settings', 'fa-gear', 'settings.index'),
+                    $this->item('security-bans', 'Banned IPs', 'fa-ban', 'security.bans.index'),
+                    $this->item('activity-logs', 'Activity Logs', 'fa-clock-rotate-left', 'security.activity-logs.index'),
+                ],
+            ],
+        ];
+    }
+
+    /** @return array{id: string, label: string, icon: string, href: string} */
+    private function item(string $id, string $label, string $icon, string $routeName): array
+    {
+        return [
+            'id' => $id,
+            'label' => $label,
+            'icon' => $icon,
+            'href' => $this->route($routeName),
+        ];
+    }
+
+    /** @return array{id: string, label: string, icon: string, href: string} */
+    private function ministry(string $id, string $label, string $icon, string $ministryKey): array
+    {
+        return [
+            'id' => $id,
+            'label' => $label,
+            'icon' => $icon,
+            'href' => $this->route('ministries.module.index', ['ministryKey' => $ministryKey]),
+        ];
+    }
+
+    /** @return array{id: string, label: string, icon: string, href: string} */
+    private function legacy(string $id, string $label, string $icon, string $path): array
+    {
+        return [
+            'id' => $id,
+            'label' => $label,
+            'icon' => $icon,
+            'href' => $this->legacyUrl($path),
+        ];
+    }
+
+    /** @param array<string, mixed> $params */
+    private function route(string $routeName, array $params = []): string
+    {
+        if (Route::has($routeName)) {
+            return route($routeName, $params);
+        }
+
+        return '#';
+    }
+
+    private function legacyUrl(string $path): string
+    {
+        return rtrim((string) config('portal.legacy_admin_base'), '/') . '/' . ltrim($path, '/');
+    }
+}

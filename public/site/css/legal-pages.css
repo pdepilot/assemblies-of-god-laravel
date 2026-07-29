@@ -1,0 +1,110 @@
+/* Legal pages — AG Ikenebgu main site */
+.ag-legal-hero {
+    padding: calc(var(--site-header-height, 120px) + 48px) 0 40px;
+    background: linear-gradient(135deg, rgba(26, 43, 92, 0.96), rgba(15, 23, 42, 0.92));
+    color: #fff;
+}
+
+.ag-legal-hero__eyebrow {
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ag-gold, #d4af37);
+    margin-bottom: 0.75rem;
+}
+
+.ag-legal-hero__title {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+}
+
+.ag-legal-hero__meta {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.92rem;
+    margin: 0;
+}
+
+.ag-legal-body {
+    padding: 48px 0 72px;
+    background: #f8f9fc;
+}
+
+.ag-legal-content {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(26, 43, 92, 0.08);
+    padding: clamp(24px, 4vw, 48px);
+    max-width: 920px;
+    margin: 0 auto;
+}
+
+.ag-legal-content h2 {
+    font-size: 1.25rem;
+    color: var(--ag-navy, #1a2b5c);
+    margin: 2rem 0 0.75rem;
+    padding-top: 0.5rem;
+}
+
+.ag-legal-content h2:first-child {
+    margin-top: 0;
+}
+
+.ag-legal-content h3 {
+    font-size: 1.05rem;
+    color: #334155;
+    margin: 1.25rem 0 0.5rem;
+}
+
+.ag-legal-content p,
+.ag-legal-content li {
+    color: #475569;
+    line-height: 1.75;
+}
+
+.ag-legal-content ul,
+.ag-legal-content ol {
+    padding-left: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.ag-legal-content a {
+    color: var(--ag-navy, #1a2b5c);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.ag-legal-content a:hover {
+    color: var(--ag-gold, #d4af37);
+}
+
+.ag-legal-toc {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.ag-legal-toc ol {
+    margin: 0;
+    padding-left: 1.1rem;
+}
+
+.footer-legal-links {
+    font-size: 0.82rem;
+}
+
+.footer-legal-links a {
+    color: rgba(255, 255, 255, 0.82);
+    text-decoration: none;
+}
+
+.footer-legal-links a:hover {
+    color: var(--ag-gold, #d4af37);
+    text-decoration: underline;
+}
+
+.footer-legal-links span {
+    color: rgba(255, 255, 255, 0.45);
+}
