@@ -1,7 +1,7 @@
 <x-guest-layout>
     <div id="authLoginWrap">
         <div class="auth-welcome">
-            <p class="auth-welcome__label">Administrator Portal</p>
+            <p class="auth-welcome__label">{{ config('identity.admin.login_title', 'Administrator Portal') }}</p>
             <h2 class="auth-welcome__title">Welcome Back</h2>
             <div class="auth-welcome__rotate" aria-live="polite" aria-atomic="true"></div>
         </div>
@@ -51,7 +51,7 @@
             </button>
 
             <p class="auth-form__footer">
-                Protected by enterprise encryption · <a href="{{ config('portal.media_base') }}/">Return to Website</a>
+                Protected by enterprise encryption · <a href="{{ rtrim((string) config('portal.media_base'), '/') }}/">Return to {{ config('identity.public.short_name', 'Website') }}</a>
             </p>
         </form>
     </div>

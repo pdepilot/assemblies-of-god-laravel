@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title }} | AG Ikenebgu</title>
+    <title>{{ $title }} | {{ config('identity.public.short_name', 'AG Ikenebgu') }}</title>
     <link rel="stylesheet" href="{{ asset('site/css/registration-portal.css') }}">
 </head>
 <body class="rp-public">
@@ -14,7 +14,7 @@
         @if (!empty($hint))
             <p class="rp-public__hint">{{ $hint }}</p>
         @endif
-        <a class="rp-public__home-link" href="{{ url('/') }}">Return to church website</a>
+        <a class="rp-public__home-link" href="{{ url('/') }}">Return to {{ config('identity.public.short_name', 'church website') }}</a>
     </section>
 </main>
 </body>

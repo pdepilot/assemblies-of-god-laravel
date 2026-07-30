@@ -4,7 +4,7 @@
         <div class="text-center mx-auto mb-5 wow fadeIn" data-wow-delay="0.1s" style="max-width: 720px;">
             <p class="fs-5 text-uppercase text-primary">{{ $homePage['worship_eyebrow'] ?? 'Plan Your Visit' }}</p>
             <h1 class="display-3">{{ $homePage['worship_title'] ?? 'Join Us In Worship' }}</h1>
-            <p class="mb-0">{{ $homePage['worship_intro'] ?? 'Everyone is welcome. Come worship with us at AG Ikenebgu — Ikenegbu Layout, Owerri.' }}</p>
+            <p class="mb-0">{{ $homePage['worship_intro'] ?? 'Everyone is welcome. Come worship with us at '.($church['short_name'] ?? config('identity.public.short_name', 'AG Ikenebgu')).' - Ikenegbu Layout, Owerri.' }}</p>
         </div>
         <div class="row g-4 justify-content-center">
             <div class="col-lg-6 col-xl-4">
@@ -43,7 +43,7 @@
                     <div class="row g-0">
                         <div class="col-lg-7 ag-location-map__embed">
                             <iframe
-                                title="Assemblies of God church Ikenebgu Layout location on Google Maps"
+                                title="{{ ($church['church_name'] ?? config('identity.public.site_name', 'Assemblies of God Church Ikenegbu')).' location on Google Maps' }}"
                                 src="https://maps.google.com/maps?q=11+Archdeacon+Dennis+Street,+Ikenegbu,+Owerri,+Imo,+Nigeria&amp;z=16&amp;ie=UTF8&amp;iwloc=&amp;output=embed"
                                 width="100%"
                                 height="100%"

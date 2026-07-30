@@ -126,6 +126,7 @@ final class WebsitePagesReadService
     /** @return array<string, mixed> */
     public function defaultPageContent(string $pageKey): array
     {
+        $shortName = (string) config('identity.public.short_name', 'AG Ikenebgu');
         $meta = $this->pageCatalog()[$pageKey] ?? null;
         $type = is_array($meta) ? (string) $meta['type'] : 'content';
         $label = is_array($meta) ? (string) $meta['label'] : ucfirst($pageKey);
@@ -136,10 +137,10 @@ final class WebsitePagesReadService
                 'ministries_title' => 'Serving God Through Every Season of Life',
                 'events_eyebrow' => 'Gather With Us',
                 'events_title' => 'Upcoming Events',
-                'events_intro' => 'Worship, study, and prayer — rhythm of life together at AG Ikenebgu. Mark your calendar and bring someone along.',
+                'events_intro' => 'Worship, study, and prayer — rhythm of life together at '.$shortName.'. Mark your calendar and bring someone along.',
                 'worship_eyebrow' => 'Plan Your Visit',
                 'worship_title' => 'Join Us In Worship',
-                'worship_intro' => 'Everyone is welcome. Come worship with us at AG Ikenebgu — Ikenegbu Layout, Owerri.',
+                'worship_intro' => 'Everyone is welcome. Come worship with us at '.$shortName.' - Ikenegbu Layout, Owerri.',
             ],
             'header' => [
                 'heading' => $label,

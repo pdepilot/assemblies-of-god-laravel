@@ -2,6 +2,15 @@
     $mediaBase = config('portal.media_base');
     $portalCss = asset('portal/css');
     $portalJs = asset('portal/js');
+    $adminIdentity = config('identity.admin');
+    $loginTitle = $adminIdentity['login_title'] ?? 'Administrator Portal';
+    $primaryLabel = $adminIdentity['login_primary_label'] ?? 'AGC IKENEGBU';
+    $primarySubtitle = $adminIdentity['login_primary_subtitle'] ?? 'Church Management Platform';
+    $secondaryLabel = $adminIdentity['login_secondary_label'] ?? 'Send Down Thy Glory';
+    $secondarySubtitle = $adminIdentity['login_secondary_subtitle'] ?? 'Event Management Platform';
+    $faviconPath = ltrim((string) ($adminIdentity['favicon_path'] ?? 'images/ag-logo.jpeg'), '/');
+    $primaryVideoPath = ltrim((string) ($adminIdentity['primary_logo_video_path'] ?? 'videos/Create_a_cinematic_D_animatio.mp4'), '/');
+    $secondaryVideoPath = ltrim((string) ($adminIdentity['secondary_logo_video_path'] ?? 'sdgt/videos/3d-logo.mp4'), '/');
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -11,14 +20,14 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#0a0f1f">
-    <title>Admin Login | AGC Ikenebgu & SDTG Management Platform</title>
+    <title>Admin Login | {{ $loginTitle }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="{{ $portalCss }}/auth.css">
     <link rel="stylesheet" href="{{ $portalCss }}/admin-auth.css">
-    <link rel="icon" href="{{ $mediaBase }}/images/ag-logo.jpeg" type="image/jpeg">
+    <link rel="icon" href="{{ rtrim((string) $mediaBase, '/') }}/{{ $faviconPath }}" type="image/jpeg">
 </head>
 <body class="auth-page">
     <a href="#authForm" class="auth-skip">Skip to login form</a>
@@ -47,20 +56,20 @@
         <section class="auth-panel auth-panel--visual" aria-label="Platform overview">
             <header class="auth-brand auth-glass" style="padding: 24px;">
                 <div class="auth-brand__logos">
-                    <div class="auth-logo-video auth-logo-video--ag" aria-label="AGC Ikenebgu 3D logo">
-                        <video class="auth-logo-video__el" src="{{ $mediaBase }}/videos/Create_a_cinematic_D_animatio.mp4" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+                    <div class="auth-logo-video auth-logo-video--ag" aria-label="{{ $primaryLabel }} 3D logo">
+                        <video class="auth-logo-video__el" src="{{ rtrim((string) $mediaBase, '/') }}/{{ $primaryVideoPath }}" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
                     </div>
-                    <div class="auth-logo-video auth-logo-video--sdtg" aria-label="Send Down Thy Glory 3D logo">
-                        <video class="auth-logo-video__el" src="{{ $mediaBase }}/sdgt/videos/3d-logo.mp4" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+                    <div class="auth-logo-video auth-logo-video--sdtg" aria-label="{{ $secondaryLabel }} 3D logo">
+                        <video class="auth-logo-video__el" src="{{ rtrim((string) $mediaBase, '/') }}/{{ $secondaryVideoPath }}" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
                     </div>
                 </div>
                 <div class="auth-brand__titles">
-                    <h1>AGC IKENEGBU</h1>
-                    <p>Church Management Platform</p>
+                    <h1>{{ $primaryLabel }}</h1>
+                    <p>{{ $primarySubtitle }}</p>
                 </div>
                 <div class="auth-brand__divider" aria-hidden="true"></div>
-                <p class="auth-brand__sdtg">Send Down Thy Glory</p>
-                <p style="font-size: 0.82rem; color: var(--auth-text-muted); margin-top: 4px;">Event Management Platform</p>
+                <p class="auth-brand__sdtg">{{ $secondaryLabel }}</p>
+                <p style="font-size: 0.82rem; color: var(--auth-text-muted); margin-top: 4px;">{{ $secondarySubtitle }}</p>
             </header>
             <div class="auth-security" role="list" aria-label="Security features">
                 <article class="auth-security__card auth-glass" role="listitem">

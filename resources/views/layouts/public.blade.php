@@ -4,34 +4,40 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-    <meta name="author" content="AG Ikenebgu Assemblies of God">
+    <meta name="author" content="{{ config('identity.public.author', 'AG Ikenebgu Assemblies of God') }}">
     <meta name="theme-color" content="#1A2B5C">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @php
+        $publicIdentity = config('identity.public');
         $seoTitle = $seo['title'] ?? null;
         $seoDescription = $seo['meta_description'] ?? null;
         $seoCanonical = $seo['canonical'] ?? url()->current();
         $seoOgImage = trim((string) ($seo['og_image'] ?? ''));
+        $defaultTitle = (string) ($publicIdentity['default_title'] ?? 'AG Ikenebgu | Assemblies of God Church Owerri — Worship & Community');
+        $defaultDescription = (string) ($publicIdentity['default_description'] ?? 'AG Ikenebgu Assemblies of God in Owerri, Nigeria — spirit-filled worship, Bible teaching, family ministries, and community outreach. Join us Sundays 8:00 AM & 10:30 AM.');
+        $defaultOgTitle = (string) ($publicIdentity['default_og_title'] ?? 'AG Ikenebgu | Assemblies of God Church Owerri');
+        $defaultOgDescription = (string) ($publicIdentity['default_og_description'] ?? 'Spirit-filled worship, Bible teaching, and community outreach in Owerri, Nigeria.');
+        $defaultLogo = asset('site/'.ltrim((string) ($publicIdentity['logo_path'] ?? 'images/ag-logo.jpeg'), '/'));
         if ($seoOgImage !== '' && ! str_starts_with($seoOgImage, 'http')) {
             $seoOgImage = app(\App\Services\PublicSite\PublicAssetResolver::class)->url($seoOgImage);
         }
         if ($seoOgImage === '') {
-            $seoOgImage = asset('site/images/ag-logo.jpeg');
+            $seoOgImage = $defaultLogo;
         }
     @endphp
-    <title>{{ $seoTitle ?: 'AG Ikenebgu | Assemblies of God Church Owerri — Worship & Community' }}</title>
-    <meta name="description" content="{{ $seoDescription ?: 'AG Ikenebgu Assemblies of God in Owerri, Nigeria — spirit-filled worship, Bible teaching, family ministries, and community outreach. Join us Sundays 8:00 AM & 10:30 AM.' }}">
+    <title>{{ $seoTitle ?: $defaultTitle }}</title>
+    <meta name="description" content="{{ $seoDescription ?: $defaultDescription }}">
     <link rel="canonical" href="{{ $seoCanonical }}">
 
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="AG Ikenebgu">
-    <meta property="og:title" content="{{ $seoTitle ?: 'AG Ikenebgu | Assemblies of God Church Owerri' }}">
-    <meta property="og:description" content="{{ $seoDescription ?: 'Spirit-filled worship, Bible teaching, and community outreach in Owerri, Nigeria.' }}">
+    <meta property="og:site_name" content="{{ $publicIdentity['short_name'] ?? 'AG Ikenebgu' }}">
+    <meta property="og:title" content="{{ $seoTitle ?: $defaultOgTitle }}">
+    <meta property="og:description" content="{{ $seoDescription ?: $defaultOgDescription }}">
     <meta property="og:url" content="{{ $seoCanonical }}">
     <meta property="og:image" content="{{ $seoOgImage }}">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ $seoTitle ?: 'AG Ikenebgu | Assemblies of God Church Owerri' }}">
-    <meta name="twitter:description" content="{{ $seoDescription ?: 'Spirit-filled worship, Bible teaching, and community outreach in Owerri, Nigeria.' }}">
+    <meta name="twitter:title" content="{{ $seoTitle ?: $defaultOgTitle }}">
+    <meta name="twitter:description" content="{{ $seoDescription ?: $defaultOgDescription }}">
     <meta name="twitter:image" content="{{ $seoOgImage }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -47,7 +53,7 @@
     <link href="{{ asset('site/css/preloader.css') }}" rel="stylesheet">
     <link href="{{ asset('site/css/ag-cookie-banner.css') }}" rel="stylesheet">
     <link href="{{ asset('site/css/seo-components.css') }}" rel="stylesheet">
-    <link rel="icon" href="{{ asset('site/images/ag-logo.jpeg') }}" type="image/jpeg">
+    <link rel="icon" href="{{ $defaultLogo }}" type="image/jpeg">
     <script src="{{ asset('site/js/seo-performance.js') }}" defer></script>
     @stack('head')
 </head>

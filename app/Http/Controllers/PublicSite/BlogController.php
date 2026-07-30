@@ -24,6 +24,7 @@ final class BlogController extends Controller
 
     public function index(Request $request): View
     {
+        $brandShortName = (string) config('identity.public.short_name', 'AG Ikenebgu');
         $pageNum = max(1, (int) $request->query('page', 1));
         $posts = $this->blog->listPublished('', '', $pageNum, 9);
         $payload = $this->homepage->payload();
@@ -35,7 +36,7 @@ final class BlogController extends Controller
         $defaultHeading = (string) ($this->pages->defaultPageContent('blog')['heading'] ?? 'Blog');
         $pageHeading = trim((string) ($page['heading'] ?? ''));
         if ($pageHeading !== '' && strcasecmp($pageHeading, $defaultHeading) !== 0) {
-            $seo['title'] = $pageHeading.' | AG Ikenebgu';
+            $seo['title'] = $pageHeading.' | '.$brandShortName;
         }
         if (trim((string) ($page['intro'] ?? '')) !== '') {
             $seo['meta_description'] = \Illuminate\Support\Str::limit(strip_tags((string) $page['intro']), 160, '');
@@ -57,6 +58,7 @@ final class BlogController extends Controller
 
     public function show(string $slug): View
     {
+        $brandShortName = (string) config('identity.public.short_name', 'AG Ikenebgu');
         $post = $this->blog->getPublishedBySlug($slug);
         if ($post === null) {
             throw new NotFoundHttpException('Blog post not found.');
@@ -65,7 +67,7 @@ final class BlogController extends Controller
         $post = $this->hydratePost($post);
         $payload = $this->homepage->payload();
         $seo = $this->seo->forKey('blog', url('/blog/'.$slug));
-        $seo['title'] = trim((string) ($post['title'] ?? 'Blog')).' | AG Ikenebgu';
+        $seo['title'] = trim((string) ($post['title'] ?? 'Blog')).' | '.$brandShortName;
         if (trim((string) ($post['meta_description'] ?? '')) !== '') {
             $seo['meta_description'] = (string) $post['meta_description'];
         } elseif (trim((string) ($post['excerpt'] ?? '')) !== '') {

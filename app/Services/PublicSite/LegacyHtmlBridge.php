@@ -545,7 +545,9 @@ final class LegacyHtmlBridge
 
     private function fallbackPage(string $legacyPath, string $area, string $message): string
     {
-        $title = $area === 'sdtg' ? 'Send Down Thy Glory' : 'AG Ikenebgu';
+        $title = $area === 'sdtg'
+            ? (string) config('identity.public.sdtg_label', 'Send Down Thy Glory')
+            : (string) config('identity.public.short_name', 'AG Ikenebgu');
         $home = e(url('/'));
         $legacy = e(rtrim((string) config('portal.legacy_public_base'), '/').'/'.ltrim($legacyPath, '/'));
         $msg = e($message);

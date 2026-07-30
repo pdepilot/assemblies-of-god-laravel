@@ -13,6 +13,8 @@
     $isCmsNativeShell = $isSsLegacyShell || $isSettingsShell;
     $portalCss = asset('portal/css');
     $portalJs = asset('portal/js');
+    $adminIdentity = config('identity.admin');
+    $adminFavicon = rtrim((string) config('portal.media_base'), '/').'/'.ltrim((string) ($adminIdentity['favicon_path'] ?? 'images/ag-logo.jpeg'), '/');
     $cmsAdminUser = [
         'name' => $admin->display_name,
         'role' => ucfirst(str_replace('_', ' ', (string) $admin->role)),
@@ -27,6 +29,7 @@
         'media_base' => config('portal.media_base'),
         'admin_base' => url('/admin'),
         'legacy_admin_base' => config('portal.legacy_admin_base'),
+        'brand_subtitle' => $adminIdentity['brand_subtitle'] ?? 'Church Management System',
         'admin_user' => $cmsAdminUser,
         'logout_url' => route('logout'),
         'settings_url' => route('settings.index'),
@@ -50,7 +53,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#070b16">
-    <title>{{ $title ?? 'Dashboard' }} | AGC Ikenebgu CMS</title>
+    <title>{{ $title ?? 'Dashboard' }} | {{ $adminIdentity['page_title_suffix'] ?? 'AGC IKENEGBU CMS' }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -68,7 +71,7 @@
     @else
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endif
-    <link rel="icon" href="{{ config('portal.media_base') }}/images/ag-logo.jpeg" type="image/jpeg">
+    <link rel="icon" href="{{ $adminFavicon }}" type="image/jpeg">
 </head>
 <body class="cms-app{{ $isSundaySchool ? ' cms-app--sunday-school' : '' }}" data-page="{{ $isSettingsShell ? 'settings' : ($isSundaySchool ? 'sunday-school' : $activePage) }}" data-depth="0" data-theme="{{ $admin->ui_theme ?? 'gold' }}" data-mode="{{ $admin->ui_mode ?? 'dark' }}">
 
@@ -115,7 +118,7 @@
                 presentation: {
                     title: 'Dashboard',
                     subtitle: 'Live overview from Members, Visitors, and platform activity.',
-                    brand_subtitle: 'Church Management System',
+                    brand_subtitle: boot.brand_subtitle || 'Church Management System',
                     home_route: boot.home_route
                 }
             };

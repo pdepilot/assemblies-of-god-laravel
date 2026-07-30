@@ -22,6 +22,7 @@ final class AboutController extends Controller
 
     public function show(): View
     {
+        $brandShortName = (string) config('identity.public.short_name', 'AG Ikenebgu');
         $about = $this->resolveMedia($this->content->getSection('about_page'));
         $payload = $this->homepage->payload();
         $page = $this->hydratePageChrome($this->pages->getPage('about'));
@@ -29,7 +30,7 @@ final class AboutController extends Controller
         $defaultHeading = (string) ($this->pages->defaultPageContent('about')['heading'] ?? 'About');
         $pageHeading = trim((string) ($page['heading'] ?? ''));
         if ($pageHeading !== '' && strcasecmp($pageHeading, $defaultHeading) !== 0) {
-            $seo['title'] = $pageHeading.' | AG Ikenebgu';
+            $seo['title'] = $pageHeading.' | '.$brandShortName;
         }
         if (trim((string) ($page['intro'] ?? '')) !== '') {
             $seo['meta_description'] = \Illuminate\Support\Str::limit(strip_tags((string) $page['intro']), 160, '');

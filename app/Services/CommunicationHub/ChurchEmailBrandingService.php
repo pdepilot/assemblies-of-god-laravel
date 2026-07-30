@@ -86,11 +86,12 @@ final class ChurchEmailBrandingService
      */
     public function wrapHtml(string $content, array $settings, string $previewText = '', bool $preferCid = true): string
     {
-        $churchName = e((string) ($settings['from_name'] ?? 'Assemblies of God Church Ikenegbu'));
-        $website = e((string) ($settings['church_website'] ?? config('app.url')));
-        $address = e((string) ($settings['church_address'] ?? '11 Archdeacon, Dennis Street, Ikenegbu, Owerri, Imo State'));
-        $phone = e((string) ($settings['church_phone'] ?? '+234 800 000 0000'));
-        $email = e((string) ($settings['church_email'] ?? ($settings['from_email'] ?? 'info@agikenebgu.org')));
+        $emailIdentity = config('identity.email');
+        $churchName = e((string) ($settings['from_name'] ?? ($emailIdentity['from_name'] ?? 'Assemblies of God Church Ikenegbu')));
+        $website = e((string) ($settings['church_website'] ?? ($emailIdentity['church_website'] ?? config('app.url'))));
+        $address = e((string) ($settings['church_address'] ?? ($emailIdentity['church_address'] ?? '11 Archdeacon, Dennis Street, Ikenegbu, Owerri, Imo State')));
+        $phone = e((string) ($settings['church_phone'] ?? ($emailIdentity['church_phone'] ?? '+234 800 000 0000')));
+        $email = e((string) ($settings['church_email'] ?? ($settings['from_email'] ?? ($emailIdentity['from_email'] ?? 'info@agikenebgu.org'))));
         $logoUrl = e($this->logoSrc($settings, $preferCid));
         $year = date('Y');
 
@@ -145,9 +146,9 @@ final class ChurchEmailBrandingService
     public function defaultMergeTags(array $settings): array
     {
         return [
-            'church_name' => (string) ($settings['from_name'] ?? 'Assemblies of God Church Ikenegbu'),
-            'pastor_name' => (string) ($settings['pastor_name'] ?? 'Pastor Emmanuel'),
-            'church_email' => (string) ($settings['church_email'] ?? 'info@agikenebgu.org'),
+            'church_name' => (string) ($settings['from_name'] ?? config('identity.email.from_name', 'Assemblies of God Church Ikenegbu')),
+            'pastor_name' => (string) ($settings['pastor_name'] ?? config('identity.email.pastor_name', 'Pastor Emmanuel')),
+            'church_email' => (string) ($settings['church_email'] ?? config('identity.email.from_email', 'info@agikenebgu.org')),
             'church_phone' => (string) ($settings['church_phone'] ?? ''),
             'church_website' => (string) ($settings['church_website'] ?? config('app.url')),
         ];
@@ -159,13 +160,13 @@ final class ChurchEmailBrandingService
     public function resolveBrandingSettings(array $emailSettings): array
     {
         $defaults = [
-            'from_name' => 'Assemblies of God Church Ikenegbu',
-            'from_email' => 'info@agikenebgu.org',
-            'church_address' => '11 Archdeacon, Dennis Street, Ikenegbu, Owerri, Imo State',
-            'church_phone' => '+234 800 000 0000',
-            'church_email' => 'info@agikenebgu.org',
-            'church_website' => rtrim((string) config('portal.media_base', config('app.url')), '/'),
-            'pastor_name' => 'Pastor Emmanuel',
+            'from_name' => config('identity.email.from_name', 'Assemblies of God Church Ikenegbu'),
+            'from_email' => config('identity.email.from_email', 'info@agikenebgu.org'),
+            'church_address' => config('identity.email.church_address', '11 Archdeacon, Dennis Street, Ikenegbu, Owerri, Imo State'),
+            'church_phone' => config('identity.email.church_phone', '+234 800 000 0000'),
+            'church_email' => config('identity.email.from_email', 'info@agikenebgu.org'),
+            'church_website' => rtrim((string) config('identity.email.church_website', config('portal.media_base', config('app.url'))), '/'),
+            'pastor_name' => config('identity.email.pastor_name', 'Pastor Emmanuel'),
             'social_facebook' => '',
             'social_instagram' => '',
             'social_youtube' => '',

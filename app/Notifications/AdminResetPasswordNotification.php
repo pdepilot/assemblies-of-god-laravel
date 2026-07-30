@@ -13,7 +13,9 @@ final class AdminResetPasswordNotification extends ResetPassword
         $expire = (int) config('auth.passwords.admins.expire', 60);
 
         return (new MailMessage)
-            ->subject(Lang::get('Reset your AGC Ikenegbu admin password'))
+            ->subject(Lang::get('Reset your :platform admin password', [
+                'platform' => (string) config('identity.admin.brand_name', 'AGC IKENEGBU'),
+            ]))
             ->greeting(Lang::get('Password reset request'))
             ->line(Lang::get('You are receiving this email because we received a password reset request for your administrator account.'))
             ->action(Lang::get('Reset Password'), $url)

@@ -4,9 +4,8 @@ it('serves the public church homepage at root', function () {
     $response = $this->get('/');
 
     $response->assertOk();
-    $response->assertSee('AG', false);
-    $response->assertSee('Ikenebgu', false);
-    $response->assertSee('Welcome Home', false);
+    $response->assertSee(config('identity.public.short_name', 'AG Ikenebgu'), false);
+    $response->assertSee('hero-slider', false);
     $response->assertDontSee('Initializing Platform', false);
 });
 

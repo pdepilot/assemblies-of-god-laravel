@@ -218,9 +218,10 @@ final class PublicHomepageReadService
     /** @return array<string, mixed> */
     private function church(): array
     {
+        $publicIdentity = config('identity.public');
         $defaults = [
-            'church_name' => 'AG Ikenebgu Assemblies of God',
-            'short_name' => 'AG Ikenebgu',
+            'church_name' => (string) ($publicIdentity['site_name'] ?? 'AG Ikenebgu Assemblies of God'),
+            'short_name' => (string) ($publicIdentity['short_name'] ?? 'AG Ikenebgu'),
             'phone' => '+2348034567890',
             'phone_display' => '+234 803 456 7890',
             'phone_tel' => '+2348034567890',
@@ -290,16 +291,20 @@ final class PublicHomepageReadService
     /** @return array<string, mixed> */
     private function aboutSection(): array
     {
+        $publicIdentity = config('identity.public');
         $defaults = [
             'eyebrow' => 'About Us',
             'title' => 'A Church Family Rooted in Faith, Love, and Service',
-            'intro' => 'AG Ikenebgu is a spirit-filled Assemblies of God church in Owerri, welcoming every heart to worship, grow, and serve.',
+            'intro' => sprintf(
+                '%s is a spirit-filled Assemblies of God church in Owerri, welcoming every heart to worship, grow, and serve.',
+                (string) ($publicIdentity['short_name'] ?? 'AG Ikenebgu')
+            ),
             'vision_title' => 'Our Vision',
             'vision_text' => 'To raise disciples who know Christ and make Him known.',
             'mission_title' => 'Our Mission',
             'mission_text' => 'Proclaim the full Gospel through worship, teaching, fellowship, and compassion.',
             'gallery' => [
-                ['image' => 'images/main1.jpg', 'alt' => 'AG Ikenebgu church'],
+                ['image' => 'images/main1.jpg', 'alt' => ((string) ($publicIdentity['short_name'] ?? 'AG Ikenebgu')).' church'],
                 ['image' => 'images/main2.jpg', 'alt' => 'Worship gathering'],
                 ['image' => 'images/church2.webp', 'alt' => 'Church community'],
             ],

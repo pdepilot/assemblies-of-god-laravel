@@ -40,8 +40,8 @@ return [
     ),
 
     'brand' => [
-        'name' => 'AGC IKENEGBU',
-        'subtitle' => 'Church Management System',
+        'name' => env('ADMIN_BRAND_NAME', 'AGC IKENEGBU'),
+        'subtitle' => env('ADMIN_BRAND_SUBTITLE', 'Church Management System'),
     ],
 
     /*

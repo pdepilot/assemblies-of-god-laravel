@@ -239,7 +239,7 @@ final class PortalNavService
             ['id' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'fa-gauge-high', 'href' => $this->route('dashboard')],
             [
                 'id' => 'ag',
-                'label' => 'AGC IKENEGBU',
+                'label' => (string) config('portal.brand.name', 'AGC IKENEGBU'),
                 'type' => 'group',
                 'children' => [
                     $this->item('members', 'Members', 'fa-users', 'members.index'),

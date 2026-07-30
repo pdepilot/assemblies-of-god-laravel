@@ -21,6 +21,7 @@ final class CmsPageController extends Controller
 
     public function show(string $pageKey): View
     {
+        $brandShortName = (string) config('identity.public.short_name', 'AG Ikenebgu');
         $pageKey = strtolower(trim($pageKey));
         if (! $this->pages->isEditablePage($pageKey)) {
             throw new NotFoundHttpException('Page not found.');
@@ -36,7 +37,7 @@ final class CmsPageController extends Controller
         $payload = $this->homepage->payload();
         $seo = $this->seo->forKey($pageKey, url('/'.$pageKey));
         if (trim((string) ($page['heading'] ?? '')) !== '') {
-            $seo['title'] = (string) $page['heading'].' | AG Ikenebgu';
+            $seo['title'] = (string) $page['heading'].' | '.$brandShortName;
         }
         if (trim((string) ($page['intro'] ?? '')) !== '') {
             $seo['meta_description'] = \Illuminate\Support\Str::limit(strip_tags((string) $page['intro']), 160, '');

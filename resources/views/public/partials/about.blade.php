@@ -5,7 +5,10 @@
         static fn ($item): bool => is_array($item) && trim((string) ($item['image'] ?? '')) !== ''
     ));
     while (count($gallery) < 3) {
-        $gallery[] = ['image' => app(\App\Services\PublicSite\PublicAssetResolver::class)->url('images/main1.jpg'), 'alt' => 'AG Ikenebgu church'];
+        $gallery[] = [
+            'image' => app(\App\Services\PublicSite\PublicAssetResolver::class)->url('images/main1.jpg'),
+            'alt' => ((string) ($church['short_name'] ?? config('identity.public.short_name', 'AG Ikenebgu'))).' church',
+        ];
     }
     $gallery = array_slice($gallery, 0, 3);
     $highlight = is_array($about['highlight'] ?? null) ? $about['highlight'] : [];
