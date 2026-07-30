@@ -25,6 +25,8 @@ return [
         'default_og_title' => env('PUBLIC_SITE_DEFAULT_OG_TITLE', 'AG Ikenebgu | Assemblies of God Church Owerri'),
         'default_og_description' => env('PUBLIC_SITE_DEFAULT_OG_DESCRIPTION', 'Spirit-filled worship, Bible teaching, and community outreach in Owerri, Nigeria.'),
         'logo_path' => env('PUBLIC_SITE_LOGO_PATH', 'images/ag-logo.jpeg'),
+        'logo_video_path' => env('PUBLIC_SITE_LOGO_VIDEO_PATH', 'videos/Create_a_cinematic_D_animatio.mp4'),
+        'welcome_video_path' => env('PUBLIC_SITE_WELCOME_VIDEO_PATH', 'videos/Create_a_cinematic_D_animatio.mp4'),
         'welcome_video_label' => env('PUBLIC_SITE_WELCOME_VIDEO_LABEL', 'AG Ikenebgu welcome video'),
         'sdtg_label' => env('PUBLIC_SITE_SDTG_LABEL', 'Send Down Thy Glory'),
     ],

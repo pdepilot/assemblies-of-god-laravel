@@ -1,8 +1,10 @@
 @extends('layouts.public')
 
 @php
-    $shortName = (string) ($church['short_name'] ?? config('identity.public.short_name', 'AG Ikenebgu'));
-    $sdtgLabel = (string) config('identity.public.sdtg_label', 'Send Down Thy Glory');
+    $publicIdentity = config('identity.public');
+    $shortName = (string) ($church['short_name'] ?? ($publicIdentity['short_name'] ?? 'AG Ikenebgu'));
+    $sdtgLabel = (string) ($publicIdentity['sdtg_label'] ?? 'Send Down Thy Glory');
+    $logoVideoUrl = asset('site/'.ltrim((string) ($publicIdentity['logo_video_path'] ?? 'videos/Create_a_cinematic_D_animatio.mp4'), '/'));
 @endphp
 
 @section('content')
@@ -16,7 +18,7 @@
         <nav class="navbar navbar-light navbar-expand-lg py-3">
             <a href="{{ url('/') }}" class="navbar-brand d-flex align-items-center">
                 <div class="ag-logo-video ag-logo-video--nav me-2" aria-label="{{ $shortName }} 3D logo">
-                    <video class="ag-logo-video__el" src="{{ asset('site/videos/Create_a_cinematic_D_animatio.mp4') }}" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+                    <video class="ag-logo-video__el" src="{{ $logoVideoUrl }}" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
                 </div>
                 <span class="mb-0 lh-sm">{{ $shortName }}</span>
             </a>

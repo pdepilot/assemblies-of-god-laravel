@@ -1,11 +1,14 @@
 @php
     $social = $church['social'] ?? [];
-    $nameParts = preg_split('/\s+/', trim(($church['short_name'] ?? '') !== '' ? $church['short_name'] : ($church['church_name'] ?? 'AG Ikenebgu'))) ?: ['AG', 'Ikenebgu'];
+    $publicIdentity = config('identity.public');
+    $fallbackShortName = (string) ($publicIdentity['short_name'] ?? 'AG Ikenebgu');
+    $nameParts = preg_split('/\s+/', trim(($church['short_name'] ?? '') !== '' ? $church['short_name'] : ($church['church_name'] ?? $fallbackShortName))) ?: ['AG', 'Ikenebgu'];
     $brandLead = (string) ($nameParts[0] ?? 'AG');
     $brandRest = trim(implode(' ', array_slice($nameParts, 1)));
     if ($brandRest === '') {
         $brandRest = 'Ikenebgu';
     }
+    $logoVideoUrl = asset('site/'.ltrim((string) ($publicIdentity['logo_video_path'] ?? 'videos/Create_a_cinematic_D_animatio.mp4'), '/'));
 @endphp
 <footer class="container-fluid ag-footer pt-0 wow fadeIn" data-wow-delay="0.1s">
     <div class="footer-blessing">
@@ -15,8 +18,8 @@
             <div class="row justify-content-center py-5">
                 <div class="col-lg-10 col-xl-8 text-center">
                     <a href="{{ url('/') }}" class="footer-logo-link d-inline-block mb-4">
-                        <div class="ag-logo-video ag-logo-video--footer" aria-label="{{ $church['church_name'] }} logo">
-                            <video class="ag-logo-video__el" src="{{ asset('site/videos/Create_a_cinematic_D_animatio.mp4') }}" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+                        <div class="ag-logo-video ag-logo-video--footer" aria-label="{{ $church['church_name'] ?? ($publicIdentity['site_name'] ?? $fallbackShortName) }} logo">
+                            <video class="ag-logo-video__el" src="{{ $logoVideoUrl }}" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
                         </div>
                     </a>
                     <p class="footer-verse mb-3">"The Lord bless thee, and keep thee: the Lord make his face shine upon thee, and be gracious unto thee: the Lord lift up his countenance upon thee, and give thee peace."</p>

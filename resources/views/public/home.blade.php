@@ -7,14 +7,17 @@
     $toHref = function (string $path): string {
         return app(\App\Services\PublicSite\PublicHomepageReadService::class)->legacyUrl($path);
     };
+    $publicIdentity = config('identity.public');
+    $welcomeVideoPath = ltrim((string) ($publicIdentity['welcome_video_path'] ?? 'videos/Create_a_cinematic_D_animatio.mp4'), '/');
+    $logoVideoPath = ltrim((string) ($publicIdentity['logo_video_path'] ?? 'videos/Create_a_cinematic_D_animatio.mp4'), '/');
     $preloaderEnabled = filter_var($preloader['enabled'] ?? true, FILTER_VALIDATE_BOOL);
-    $preloaderVideo = $toAsset(trim((string) ($preloader['video_url'] ?? 'videos/Create_a_cinematic_D_animatio.mp4')));
+    $preloaderVideo = $toAsset(trim((string) ($preloader['video_url'] ?? $welcomeVideoPath)));
     $preloaderShowSkip = filter_var($preloader['show_skip'] ?? false, FILTER_VALIDATE_BOOL);
     $preloaderMaxWait = max(3000, min(300000, (int) ($preloader['max_wait_ms'] ?? 120000)));
-    $publicIdentity = config('identity.public');
     $shortName = (string) ($church['short_name'] ?? ($publicIdentity['short_name'] ?? 'AG Ikenebgu'));
     $welcomeVideoLabel = (string) ($publicIdentity['welcome_video_label'] ?? 'AG Ikenebgu welcome video');
     $sdtgLabel = (string) ($publicIdentity['sdtg_label'] ?? 'Send Down Thy Glory');
+    $logoVideoUrl = asset('site/'.$logoVideoPath);
     $iconClass = static function (string $icon): string {
         $icon = trim($icon);
         if ($icon === '') {
@@ -49,7 +52,7 @@
         <nav class="navbar navbar-light navbar-expand-lg py-3">
             <a href="{{ url('/') }}" class="navbar-brand d-flex align-items-center">
                 <div class="ag-logo-video ag-logo-video--nav me-2" aria-label="{{ $shortName }} 3D logo">
-                    <video class="ag-logo-video__el" src="{{ asset('site/videos/Create_a_cinematic_D_animatio.mp4') }}" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+                    <video class="ag-logo-video__el" src="{{ $logoVideoUrl }}" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
                 </div>
                 <span class="mb-0 lh-sm">{{ $shortName }}</span>
             </a>
