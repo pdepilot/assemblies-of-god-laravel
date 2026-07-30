@@ -1,10 +1,13 @@
 @php
-    $admin = auth('admin')->user();
+    $isSdtgContext = request()->is('admin/sdtg') || request()->is('admin/sdtg/*');
+    $admin = $isSdtgContext
+        ? (auth('sdtg')->user() ?? auth('admin')->user())
+        : (auth('admin')->user() ?? auth('sdtg')->user());
     $portalNav = app(\App\Services\Portal\PortalNavService::class);
     $navAccess = app(\App\Services\Auth\RbacNavAccessService::class);
     $cmsConfig = $portalNav->cmsConfig($admin);
     $activePage = $portalPage ?? $portalNav->resolveActivePage();
-    $homeRoute = $portalNav->homeHrefForAdmin($admin);
+    $homeRoute = $isSdtgContext ? route('sdtg.dashboard') : $portalNav->homeHrefForAdmin($admin);
     $cmsNavAccess = $navAccess->getNavAccess($admin);
     $cmsDashboardAccess = $navAccess->getDashboardAccess($admin, $homeRoute);
     $isSundaySchool = $activePage === 'sunday-school' || str_starts_with(request()->path(), 'admin/sunday-school');
@@ -15,6 +18,11 @@
     $portalJs = asset('portal/js');
     $adminIdentity = config('identity.admin');
     $adminFavicon = rtrim((string) config('portal.media_base'), '/').'/'.ltrim((string) ($adminIdentity['favicon_path'] ?? 'images/ag-logo.jpeg'), '/');
+    $logoutUrl = $isSdtgContext ? route('sdtg.logout') : route('logout');
+    $sessionApiUrl = $isSdtgContext ? route('sdtg.session') : route('admin.session');
+    $loginUrl = $isSdtgContext
+        ? route('sdtg.login', ['reason' => 'inactivity'])
+        : route('login', ['reason' => 'inactivity']);
     $cmsAdminUser = [
         'name' => $admin->display_name,
         'role' => ucfirst(str_replace('_', ' ', (string) $admin->role)),
@@ -29,17 +37,19 @@
         'media_base' => config('portal.media_base'),
         'admin_base' => url('/admin'),
         'legacy_admin_base' => config('portal.legacy_admin_base'),
-        'brand_subtitle' => $adminIdentity['brand_subtitle'] ?? 'Church Management System',
+        'brand_subtitle' => $isSdtgContext
+            ? ($adminIdentity['login_secondary_subtitle'] ?? 'Event Management Platform')
+            : ($adminIdentity['brand_subtitle'] ?? 'Church Management System'),
         'admin_user' => $cmsAdminUser,
-        'logout_url' => route('logout'),
+        'logout_url' => $logoutUrl,
         'settings_url' => route('settings.index'),
         'user_ui_pref' => $cmsUserUiPref,
         'home_route' => $homeRoute,
         'nav_access' => $cmsNavAccess,
         'dashboard_access' => $cmsDashboardAccess,
         'session' => [
-            'apiUrl' => route('admin.session'),
-            'loginUrl' => route('login', ['reason' => 'inactivity']),
+            'apiUrl' => $sessionApiUrl,
+            'loginUrl' => $loginUrl,
             'lifetimeMs' => max(60, (int) config('portal.session_lifetime_seconds', 1800)) * 1000,
             'warningMs' => max(30, (int) config('portal.session_warning_seconds', 1500)) * 1000,
         ],
@@ -75,7 +85,7 @@
 </head>
 <body class="cms-app{{ $isSundaySchool ? ' cms-app--sunday-school' : '' }}" data-page="{{ $isSettingsShell ? 'settings' : ($isSundaySchool ? 'sunday-school' : $activePage) }}" data-depth="0" data-theme="{{ $admin->ui_theme ?? 'gold' }}" data-mode="{{ $admin->ui_mode ?? 'dark' }}">
 
-    <form id="cmsLogoutForm" method="POST" action="{{ route('logout') }}" hidden>
+    <form id="cmsLogoutForm" method="POST" action="{{ $logoutUrl }}" hidden>
         @csrf
     </form>
 

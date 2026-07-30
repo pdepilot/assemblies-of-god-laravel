@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Sdtg;
 
+use App\Http\Controllers\Concerns\ResolvesSdtgAdmin;
 use App\Models\Admin;
 use App\Policies\SdtgPolicy;
 use App\Services\Sdtg\SdtgLivestreamReadService;
@@ -13,6 +14,8 @@ use InvalidArgumentException;
 
 final class LivestreamController
 {
+    use ResolvesSdtgAdmin;
+
     public function __construct(
         private readonly SdtgLivestreamReadService $read,
         private readonly SdtgLivestreamWriteService $write,
@@ -90,13 +93,5 @@ final class LivestreamController
         }
 
         return redirect()->route('sdtg.livestream.index')->with('status', 'Stream platform settings saved.');
-    }
-
-    private function admin(): Admin
-    {
-        /** @var Admin $admin */
-        $admin = auth('admin')->user();
-
-        return $admin;
     }
 }

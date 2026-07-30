@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Sdtg;
 
+use App\Http\Controllers\Concerns\ResolvesSdtgAdmin;
 use App\Models\Admin;
 use App\Policies\SdtgPolicy;
 use App\Services\Sdtg\SdtgDashboardReadService;
@@ -9,6 +10,8 @@ use Illuminate\View\View;
 
 final class DashboardController
 {
+    use ResolvesSdtgAdmin;
+
     public function __construct(
         private readonly SdtgDashboardReadService $dashboard,
         private readonly SdtgPolicy $policy,
@@ -23,13 +26,5 @@ final class DashboardController
             'stats' => $this->dashboard->getStats(),
             'canManage' => $this->policy->manageSdtg($admin),
         ]);
-    }
-
-    private function admin(): Admin
-    {
-        /** @var Admin $admin */
-        $admin = auth('admin')->user();
-
-        return $admin;
     }
 }

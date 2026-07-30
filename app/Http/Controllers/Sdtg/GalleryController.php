@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Sdtg;
 
+use App\Http\Controllers\Concerns\ResolvesSdtgAdmin;
 use App\Http\Requests\Sdtg\SaveSdtgGalleryAlbumRequest;
 use App\Http\Requests\Sdtg\SaveSdtgGalleryItemRequest;
 use App\Models\Admin;
@@ -19,6 +20,8 @@ use InvalidArgumentException;
 
 final class GalleryController
 {
+    use ResolvesSdtgAdmin;
+
     public function __construct(
         private readonly SdtgGalleryReadService $read,
         private readonly SdtgGalleryWriteService $write,
@@ -330,13 +333,5 @@ final class GalleryController
         }
 
         return 'photos';
-    }
-
-    private function admin(): Admin
-    {
-        /** @var Admin $admin */
-        $admin = auth('admin')->user();
-
-        return $admin;
     }
 }

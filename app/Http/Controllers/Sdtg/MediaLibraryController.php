@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Sdtg;
 
+use App\Http\Controllers\Concerns\ResolvesSdtgAdmin;
 use App\Http\Requests\Sdtg\SaveSdtgMediaAssetRequest;
 use App\Http\Requests\Sdtg\SaveSdtgMediaFolderRequest;
 use App\Models\Admin;
@@ -15,6 +16,8 @@ use InvalidArgumentException;
 
 final class MediaLibraryController
 {
+    use ResolvesSdtgAdmin;
+
     public function __construct(
         private readonly SdtgMediaReadService $read,
         private readonly SdtgMediaWriteService $write,
@@ -154,13 +157,5 @@ final class MediaLibraryController
         }
 
         return back()->with('status', 'Folder deleted.');
-    }
-
-    private function admin(): Admin
-    {
-        /** @var Admin $admin */
-        $admin = auth('admin')->user();
-
-        return $admin;
     }
 }

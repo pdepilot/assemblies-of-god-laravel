@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
-class LoginRequest extends FormRequest
+class SdtgLoginRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -42,7 +42,7 @@ class LoginRequest extends FormRequest
         $bans = app(DeviceBanService::class);
         $fingerprint = $audit->deviceFingerprint($this);
 
-        $source = DeviceBanService::SOURCE_ADMIN_LOGIN;
+        $source = DeviceBanService::SOURCE_SDTG_LOGIN;
         $activeBan = $bans->getActiveBan($fingerprint, $source);
         if ($activeBan !== null) {
             $expires = \Illuminate\Support\Carbon::parse((string) $activeBan['ban_expires'])->format('F j, Y \a\t g:i A');
@@ -60,7 +60,7 @@ class LoginRequest extends FormRequest
             'account_status' => 'active',
         ];
 
-        if (! Auth::guard('admin')->attempt($credentials, false)) {
+        if (! Auth::guard('sdtg')->attempt($credentials, false)) {
             RateLimiter::hit($this->throttleKey());
 
             $admin = Admin::query()->where('email', $credentials['email'])->first();
@@ -95,19 +95,18 @@ class LoginRequest extends FormRequest
         }
 
         /** @var Admin $admin */
-        $admin = Auth::guard('admin')->user();
-        if (! $admin->canAccessPlatform(Admin::PLATFORM_AG)) {
-            Auth::guard('admin')->logout();
+        $admin = Auth::guard('sdtg')->user();
+        if (! $admin->canAccessPlatform(Admin::PLATFORM_SDTG)) {
+            Auth::guard('sdtg')->logout();
             RateLimiter::hit($this->throttleKey());
             $audit->recordAttempt($this, $admin, false, 'platform_denied', $source);
 
             throw ValidationException::withMessages([
-                'email' => 'This account is not authorized for the AG IKENEGBU Church ERP.',
+                'email' => 'This account is not authorized for the SDTG Management Platform.',
             ]);
         }
 
         RateLimiter::clear($this->throttleKey());
-
         $audit->recordSuccessfulLogin($admin, $this);
     }
 
@@ -134,6 +133,6 @@ class LoginRequest extends FormRequest
 
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return Str::transliterate('sdtg|'.Str::lower($this->string('email')).'|'.$this->ip());
     }
 }

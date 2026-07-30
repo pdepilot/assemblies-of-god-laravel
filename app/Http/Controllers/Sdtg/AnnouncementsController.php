@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Sdtg;
 
+use App\Http\Controllers\Concerns\ResolvesSdtgAdmin;
 use App\Models\Admin;
 use App\Policies\SdtgPolicy;
 use App\Services\Sdtg\SdtgAnnouncementReadService;
@@ -13,6 +14,8 @@ use InvalidArgumentException;
 
 final class AnnouncementsController
 {
+    use ResolvesSdtgAdmin;
+
     public function __construct(
         private readonly SdtgAnnouncementReadService $read,
         private readonly SdtgAnnouncementWriteService $write,
@@ -86,13 +89,5 @@ final class AnnouncementsController
         }
 
         return redirect()->route('sdtg.announcements.show', $announcement)->with('status', 'Announcement updated.');
-    }
-
-    private function admin(): Admin
-    {
-        /** @var Admin $admin */
-        $admin = auth('admin')->user();
-
-        return $admin;
     }
 }

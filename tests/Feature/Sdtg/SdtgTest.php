@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 test('sdtg administrator can view sdtg dashboard', function () {
     $admin = Admin::factory()->create(['role' => 'sdtg_administrator']);
 
-    $response = $this->actingAs($admin, 'admin')->get(route('sdtg.dashboard'));
+    $response = $this->actingAs($admin, 'sdtg')->get(route('sdtg.dashboard'));
 
     $response->assertOk();
     $response->assertSee('SDTG Crusade Admin');
@@ -28,13 +28,13 @@ test('sdtg administrator can update registration status', function () {
         'created_at' => now(),
     ]);
 
-    $this->actingAs($admin, 'admin')
+    $this->actingAs($admin, 'sdtg')
         ->get(route('sdtg.registrations.show', $id))
         ->assertOk()
         ->assertSee('Jane Doe')
         ->assertSee('confirmed');
 
-    $this->actingAs($admin, 'admin')->put(route('sdtg.registrations.update', $id), [
+    $this->actingAs($admin, 'sdtg')->put(route('sdtg.registrations.update', $id), [
         'status' => 'confirmed',
         'notes' => 'Checked in at gate',
     ])->assertRedirect();
@@ -49,13 +49,13 @@ test('sdtg administrator can update registration status', function () {
 test('ss teacher cannot access sdtg module', function () {
     $admin = Admin::factory()->create(['role' => 'ss_teacher']);
 
-    $this->actingAs($admin, 'admin')->get(route('sdtg.dashboard'))->assertForbidden();
+    $this->actingAs($admin, 'sdtg')->get(route('sdtg.dashboard'))->assertForbidden();
 });
 
 test('sdtg administrator can view livestream control page', function () {
     $admin = Admin::factory()->create(['role' => 'sdtg_administrator']);
 
-    $this->actingAs($admin, 'admin')
+    $this->actingAs($admin, 'sdtg')
         ->get(route('sdtg.livestream.index'))
         ->assertOk()
         ->assertSee('SDTG Livestream')
@@ -79,7 +79,7 @@ test('sdtg administrator can view speakers index', function () {
         'updated_at' => now(),
     ]);
 
-    $this->actingAs($admin, 'admin')
+    $this->actingAs($admin, 'sdtg')
         ->get(route('sdtg.speakers.index'))
         ->assertOk()
         ->assertSee('SDTG Speakers')
@@ -91,7 +91,7 @@ test('sdtg administrator can manage gallery albums and items', function () {
     $admin = Admin::factory()->create(['role' => 'sdtg_administrator']);
     $year = (int) date('Y');
 
-    $this->actingAs($admin, 'admin')
+    $this->actingAs($admin, 'sdtg')
         ->post(route('sdtg.gallery.albums.store'), [
             'title' => 'Opening Night',
             'crusade_year' => $year,
@@ -109,7 +109,7 @@ test('sdtg administrator can manage gallery albums and items', function () {
     expect($coverPath)->toStartWith('uploads/sdtg-gallery/');
     expect(is_file(public_path('site/'.$coverPath)))->toBeTrue();
 
-    $this->actingAs($admin, 'admin')
+    $this->actingAs($admin, 'sdtg')
         ->post(route('sdtg.gallery.items.store'), [
             'title' => 'Worship Moment',
             'crusade_year' => $year,
@@ -128,7 +128,7 @@ test('sdtg administrator can manage gallery albums and items', function () {
     expect($filePath)->toStartWith('uploads/sdtg-gallery/');
     expect(is_file(public_path('site/'.$filePath)))->toBeTrue();
 
-    $this->actingAs($admin, 'admin')
+    $this->actingAs($admin, 'sdtg')
         ->get(route('sdtg.gallery.index', ['tab' => 'photos']))
         ->assertOk()
         ->assertSee('Photo Archive')
@@ -137,14 +137,14 @@ test('sdtg administrator can manage gallery albums and items', function () {
         ->assertSee('site/uploads/sdtg-gallery/', false)
         ->assertDontSee('/portal/sdtg/gallery');
 
-    $this->actingAs($admin, 'admin')
+    $this->actingAs($admin, 'sdtg')
         ->get(route('sdtg.gallery.index', ['tab' => 'videos']))
         ->assertOk()
         ->assertSee('Video Archive')
         ->assertSee('Watch & Relive')
         ->assertSee('Upload video');
 
-    $this->actingAs($admin, 'admin')
+    $this->actingAs($admin, 'sdtg')
         ->get(route('sdtg.gallery.items.edit', $itemId))
         ->assertOk()
         ->assertSee('site/uploads/sdtg-gallery/', false);
@@ -166,14 +166,14 @@ test('sdtg gallery admin manages editions timeline and features community memori
     $admin = Admin::factory()->create(['role' => 'sdtg_administrator']);
     $year = 2098;
 
-    $this->actingAs($admin, 'admin')
+    $this->actingAs($admin, 'sdtg')
         ->get(route('sdtg.gallery.index'))
         ->assertOk()
         ->assertSee('Photo Archive')
         ->assertSee('Captured In His Presence')
         ->assertSee('Through The Years');
 
-    $this->actingAs($admin, 'admin')
+    $this->actingAs($admin, 'sdtg')
         ->from(route('sdtg.gallery.index', ['tab' => 'timeline']))
         ->post(route('sdtg.gallery.editions.store'), [
             'crusade_year' => $year,
@@ -208,7 +208,7 @@ test('sdtg gallery admin manages editions timeline and features community memori
         'created_at' => now(),
     ]);
 
-    $this->actingAs($admin, 'admin')
+    $this->actingAs($admin, 'sdtg')
         ->put(route('sdtg.gallery.memories.update', $memoryId), [
             'status' => 'featured',
         ])
@@ -242,7 +242,7 @@ test('sdtg gallery admin manages editions timeline and features community memori
 test('sdtg administrator can manage media library folders and assets', function () {
     $admin = Admin::factory()->create(['role' => 'sdtg_administrator']);
 
-    $this->actingAs($admin, 'admin')
+    $this->actingAs($admin, 'sdtg')
         ->post(route('sdtg.media-library.folders.store'), [
             'name' => 'Promo Pack',
             'description' => 'Social assets',
@@ -252,7 +252,7 @@ test('sdtg administrator can manage media library folders and assets', function 
     $folderId = (int) DB::table('sdtg_media_folders')->where('name', 'Promo Pack')->value('id');
     expect($folderId)->toBeGreaterThan(0);
 
-    $this->actingAs($admin, 'admin')
+    $this->actingAs($admin, 'sdtg')
         ->post(route('sdtg.media-library.assets.store'), [
             'title' => 'Crusade Banner',
             'media_type' => 'image',
@@ -267,7 +267,7 @@ test('sdtg administrator can manage media library folders and assets', function 
     expect($path)->toStartWith('uploads/sdtg-media/');
     expect(is_file(public_path('site/'.$path)))->toBeTrue();
 
-    $this->actingAs($admin, 'admin')
+    $this->actingAs($admin, 'sdtg')
         ->get(route('sdtg.media-library.index'))
         ->assertOk()
         ->assertSee('SDTG Media Library')
@@ -279,7 +279,7 @@ test('sdtg administrator can manage media library folders and assets', function 
 test('sdtg administrator can go live and end stream', function () {
     $admin = Admin::factory()->create(['role' => 'sdtg_administrator']);
 
-    $this->actingAs($admin, 'admin')
+    $this->actingAs($admin, 'sdtg')
         ->post(route('sdtg.livestream.toggle'), [
             'is_live' => '1',
             'session_name' => 'Opening Night',
@@ -297,7 +297,7 @@ test('sdtg administrator can go live and end stream', function () {
     expect($settings['is_live'] ?? false)->toBeTrue()
         ->and($settings['current_viewers'] ?? 0)->toBe(120);
 
-    $this->actingAs($admin, 'admin')
+    $this->actingAs($admin, 'sdtg')
         ->post(route('sdtg.livestream.toggle'), ['is_live' => '0'])
         ->assertRedirect(route('sdtg.livestream.index'));
 
@@ -309,7 +309,7 @@ test('sdtg administrator can go live and end stream', function () {
 test('sdtg administrator sees all catalog sections on content index', function () {
     $admin = Admin::factory()->create(['role' => 'sdtg_administrator']);
 
-    $response = $this->actingAs($admin, 'admin')
+    $response = $this->actingAs($admin, 'sdtg')
         ->get(route('sdtg.content.index'))
         ->assertOk();
 
@@ -326,7 +326,7 @@ test('sdtg administrator sees all catalog sections on content index', function (
 test('sdtg administrator can edit hero section and save it', function () {
     $admin = Admin::factory()->create(['role' => 'sdtg_administrator']);
 
-    $this->actingAs($admin, 'admin')
+    $this->actingAs($admin, 'sdtg')
         ->get(route('sdtg.content.edit', 'hero'))
         ->assertOk()
         ->assertSee('Homepage Hero')
@@ -337,7 +337,7 @@ test('sdtg administrator can edit hero section and save it', function () {
         ->assertDontSee('Video URL')
         ->assertDontSee('name="content[video_url]"', false);
 
-    $this->actingAs($admin, 'admin')
+    $this->actingAs($admin, 'sdtg')
         ->put(route('sdtg.content.update', 'hero'), [
             'content' => [
                 'eyebrow' => 'International Music Crusade',
@@ -364,7 +364,7 @@ test('sdtg administrator can edit hero section and save it', function () {
 test('sdtg administrator can save livestream page hero subsection', function () {
     $admin = Admin::factory()->create(['role' => 'sdtg_administrator']);
 
-    $this->actingAs($admin, 'admin')
+    $this->actingAs($admin, 'sdtg')
         ->put(route('sdtg.content.update', 'livestream_page'), [
             'tab' => 'hero',
             'content' => [
@@ -393,7 +393,7 @@ test('sdtg administrator can save livestream page hero subsection', function () 
 test('ss teacher is forbidden from sdtg content index', function () {
     $admin = Admin::factory()->create(['role' => 'ss_teacher']);
 
-    $this->actingAs($admin, 'admin')
+    $this->actingAs($admin, 'sdtg')
         ->get(route('sdtg.content.index'))
         ->assertForbidden();
 });

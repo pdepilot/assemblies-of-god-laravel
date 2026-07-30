@@ -10,11 +10,14 @@ final class DeviceBanService
 {
     public const SOURCE_ADMIN_LOGIN = 'admin/login';
 
+    public const SOURCE_SDTG_LOGIN = 'admin/sdtg/login';
+
     public const SOURCE_MEMBER_PORTAL_LOGIN = 'member-portal/login';
 
     /** @var list<string> */
     public const SOURCES = [
         self::SOURCE_ADMIN_LOGIN,
+        self::SOURCE_SDTG_LOGIN,
         self::SOURCE_MEMBER_PORTAL_LOGIN,
     ];
 
@@ -35,6 +38,7 @@ final class DeviceBanService
     {
         return match (self::normalizeSource($source)) {
             self::SOURCE_MEMBER_PORTAL_LOGIN => 'Member portal login',
+            self::SOURCE_SDTG_LOGIN => 'SDTG admin login',
             default => 'Admin login',
         };
     }

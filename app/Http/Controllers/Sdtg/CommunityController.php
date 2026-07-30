@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Sdtg;
 
+use App\Http\Controllers\Concerns\ResolvesSdtgAdmin;
 use App\Models\Admin;
 use App\Policies\SdtgPolicy;
 use App\Services\Sdtg\SdtgCommunityReadService;
@@ -12,6 +13,8 @@ use Illuminate\View\View;
 
 final class CommunityController
 {
+    use ResolvesSdtgAdmin;
+
     public function __construct(
         private readonly SdtgCommunityReadService $read,
         private readonly SdtgCommunityWriteService $write,
@@ -53,13 +56,5 @@ final class CommunityController
         $this->write->updateMemoryStatus($memory, (string) $request->input('status', 'pending'));
 
         return back()->with('status', 'Memory updated. Featured memories appear on the public gallery.');
-    }
-
-    private function admin(): Admin
-    {
-        /** @var Admin $admin */
-        $admin = auth('admin')->user();
-
-        return $admin;
     }
 }

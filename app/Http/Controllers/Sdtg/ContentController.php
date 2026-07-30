@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Sdtg;
 
+use App\Http\Controllers\Concerns\ResolvesSdtgAdmin;
 use App\Models\Admin;
 use App\Policies\SdtgPolicy;
 use App\Services\PublicSite\PublicAssetResolver;
@@ -16,6 +17,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 final class ContentController
 {
+    use ResolvesSdtgAdmin;
+
     public function __construct(
         private readonly SdtgContentReadService $read,
         private readonly SdtgContentWriteService $write,
@@ -185,13 +188,5 @@ final class ContentController
         if (! $this->read->isKnownSection($section)) {
             throw new NotFoundHttpException('Unknown content section.');
         }
-    }
-
-    private function admin(): Admin
-    {
-        /** @var Admin $admin */
-        $admin = auth('admin')->user();
-
-        return $admin;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Sdtg;
 
+use App\Http\Controllers\Concerns\ResolvesSdtgAdmin;
 use App\Models\Admin;
 use App\Policies\SdtgPolicy;
 use App\Services\Sdtg\SdtgRegistrationReadService;
@@ -13,6 +14,8 @@ use Illuminate\View\View;
 
 final class RegistrationsController
 {
+    use ResolvesSdtgAdmin;
+
     public function __construct(
         private readonly SdtgRegistrationReadService $read,
         private readonly SdtgRegistrationWriteService $write,
@@ -73,13 +76,5 @@ final class RegistrationsController
         $this->volunteers->decline($registration);
 
         return back()->with('status', 'Volunteer declined.');
-    }
-
-    private function admin(): Admin
-    {
-        /** @var Admin $admin */
-        $admin = auth('admin')->user();
-
-        return $admin;
     }
 }

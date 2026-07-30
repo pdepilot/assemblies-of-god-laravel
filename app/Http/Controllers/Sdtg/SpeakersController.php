@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Sdtg;
 
+use App\Http\Controllers\Concerns\ResolvesSdtgAdmin;
 use App\Http\Requests\Sdtg\SaveSdtgSpeakerRequest;
 use App\Models\Admin;
 use App\Models\SdtgSpeaker;
@@ -15,6 +16,8 @@ use InvalidArgumentException;
 
 final class SpeakersController
 {
+    use ResolvesSdtgAdmin;
+
     public function __construct(
         private readonly SdtgSpeakerReadService $read,
         private readonly SdtgSpeakerWriteService $write,
@@ -91,13 +94,5 @@ final class SpeakersController
         }
 
         return redirect()->route('sdtg.speakers.show', $speaker)->with('status', 'Speaker updated.');
-    }
-
-    private function admin(): Admin
-    {
-        /** @var Admin $admin */
-        $admin = auth('admin')->user();
-
-        return $admin;
     }
 }
