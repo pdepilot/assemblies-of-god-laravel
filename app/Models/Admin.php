@@ -22,6 +22,19 @@ class Admin extends Authenticatable implements CanResetPasswordContract
     use HasFactory;
     use Notifiable;
 
+    public const PLATFORM_AG = 'ag';
+
+    public const PLATFORM_SDTG = 'sdtg';
+
+    public const PLATFORM_BOTH = 'both';
+
+    /** @var list<string> */
+    public const PLATFORM_ACCESS_VALUES = [
+        self::PLATFORM_AG,
+        self::PLATFORM_SDTG,
+        self::PLATFORM_BOTH,
+    ];
+
     protected $table = 'admins';
 
     protected $primaryKey = 'id';
@@ -29,6 +42,11 @@ class Admin extends Authenticatable implements CanResetPasswordContract
     protected $authPasswordName = 'password_hash';
 
     public $timestamps = false;
+
+    /**
+     * When true, password reset mail uses the SDTG reset URL/notification.
+     */
+    public bool $passwordResetViaSdtg = false;
 
     protected $fillable = [
         'email',
@@ -44,6 +62,7 @@ class Admin extends Authenticatable implements CanResetPasswordContract
         'role_id',
         'is_active',
         'account_status',
+        'platform_access',
         'force_password_change',
         'locked_at',
         'recovery_email',
@@ -79,6 +98,15 @@ class Admin extends Authenticatable implements CanResetPasswordContract
 
     public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
     {
+        $viaSdtg = $this->passwordResetViaSdtg
+            || (app()->bound('auth.password_reset_platform') && app('auth.password_reset_platform') === Admin::PLATFORM_SDTG);
+
+        if ($viaSdtg) {
+            $this->notify(new \App\Notifications\SdtgAdminResetPasswordNotification($token));
+
+            return;
+        }
+
         $this->notify(new AdminResetPasswordNotification($token));
     }
 
@@ -87,7 +115,8 @@ class Admin extends Authenticatable implements CanResetPasswordContract
      */
     public function routeNotificationForMail(object $notification): string
     {
-        if ($notification instanceof AdminResetPasswordNotification) {
+        if ($notification instanceof AdminResetPasswordNotification
+            || $notification instanceof \App\Notifications\SdtgAdminResetPasswordNotification) {
             $recovery = trim((string) ($this->recovery_email ?? ''));
             if ($recovery !== '' && filter_var($recovery, FILTER_VALIDATE_EMAIL)) {
                 return $recovery;
@@ -100,6 +129,26 @@ class Admin extends Authenticatable implements CanResetPasswordContract
     public function getDisplayNameAttribute(): string
     {
         return $this->full_name ?: $this->email;
+    }
+
+    public function canAccessPlatform(string $platform): bool
+    {
+        $access = strtolower(trim((string) ($this->platform_access ?? self::PLATFORM_BOTH)));
+        if ($access === '' || $access === self::PLATFORM_BOTH) {
+            return true;
+        }
+
+        return $access === strtolower(trim($platform));
+    }
+
+    public function isAgOnly(): bool
+    {
+        return strtolower(trim((string) ($this->platform_access ?? ''))) === self::PLATFORM_AG;
+    }
+
+    public function isSdtgOnly(): bool
+    {
+        return strtolower(trim((string) ($this->platform_access ?? ''))) === self::PLATFORM_SDTG;
     }
 
     public function canPermission(string $permission): bool
