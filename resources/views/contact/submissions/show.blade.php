@@ -65,7 +65,7 @@
             @php
                 $mailto = 'mailto:'.rawurlencode((string) $submission['email'])
                     .'?subject='.rawurlencode('Re: '.(string) $submission['subject'])
-                    .'&body='.rawurlencode('Dear '.(string) $submission['full_name'].",\n\nThank you for contacting AGC Ikenebgu.\n\n");
+                    .'&body='.rawurlencode('Dear '.(string) $submission['full_name'].",\n\nThank you for contacting AGC Ikenegbu.\n\n");
             @endphp
 
             @if ($canManage)
@@ -113,6 +113,22 @@
                     <button class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700">
                         <i class="fas fa-save"></i> Save Update
                     </button>
+                </form>
+
+                <form method="POST" action="{{ route('contact.submissions.destroy', $submission['id']) }}"
+                      class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6"
+                      onsubmit="return confirm('Delete this message permanently? This cannot be undone.');">
+                    @csrf
+                    @method('DELETE')
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <h3 class="font-semibold text-red-700 dark:text-red-300">Delete message</h3>
+                            <p class="text-sm text-gray-500 mt-1">Permanently remove this enquiry from the inbox.</p>
+                        </div>
+                        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-red-300 text-red-700 text-sm hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30">
+                            <i class="fas fa-trash"></i> Delete message
+                        </button>
+                    </div>
                 </form>
             @else
                 <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">

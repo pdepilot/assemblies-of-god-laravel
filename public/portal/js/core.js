@@ -175,6 +175,7 @@
         var confirmLabel = opts.confirmLabel || 'Confirm';
         var cancelLabel = opts.cancelLabel || 'Cancel';
         var tone = opts.tone || 'danger';
+        var isDanger = tone === 'danger' || tone === 'error' || tone === 'warning';
 
         return new Promise(function (resolve) {
             var existing = document.getElementById('cmsConfirmModal');
@@ -183,18 +184,20 @@
             var modal = document.createElement('div');
             modal.id = 'cmsConfirmModal';
             modal.className = 'cms-modal is-open cms-confirm-modal';
-            modal.setAttribute('role', 'dialog');
+            modal.setAttribute('role', 'alertdialog');
             modal.setAttribute('aria-modal', 'true');
             modal.setAttribute('aria-labelledby', 'cmsConfirmTitle');
+            modal.setAttribute('aria-describedby', 'cmsConfirmMessage');
 
             modal.innerHTML =
                 '<div class="cms-modal__backdrop" data-cms-confirm-cancel></div>' +
-                '<div class="cms-modal__dialog cms-modal__dialog--sm cms-confirm-modal__dialog">' +
-                '  <div class="cms-modal__head">' +
+                '<div class="cms-modal__dialog cms-modal__dialog--sm cms-confirm-modal__dialog" role="document">' +
+                '  <div class="cms-confirm-modal__icon" aria-hidden="true"><i class="fas fa-exclamation-triangle"></i></div>' +
+                '  <div class="cms-modal__head cms-confirm-modal__head">' +
                 '    <h2 id="cmsConfirmTitle" class="cms-modal__title"></h2>' +
                 '    <button type="button" class="cms-modal__close" data-cms-confirm-cancel aria-label="Close">&times;</button>' +
                 '  </div>' +
-                '  <div class="cms-modal__body"><p class="cms-confirm-modal__message"></p></div>' +
+                '  <div class="cms-modal__body"><p id="cmsConfirmMessage" class="cms-confirm-modal__message"></p></div>' +
                 '  <div class="cms-modal__foot">' +
                 '    <button type="button" class="cms-btn cms-btn--ghost" data-cms-confirm-cancel></button>' +
                 '    <button type="button" class="cms-btn cms-confirm-modal__ok" data-cms-confirm-ok></button>' +
@@ -202,11 +205,21 @@
                 '</div>';
 
             modal.querySelector('#cmsConfirmTitle').textContent = title;
-            modal.querySelector('.cms-confirm-modal__message').textContent = message;
+            modal.querySelector('#cmsConfirmMessage').textContent = message;
             modal.querySelector('[data-cms-confirm-cancel].cms-btn').textContent = cancelLabel;
             var okBtn = modal.querySelector('[data-cms-confirm-ok]');
             okBtn.textContent = confirmLabel;
-            okBtn.classList.add(tone === 'danger' || tone === 'error' ? 'cms-btn--danger' : 'cms-btn--primary');
+            okBtn.classList.add(isDanger ? 'cms-btn--danger' : 'cms-btn--primary');
+            if (isDanger) {
+                modal.classList.add('cms-confirm-modal--danger');
+            }
+
+            // Inline critical styles so Vite/Tailwind cannot hide the dialog
+            modal.style.cssText = 'position:fixed;inset:0;z-index:13000;display:flex;align-items:center;justify-content:center;padding:16px;opacity:1;visibility:visible;pointer-events:auto;';
+            var dialogEl = modal.querySelector('.cms-modal__dialog');
+            if (dialogEl) {
+                dialogEl.style.cssText = 'position:relative;width:min(420px,100%);max-width:100%;background:#0f172a;color:#e2e8f0;border:1px solid rgba(148,163,184,.35);border-radius:14px;box-shadow:0 24px 64px rgba(0,0,0,.45);padding:0;text-align:center;';
+            }
 
             document.body.appendChild(modal);
             document.body.classList.add('cms-modal-open');
@@ -220,8 +233,13 @@
             }
 
             function onKey(e) {
-                if (e.key === 'Escape') finish(false);
-                if (e.key === 'Enter') finish(true);
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    finish(false);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    finish(true);
+                }
             }
 
             modal.querySelectorAll('[data-cms-confirm-cancel]').forEach(function (el) {
@@ -232,7 +250,18 @@
         });
     }
 
+    function formNeedsDeleteConfirm(form) {
+        if (!(form instanceof HTMLFormElement)) return false;
+        if (form.getAttribute('data-confirm')) return false;
+        var methodInput = form.querySelector('input[name="_method"]');
+        var method = ((methodInput && methodInput.value) || form.getAttribute('method') || 'get').toUpperCase();
+        return method === 'DELETE';
+    }
+
     function initConfirmBindings() {
+        if (window.__cmsConfirmBound) return;
+        window.__cmsConfirmBound = true;
+
         document.addEventListener('submit', function (e) {
             var form = e.target;
             if (!(form instanceof HTMLFormElement)) return;
@@ -243,26 +272,45 @@
 
             var submitter = e.submitter || null;
             var msg = (submitter && submitter.getAttribute('data-confirm')) || form.getAttribute('data-confirm');
-            if (!msg) return;
-
-            e.preventDefault();
-            e.stopPropagation();
-
             var title = (submitter && submitter.getAttribute('data-confirm-title'))
                 || form.getAttribute('data-confirm-title')
-                || 'Please confirm';
+                || '';
             var tone = (submitter && submitter.getAttribute('data-confirm-tone'))
                 || form.getAttribute('data-confirm-tone')
                 || 'danger';
             var ok = (submitter && submitter.getAttribute('data-confirm-ok'))
                 || form.getAttribute('data-confirm-ok')
-                || 'Confirm';
+                || '';
+            var cancel = (submitter && submitter.getAttribute('data-confirm-cancel'))
+                || form.getAttribute('data-confirm-cancel')
+                || 'Cancel';
+
+            if (!msg && formNeedsDeleteConfirm(form)) {
+                msg = 'Delete this item? This cannot be undone.';
+                title = title || 'Delete confirmation';
+                ok = ok || 'Delete';
+                tone = 'danger';
+            }
+
+            if (!msg) return;
+
+            if (!title) {
+                title = (tone === 'danger' || /delete|remove|destroy/i.test(msg))
+                    ? 'Delete confirmation'
+                    : 'Please confirm';
+            }
+            if (!ok) {
+                ok = (tone === 'danger' || /delete/i.test(msg)) ? 'Delete' : 'Confirm';
+            }
+
+            e.preventDefault();
+            e.stopPropagation();
 
             cmsConfirm({
                 title: title,
                 message: msg,
                 confirmLabel: ok,
-                cancelLabel: form.getAttribute('data-confirm-cancel') || 'Cancel',
+                cancelLabel: cancel,
                 tone: tone
             }).then(function (accepted) {
                 if (!accepted) return;
@@ -339,6 +387,7 @@
         function applyMode(mode) {
             var next = modes.indexOf(mode) >= 0 ? mode : 'dark';
             document.body.setAttribute('data-mode', next);
+            document.body.classList.toggle('dark', next === 'dark');
             return next;
         }
 
@@ -515,6 +564,9 @@
 
     window.CMS = { showToast: showToast, confirm: cmsConfirm, initCounters: initCounters };
 
+    // Bind delete confirms as early as possible (do not wait on other init work).
+    initConfirmBindings();
+
     function init() {
         initSidebar();
         initDropdowns();
@@ -525,7 +577,6 @@
         initExportButtons();
         initAccountModal();
         initForms();
-        initConfirmBindings();
         hideLoader();
     }
 

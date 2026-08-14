@@ -93,6 +93,131 @@
     text-decoration: none !important;
 }
 
+/* Page headers sit outside .portal-module-content — theme them for CMS dark shell */
+.cms-page__header .font-semibold,
+.cms-page__header .text-xl,
+.cms-page__header .text-gray-800,
+.cms-page__header .dark\:text-gray-200,
+.cms-page__header .text-gray-900,
+.cms-page__header h1,
+.cms-page__header h2 {
+    color: var(--cms-text) !important;
+}
+
+.cms-page__header .text-sm,
+.cms-page__header .text-gray-500,
+.cms-page__header .dark\:text-gray-400,
+.cms-page__header p {
+    color: var(--cms-text-muted) !important;
+}
+
+.cms-page__header .bg-indigo-600,
+.cms-page__header a.px-4,
+.cms-page__header a.inline-flex {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.45rem !important;
+    padding: 0.55rem 1rem !important;
+    border-radius: 999px !important;
+    border: 1px solid rgba(251, 254, 6, 0.35) !important;
+    background: linear-gradient(135deg, rgba(251, 254, 6, 0.18), rgba(251, 254, 6, 0.05)) !important;
+    color: var(--cms-gold-light) !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+}
+
+.portal-module-content a.text-indigo-600,
+.cms-page__header a.text-indigo-600,
+.portal-module-content .text-indigo-600 {
+    color: var(--cms-gold-light) !important;
+    font-weight: 600;
+}
+
+.portal-module-content a.text-indigo-600:hover,
+.cms-page__header a.text-indigo-600:hover {
+    color: #fff !important;
+}
+
+/* Plain action buttons used across SDTG forms/tables */
+.portal-module-content button.px-4,
+.portal-module-content button.px-3,
+.portal-module-content a.px-4.py-2,
+.portal-module-content a.px-3.py-2,
+.portal-module-content button[type="submit"]:not(.cms-btn):not(.auth-submit) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 999px;
+    border: 1px solid rgba(251, 254, 6, 0.28);
+    background: rgba(251, 254, 6, 0.12);
+    color: var(--cms-gold-light);
+    font-weight: 600;
+    padding: 0.45rem 0.95rem;
+    cursor: pointer;
+}
+
+.portal-module-content .rounded-lg.border.p-4,
+.portal-module-content .rounded-lg.border.border-gray-200 {
+    background: var(--cms-glass) !important;
+    border-color: var(--cms-glass-border) !important;
+    color: var(--cms-text) !important;
+}
+
+.portal-module-content label.block,
+.portal-module-content .block.text-sm.font-medium {
+    color: var(--cms-text-muted) !important;
+    margin-bottom: 0.25rem;
+}
+
+.cms-alert {
+    border-radius: var(--cms-radius);
+    padding: 0.85rem 1rem;
+    font-size: 0.9rem;
+    border: 1px solid transparent;
+}
+
+.cms-alert--success {
+    background: rgba(34, 197, 94, 0.12);
+    border-color: rgba(34, 197, 94, 0.35);
+    color: #86efac;
+}
+
+.cms-alert--danger {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.35);
+    color: #fca5a5;
+}
+
+.cms-link {
+    color: var(--cms-gold-light) !important;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.cms-link:hover {
+    color: #fff !important;
+    text-decoration: underline;
+}
+
+/* Ensure cms-card used as body still pads content */
+.cms-card.cms-card__body {
+    padding: 1.25rem;
+}
+
+.cms-app--sdtg .cms-page__body.portal-module-content > * + * {
+    margin-top: 1rem;
+}
+
+.cms-app--sdtg .cms-stat .text-2xl,
+.cms-app--sdtg .cms-stat .font-semibold {
+    color: var(--cms-text);
+}
+
+.cms-app--sdtg .cms-stat .text-sm,
+.cms-app--sdtg .cms-stat .text-gray-500 {
+    color: var(--cms-text-muted) !important;
+}
+
 .portal-module-content a.inline-flex:hover,
 .portal-module-content button.inline-flex:hover,
 .portal-module-content .bg-indigo-600:hover,
@@ -377,4 +502,7 @@ body.cms-modal-open {
     }
 }
 
+
+
+.cms-btn--danger { background: rgba(239,68,68,0.18) !important; border-color: rgba(239,68,68,0.4) !important; color: #fca5a5 !important; }
 

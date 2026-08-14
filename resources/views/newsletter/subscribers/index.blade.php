@@ -267,15 +267,16 @@
                         return;
                     }
                     e.preventDefault();
-                    var ask = (window.CMS && CMS.confirm)
-                        ? CMS.confirm({
-                            title: 'Send newsletter',
-                            message: 'Send this newsletter to all ' + total + ' active subscribers?',
-                            confirmLabel: 'Send to all',
-                            tone: 'primary'
-                        })
-                        : Promise.resolve(confirm('Send this newsletter to all ' + total + ' active subscribers?'));
-                    ask.then(function (ok) {
+                    if (!window.CMS || !CMS.confirm) {
+                        if (window.CMS && CMS.showToast) CMS.showToast('Confirm dialog unavailable. Refresh the page.', 'error');
+                        return;
+                    }
+                    CMS.confirm({
+                        title: 'Send newsletter',
+                        message: 'Send this newsletter to all ' + total + ' active subscribers?',
+                        confirmLabel: 'Send to all',
+                        tone: 'primary'
+                    }).then(function (ok) {
                         if (!ok) return;
                         form.setAttribute('data-confirm-accepted', '1');
                         form.requestSubmit(sendAllBtn);

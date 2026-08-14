@@ -437,7 +437,7 @@ return new class extends Migration
 
         foreach ([
             'currency' => 'NGN',
-            'church_name' => 'AG Ikenebgu',
+            'church_name' => 'AGC Ikenegbu',
             'fiscal_year_start_month' => '1',
             'require_expense_approval' => '1',
         ] as $key => $value) {

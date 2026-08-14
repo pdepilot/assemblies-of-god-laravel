@@ -43,29 +43,14 @@ final class ReportReadService
     /** @return array<string, mixed> */
     private function getFilterOptions(): array
     {
-        $sdtgYears = [];
-        if (Schema::hasTable('sdtg_registrations')) {
-            $sdtgYears = DB::table('sdtg_registrations')
-                ->whereNotNull('registration_date')
-                ->pluck('registration_date')
-                ->map(fn ($date) => (int) date('Y', strtotime((string) $date)))
-                ->filter(fn ($y) => $y > 2000)
-                ->unique()
-                ->sortDesc()
-                ->values()
-                ->all();
-        }
-
-        if ($sdtgYears === []) {
-            $sdtgYears = [(int) now()->format('Y')];
-        }
-
         return [
             'membership' => $this->periodOptions(['current_month', 'last_quarter', 'ytd', 'all_time']),
             'visitors' => $this->periodOptions(['current_month', 'last_quarter', 'ytd', 'all_time']),
             'attendance' => $this->periodOptions(['current_month', 'last_quarter', 'ytd', 'all_time']),
             'department' => $this->periodOptions(['current_month', 'ytd', 'all_time']),
             'ministries' => $this->periodOptions(['current_month', 'ytd', 'all_time']),
+            'ministry_age_transfers' => $this->periodOptions(['current_month', 'last_quarter', 'ytd', 'all_time']),
+            'ministry_age_eligibility' => $this->periodOptions(['all_time']),
             'sunday_school' => $this->periodOptions(['current_month', 'last_quarter', 'ytd', 'all_time']),
             'admins' => $this->periodOptions(['ytd', 'all_time']),
             'events' => $this->periodOptions(['next_30_days', 'last_quarter', 'ytd', 'all_time']),
@@ -79,10 +64,6 @@ final class ReportReadService
             'testimonies' => $this->periodOptions(['current_month', 'ytd', 'all_time']),
             'communication' => $this->periodOptions(['current_month', 'ytd', 'all_time']),
             'registration_portals' => $this->periodOptions(['current_month', 'ytd', 'all_time']),
-            'sdtg' => array_map(
-                static fn (int $year): array => ['key' => 'sdtg_'.$year, 'label' => 'SDTG '.$year],
-                $sdtgYears
-            ),
             'formats' => collect(ReportWriteService::REPORT_TYPES)
                 ->mapWithKeys(static fn (string $type): array => [$type => ['csv', 'pdf', 'docx']])
                 ->all(),
@@ -157,23 +138,6 @@ final class ReportReadService
     {
         $period = trim($period);
         $today = new \DateTimeImmutable('today');
-
-        if ($type === 'sdtg' || str_starts_with($period, 'sdtg_')) {
-            $pos = strrpos($period, '_');
-            $year = $pos !== false ? (int) substr($period, $pos + 1) : (int) date('Y');
-
-            if ($year < 2000) {
-                $year = (int) date('Y');
-            }
-
-            return [
-                'key' => 'sdtg_'.$year,
-                'label' => 'SDTG '.$year,
-                'start' => $year.'-01-01',
-                'end' => $year.'-12-31',
-                'year' => $year,
-            ];
-        }
 
         return match ($period) {
             'current_month' => [

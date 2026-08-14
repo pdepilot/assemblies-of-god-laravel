@@ -1,9 +1,10 @@
 <div class="container-fluid testimonial py-5">
     <div class="container py-5">
+        @php $homePage = is_array($homePage ?? null) ? $homePage : []; @endphp
         <div class="ag-testimonial-header text-center mx-auto mb-5 wow fadeIn" data-wow-delay="0.1s">
-            <p class="fs-5 text-uppercase text-primary">Testimonials</p>
-            <h2 class="display-3 mb-0">Stories of Faith From Our Church Family</h2>
-            <p class="text-muted mt-3 mb-0">Real stories of grace, healing, and transformation in Christ.</p>
+            <p class="fs-5 text-uppercase text-primary">{{ $homePage['testimonials_eyebrow'] ?? 'Testimonials' }}</p>
+            <h2 class="display-3 mb-0">{{ $homePage['testimonials_title'] ?? 'Stories of Faith From Our Church Family' }}</h2>
+            <p class="text-muted mt-3 mb-0">{{ $homePage['testimonials_intro'] ?? 'Real stories of grace, healing, and transformation in Christ.' }}</p>
             <button type="button" class="btn btn-primary btn-lg px-5 py-3 mt-4 ag-btn-write-testimony" data-bs-toggle="modal" data-bs-target="#agTestimonyModal">
                 <i class="fas fa-pen-fancy me-2"></i>Write Your Testimony
             </button>

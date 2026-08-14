@@ -1,5 +1,5 @@
 /**
- * AG Ikenebgu — Covenant Cookie Banner (index homepage)
+ * AGC Ikenegbu — Covenant Cookie Banner (index homepage)
  */
 (function () {
     'use strict';

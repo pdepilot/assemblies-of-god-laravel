@@ -11,7 +11,7 @@ final class EventReadService
     public function __construct(
         private readonly PublicAssetResolver $assets,
     ) {}
-    public const CATEGORIES = ['service', 'program', 'outreach', 'sdtg', 'other'];
+    public const CATEGORIES = ['service', 'program', 'outreach', 'other'];
 
     public const STATUSES = ['upcoming', 'completed', 'cancelled'];
 
@@ -33,7 +33,6 @@ final class EventReadService
             'service' => 'Sunday Service',
             'program' => 'Program',
             'outreach' => 'Outreach',
-            'sdtg' => 'SDTG',
             'other' => 'Other',
         ];
     }
@@ -45,7 +44,6 @@ final class EventReadService
             'service' => 'Worship',
             'program' => 'Program',
             'outreach' => 'Outreach',
-            'sdtg' => 'SDTG',
             'other' => 'Event',
         ];
     }
@@ -139,10 +137,6 @@ final class EventReadService
             'this_week' => (int) DB::table('church_events')
                 ->where('status', 'upcoming')
                 ->whereBetween('event_date', [$today, $weekEnd])
-                ->count(),
-            'sdtg_programs' => (int) DB::table('church_events')
-                ->where('category', 'sdtg')
-                ->where('status', 'upcoming')
                 ->count(),
             'expected_attendance' => (int) DB::table('church_events')
                 ->where('status', 'upcoming')

@@ -9,6 +9,19 @@
                 <div class="rounded-md bg-green-50 dark:bg-green-900/30 p-4 text-sm text-green-800 dark:text-green-200">{{ session('status') }}</div>
             @endif
 
+            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6 space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h3 class="text-base font-semibold">Age-based transfers</h3>
+                        <p class="text-sm text-gray-500">Children 13+ → Teens; Teens 20+ → Youth. Daily job + on save.</p>
+                    </div>
+                    <a href="{{ route('ministries.age-transfers.index') }}"
+                       class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-md bg-indigo-600 text-white hover:bg-indigo-700">
+                        Open age transfers
+                    </a>
+                </div>
+            </div>
+
             <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6 space-y-6">
                 @foreach ($settings as $setting)
                     <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4">

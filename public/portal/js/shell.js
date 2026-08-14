@@ -60,7 +60,7 @@
                 if (!visibleChildren.length) {
                     return;
                 }
-                var groupClass = 'cms-nav-group' + (item.sdtg ? ' cms-nav-group--sdtg' : '');
+                var groupClass = 'cms-nav-group';
                 html += '<div class="' + groupClass + '" data-group="' + item.id + '">';
                 html += '<button type="button" class="cms-nav-group__label" aria-expanded="true">';
                 html += '<span>' + item.label + '</span>';
@@ -111,8 +111,8 @@
         var content = document.getElementById('cmsPageContent');
         if (!content) return;
 
-        var brand = CMS_CONFIG.brand;
-        var brandSubtitle = brand.subtitle;
+        var brand = CMS_CONFIG.brand || {};
+        var brandSubtitle = brand.subtitle || '';
         try {
             if (window.CMS_DASHBOARD_ACCESS && CMS_DASHBOARD_ACCESS.presentation && CMS_DASHBOARD_ACCESS.presentation.brand_subtitle && CMS_DASHBOARD_ACCESS.rbac_enabled && !CMS_DASHBOARD_ACCESS.super_admin_bypass) {
                 brandSubtitle = CMS_DASHBOARD_ACCESS.presentation.brand_subtitle;
@@ -120,7 +120,14 @@
         } catch (e) { /* keep default */ }
         var depth = parseInt(document.body.getAttribute('data-depth') || '0', 10);
         var mediaPrefix = '../'.repeat(depth + 1);
-        var agVideo = mediaPrefix + 'videos/3D_video.mp4';
+        var logoVideo = brand.logo_video_url
+            || (brand.logo_video_path ? (window.CMS_MEDIA_BASE || mediaPrefix).replace(/\/?$/, '/') + String(brand.logo_video_path).replace(/^\//, '') : '')
+            || ((window.CMS_MEDIA_BASE || mediaPrefix).replace(/\/?$/, '/') + 'videos/3D_video.mp4');
+        var searchPlaceholder = brand.search_placeholder || 'Search...';
+        var settingsUrl = window.CMS_SETTINGS_URL || '';
+        var settingsLink = settingsUrl
+            ? '<a href="' + settingsUrl + '" role="menuitem"><i class="fas fa-gear"></i> Settings</a>'
+            : '';
 
         var shell = document.createElement('div');
         shell.className = 'cms-layout';
@@ -128,8 +135,8 @@
             '<div class="cms-sidebar-overlay" id="cmsSidebarOverlay" aria-hidden="true"></div>' +
             '<aside class="cms-sidebar" id="cmsSidebar" aria-label="Main navigation">' +
                 '<div class="cms-sidebar__brand">' +
-                    '<div class="cms-sidebar__logo"><video src="' + agVideo + '" autoplay muted loop playsinline aria-hidden="true"></video></div>' +
-                    '<div class="cms-sidebar__brand-text"><strong>' + brand.name + '</strong><span>' + brandSubtitle + '</span></div>' +
+                    '<div class="cms-sidebar__logo"><video src="' + logoVideo + '" autoplay muted loop playsinline aria-hidden="true"></video></div>' +
+                    '<div class="cms-sidebar__brand-text"><strong>' + (brand.name || '') + '</strong><span>' + brandSubtitle + '</span></div>' +
                 '</div>' +
                 '<nav class="cms-sidebar__nav" role="navigation">' + buildNav(base, activePage) + '</nav>' +
                 '<div class="cms-sidebar__footer">' +
@@ -143,7 +150,7 @@
                     '<button type="button" class="cms-topbar__menu" id="cmsMobileMenu" aria-label="Open menu"><i class="fas fa-bars"></i></button>' +
                     '<div class="cms-topbar__search" role="search">' +
                         '<i class="fas fa-search" aria-hidden="true"></i>' +
-                        '<input type="search" id="cmsGlobalSearch" placeholder="Search members, events, pages..." aria-label="Global search">' +
+                        '<input type="search" id="cmsGlobalSearch" placeholder="' + searchPlaceholder + '" aria-label="Global search">' +
                     '</div>' +
                     '<div class="cms-topbar__actions">' +
                         '<div class="cms-theme-picker">' +
@@ -178,7 +185,7 @@
                             '</button>' +
                             '<div class="cms-dropdown" id="cmsProfileDropdown" role="menu">' +
                                 '<button type="button" role="menuitem" id="cmsOpenAccount"><i class="fas fa-user-gear"></i> Login Details</button>' +
-                                '<a href="' + (window.CMS_SETTINGS_URL || resolveHref('settings', base)) + '" role="menuitem"><i class="fas fa-gear"></i> Settings</a>' +
+                                settingsLink +
                                 '<div class="cms-dropdown__divider"></div>' +
                                 '<button type="button" role="menuitem" id="cmsSignOutBtn"><i class="fas fa-right-from-bracket"></i> Sign Out</button>' +
                             '</div>' +

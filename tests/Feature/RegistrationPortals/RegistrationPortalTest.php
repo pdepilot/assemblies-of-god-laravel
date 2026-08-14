@@ -249,7 +249,7 @@ test('admin can open full registrant details', function () {
         'registrant_id' => $registrant->id,
         'field_id' => null,
         'field_key' => 'church',
-        'answer_text' => 'AG Ikenegbu',
+        'answer_text' => 'AGC Ikenegbu',
         'answer_file' => null,
     ]);
 
@@ -258,7 +258,7 @@ test('admin can open full registrant details', function () {
         ->assertOk()
         ->assertSee('Chioma Ade')
         ->assertSee('chioma@example.com')
-        ->assertSee('AG Ikenegbu')
+        ->assertSee('AGC Ikenegbu')
         ->assertSee('Form answers');
 });
 

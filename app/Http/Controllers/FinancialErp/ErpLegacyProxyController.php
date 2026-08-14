@@ -21,6 +21,28 @@ final class ErpLegacyProxyController extends Controller
         $path = trim(str_replace('\\', '/', (string) $path), '/');
         $legacyBase = rtrim((string) config('portal.legacy_public_base'), '/');
         $legacyErp = $legacyBase.'/erp';
+
+        // Clean bookmarked / proxied login URLs that still carry the XAMPP redirect path.
+        if (($path === 'login' || str_starts_with($path, 'login')) && $request->isMethod('GET')) {
+            $dirty = $request->query('redirect');
+            if (is_string($dirty) && $dirty !== '' && (
+                str_contains($dirty, 'AG_IKENEGBU_CHURCH_WEBSITE')
+                || str_contains($dirty, (string) (parse_url($legacyBase, PHP_URL_PATH) ?: '___none___'))
+            )) {
+                $mapped = $this->mapLocation($dirty, $legacyBase);
+                $mappedPath = (string) (parse_url($mapped, PHP_URL_PATH) ?? '');
+                $cleanRedirect = '/erp';
+                if (preg_match('#/erp(?:/(.*))?$#', $mappedPath, $m) === 1) {
+                    $rest = trim((string) ($m[1] ?? ''), '/');
+                    $cleanRedirect = '/erp'.($rest !== '' ? '/'.$rest : '');
+                }
+                $qs = $request->query();
+                $qs['redirect'] = $cleanRedirect;
+
+                return redirect()->to(url('/erp/login').'?'.http_build_query($qs));
+            }
+        }
+
         $url = $path === '' ? $legacyErp.'/' : $legacyErp.'/'.$path;
         if ($request->getQueryString()) {
             $url .= '?'.$request->getQueryString();
@@ -260,12 +282,22 @@ HTML;
 
         // Relative ERP path (e.g. dashboard, login?reason=…)
         if (! preg_match('#^https?://#i', $location) && ! str_starts_with($location, '/')) {
+            $qPos = strpos($location, '?');
+            if ($qPos !== false) {
+                $pathOnly = substr($location, 0, $qPos);
+                $query = substr($location, $qPos + 1);
+
+                return url('/erp/'.ltrim($pathOnly, '/')).$this->rewriteQuerySuffix($query, $legacyBase);
+            }
+
             return url('/erp/'.ltrim($location, '/'));
         }
 
         $path = (string) (parse_url($location, PHP_URL_PATH) ?? '');
         $query = parse_url($location, PHP_URL_QUERY);
-        $querySuffix = is_string($query) && $query !== '' ? '?'.$query : '';
+        $querySuffix = is_string($query) && $query !== ''
+            ? $this->rewriteQuerySuffix($query, $legacyBase)
+            : '';
 
         if (preg_match('#/erp(?:/(.*))?$#', $path, $m) === 1) {
             $rest = trim((string) ($m[1] ?? ''), '/');
@@ -287,5 +319,40 @@ HTML;
         }
 
         return $location;
+    }
+
+    /**
+     * Rewrite redirect= and similar query values that still point at the XAMPP tree.
+     */
+    private function rewriteQuerySuffix(string $query, string $legacyBase): string
+    {
+        parse_str($query, $params);
+        if ($params === []) {
+            return $query !== '' ? '?'.$query : '';
+        }
+
+        foreach (['redirect', 'return', 'next', 'url'] as $key) {
+            if (! isset($params[$key]) || ! is_string($params[$key]) || $params[$key] === '') {
+                continue;
+            }
+
+            $mapped = $this->mapLocation($params[$key], $legacyBase);
+            if ($mapped === '') {
+                continue;
+            }
+
+            $mappedPath = (string) (parse_url($mapped, PHP_URL_PATH) ?? '');
+            if (preg_match('#/erp(?:/(.*))?$#', $mappedPath, $m) === 1) {
+                $rest = trim((string) ($m[1] ?? ''), '/');
+                // Keep a Laravel-absolute ERP path so window.location works on :8000.
+                $params[$key] = '/erp'.($rest !== '' ? '/'.$rest : '');
+            } else {
+                $params[$key] = $mapped;
+            }
+        }
+
+        $built = http_build_query($params);
+
+        return $built !== '' ? '?'.$built : '';
     }
 }

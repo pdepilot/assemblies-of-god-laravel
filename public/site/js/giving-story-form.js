@@ -1,5 +1,5 @@
 /**
- * AG Ikenebgu — giving story modal (donate page)
+ * AGC Ikenegbu — giving story modal (donate page)
  */
 (function () {
     "use strict";
@@ -74,7 +74,7 @@
         '              <div class="col-12">' +
         '                <div class="ag-giving-consent">' +
         '                  <input class="form-check-input" type="checkbox" id="givingConsent" name="consent" required>' +
-        '                  <label class="form-check-label" for="givingConsent">I give AG Ikenebgu permission to review and may share my giving story on the website or in church publications.</label>' +
+        '                  <label class="form-check-label" for="givingConsent">I give AGC Ikenegbu permission to review and may share my giving story on the website or in church publications.</label>' +
         "                </div>" +
         "              </div>" +
         "            </div>" +

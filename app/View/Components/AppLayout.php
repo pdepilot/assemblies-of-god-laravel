@@ -11,11 +11,8 @@ class AppLayout extends Component
         public ?string $title = null,
     ) {}
 
-    /**
-     * Get the view / contents that represents the component.
-     */
     public function render(): View
     {
-        return view('layouts.app');
+        return view('layouts.ag-app');
     }
 }

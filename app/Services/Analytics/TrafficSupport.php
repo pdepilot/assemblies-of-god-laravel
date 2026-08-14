@@ -45,15 +45,11 @@ final class TrafficSupport
     {
         $hint = strtolower(trim($hint));
 
-        if (in_array($hint, ['ag', 'sdgt', 'sermon', 'register'], true)) {
+        if (in_array($hint, ['ag', 'sermon', 'register'], true)) {
             return $hint;
         }
 
         $p = strtolower($path);
-
-        if (str_contains($p, '/sdgt')) {
-            return 'sdgt';
-        }
 
         if (str_contains($p, '/sermon-library')) {
             return 'sermon';

@@ -116,6 +116,7 @@
                 <input type="checkbox" name="remove_photo" value="1" /> Remove current photo
             </label>
         @endif
+        <p class="mt-1 text-xs text-gray-500">JPG, PNG, or WebP up to 5 MB. Upload only — no URL or path.</p>
     </div>
 
     <div class="flex gap-3">

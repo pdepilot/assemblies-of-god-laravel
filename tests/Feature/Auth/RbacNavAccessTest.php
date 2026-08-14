@@ -67,8 +67,8 @@ function assignScopedDonationsAdmin(): Admin
 test('when rbac enforcement is off full sidebar is returned', function () {
     $admin = Admin::factory()->create(['role' => 'admin', 'role_id' => null]);
 
-    $nav = app(PortalNavService::class)->cmsConfig($admin)['nav'];
-    $access = app(RbacNavAccessService::class)->getNavAccess($admin);
+    $nav = app(PortalNavService::class)->cmsConfig($admin, \App\Support\RbacPlatform::AG)['nav'];
+    $access = app(RbacNavAccessService::class)->getNavAccess($admin, \App\Support\RbacPlatform::AG);
 
     expect($access['rbac_enabled'])->toBeFalse();
     expect($access['fail_open'])->toBeTrue();
@@ -145,7 +145,7 @@ test('scoped finance role lands on donations home not admin dashboard', function
         ->get(route('dashboard'))
         ->assertRedirect(route('donations.index'));
 
-    auth('admin')->logout();
+    $this->post('/admin/logout');
 
     $this->post('/admin/login', [
         'email' => $admin->email,

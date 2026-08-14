@@ -112,3 +112,49 @@ body:not(.donate-page) .sdgt-section .seo-faq__item {
 .nap-block a {
     text-decoration: none;
 }
+
+/* Reading progress (blog / sermon show) */
+.reading-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    z-index: 1080;
+    background: transparent;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.reading-progress.is-active {
+    opacity: 1;
+}
+
+.reading-progress span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--bs-primary, #fbfe06);
+    box-shadow: 0 0 6px rgba(26, 43, 92, 0.25);
+}
+
+.footer-legal a {
+    color: rgba(255, 255, 255, 0.75);
+    text-decoration: none;
+    margin-left: 0.75rem;
+    white-space: nowrap;
+}
+
+.footer-legal a:hover {
+    color: var(--bs-primary, #fbfe06);
+}
+
+[data-newsletter-status].is-error {
+    color: #f8d7da;
+}
+
+[data-newsletter-status].is-success {
+    color: #d1e7dd;
+}
+

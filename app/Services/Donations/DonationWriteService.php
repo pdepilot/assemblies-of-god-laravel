@@ -73,9 +73,6 @@ final class DonationWriteService
         }
 
         $categorySlug = trim((string) ($data['category_slug'] ?? $data['category'] ?? ''));
-        if ($categorySlug === 'sdtg' || str_contains(strtolower($categorySlug), 'sdtg')) {
-            $scope = 'sdtg';
-        }
 
         $donationDate = trim((string) ($data['donation_date'] ?? ''));
         if ($donationDate === '') {

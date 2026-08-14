@@ -1,5 +1,5 @@
 /**
- * AG Ikenebgu — Donate page (API + SSE + online giving)
+ * AGC Ikenegbu — Donate page (API + SSE + online giving)
  */
 (function () {
     "use strict";
@@ -10,7 +10,7 @@
     var PAYSTACK_KEY = (body && body.getAttribute("data-paystack-key")) || "";
     var FLUTTERWAVE_KEY = (body && body.getAttribute("data-flutterwave-key")) || "";
     var FUND_SCOPE = (body && body.getAttribute("data-fund-scope")) || "church";
-    if (FUND_SCOPE !== "church" && FUND_SCOPE !== "sdtg") {
+    if (FUND_SCOPE !== "church") {
         FUND_SCOPE = "church";
     }
 
@@ -21,8 +21,6 @@
         charity: "charity",
         building: "building_fund",
         building_fund: "building_fund",
-        sdtg: "sdtg",
-        crusade: "sdtg",
         missions: "missions",
         project: "project_fund",
         partnership: "offering"
@@ -53,15 +51,6 @@
     }
 
     function getFallbackCategories() {
-        if (FUND_SCOPE === "sdtg") {
-            return [
-                { id: 6, slug: "sdtg", name: "Crusade / SDTG" },
-                { id: 1, slug: "offering", name: "Offering" },
-                { id: 2, slug: "tithe", name: "Tithe" },
-                { id: 3, slug: "charity", name: "Charity" },
-                { id: 5, slug: "project_fund", name: "Project Fund" }
-            ];
-        }
         return [
             { id: 1, slug: "offering", name: "Offering" },
             { id: 2, slug: "tithe", name: "Tithe" },
@@ -157,9 +146,6 @@
         }
         tbody.innerHTML = list.map(function (d) {
             var nameHtml = '<span class="donate-donor-name">' + escapeHtml(d.display_name) + "</span>";
-            if (FUND_SCOPE === "sdtg" && d.location) {
-                nameHtml += '<span class="donate-donor-location">' + escapeHtml(d.location) + "</span>";
-            }
             return (
                 "<tr>" +
                 '<td data-label="Donor">' + nameHtml + "</td>" +

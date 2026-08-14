@@ -2,6 +2,7 @@
 
 namespace App\Services\Contact;
 
+use App\Services\Security\SecurityAuditService;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -9,6 +10,7 @@ final class ContactSubmissionWriteService
 {
     public function __construct(
         private readonly ContactMailService $mail,
+        private readonly SecurityAuditService $audit,
     ) {}
 
     /** @param array<string, mixed> $input @return array<string, mixed> */
@@ -47,6 +49,16 @@ final class ContactSubmissionWriteService
         $read = new ContactSubmissionReadService;
 
         return $read->getSubmission($id) ?? (array) $existing;
+    }
+
+    public function delete(int $id): void
+    {
+        $existing = DB::table('contact_submissions')->where('id', $id)->first();
+        if (! $existing) {
+            throw new InvalidArgumentException('Message not found.');
+        }
+
+        DB::table('contact_submissions')->where('id', $id)->delete();
     }
 
     public function markRead(int $id, int $adminId): void
@@ -161,6 +173,18 @@ final class ContactSubmissionWriteService
         ];
 
         $ackSent = $this->mail->sendAcknowledgement($submission);
+
+        $this->audit->log(
+            'contact_submission',
+            'New contact from '.$name.': '.$subject.' ('.$code.').',
+            null,
+            'info',
+            [
+                'submission_id' => $id,
+                'submission_code' => $code,
+                'inquiry_type' => $type,
+            ],
+        );
 
         return [
             'id' => $id,

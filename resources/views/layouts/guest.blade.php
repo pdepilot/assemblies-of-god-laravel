@@ -6,11 +6,8 @@
     $loginTitle = $adminIdentity['login_title'] ?? 'Administrator Portal';
     $primaryLabel = $adminIdentity['login_primary_label'] ?? 'AGC IKENEGBU';
     $primarySubtitle = $adminIdentity['login_primary_subtitle'] ?? 'Church Management Platform';
-    $secondaryLabel = $adminIdentity['login_secondary_label'] ?? 'Send Down Thy Glory';
-    $secondarySubtitle = $adminIdentity['login_secondary_subtitle'] ?? 'Event Management Platform';
     $faviconPath = ltrim((string) ($adminIdentity['favicon_path'] ?? 'images/ag-logo.jpeg'), '/');
     $primaryVideoPath = ltrim((string) ($adminIdentity['primary_logo_video_path'] ?? 'videos/Create_a_cinematic_D_animatio.mp4'), '/');
-    $secondaryVideoPath = ltrim((string) ($adminIdentity['secondary_logo_video_path'] ?? 'sdgt/videos/3d-logo.mp4'), '/');
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -59,17 +56,11 @@
                     <div class="auth-logo-video auth-logo-video--ag" aria-label="{{ $primaryLabel }} 3D logo">
                         <video class="auth-logo-video__el" src="{{ rtrim((string) $mediaBase, '/') }}/{{ $primaryVideoPath }}" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
                     </div>
-                    <div class="auth-logo-video auth-logo-video--sdtg" aria-label="{{ $secondaryLabel }} 3D logo">
-                        <video class="auth-logo-video__el" src="{{ rtrim((string) $mediaBase, '/') }}/{{ $secondaryVideoPath }}" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
-                    </div>
                 </div>
                 <div class="auth-brand__titles">
                     <h1>{{ $primaryLabel }}</h1>
                     <p>{{ $primarySubtitle }}</p>
                 </div>
-                <div class="auth-brand__divider" aria-hidden="true"></div>
-                <p class="auth-brand__sdtg">{{ $secondaryLabel }}</p>
-                <p style="font-size: 0.82rem; color: var(--auth-text-muted); margin-top: 4px;">{{ $secondarySubtitle }}</p>
             </header>
             <div class="auth-security" role="list" aria-label="Security features">
                 <article class="auth-security__card auth-glass" role="listitem">

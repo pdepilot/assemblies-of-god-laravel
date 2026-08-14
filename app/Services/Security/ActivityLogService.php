@@ -23,7 +23,6 @@ final class ActivityLogService
             ['id' => 'donations', 'label' => 'Donations'],
             ['id' => 'stewardship', 'label' => 'Stewardship'],
             ['id' => 'partnerships', 'label' => 'Partnerships'],
-            ['id' => 'sdtg', 'label' => 'SDTG'],
             ['id' => 'seo', 'label' => 'SEO'],
             ['id' => 'sermons', 'label' => 'Sermons'],
             ['id' => 'sunday_school', 'label' => 'Sunday School'],
@@ -241,7 +240,6 @@ final class ActivityLogService
                 'create_partner', 'update_partner', 'delete_partner',
                 'create_campaign', 'update_campaign', 'delete_campaign',
             ]),
-            'sdtg' => $query->where('sl.event_type', 'like', 'sdtg_%'),
             'seo' => $query->where('sl.event_type', 'seo'),
             'sermons' => $query->where(function (Builder $q) {
                 $q->where('sl.event_type', 'like', 'sermon_%')
@@ -266,7 +264,6 @@ final class ActivityLogService
                     ->where('sl.event_type', 'not like', 'event_%')
                     ->where('sl.event_type', 'not like', 'activity_%')
                     ->where('sl.event_type', 'not like', 'donation_%')
-                    ->where('sl.event_type', 'not like', 'sdtg_%')
                     ->where('sl.event_type', 'not like', 'sermon_%')
                     ->where('sl.event_type', 'not like', 'stream_%')
                     ->where('sl.event_type', 'not like', 'ss_%')
@@ -351,9 +348,6 @@ final class ActivityLogService
             'create_campaign', 'update_campaign', 'delete_campaign',
         ], true)) {
             return 'partnerships';
-        }
-        if (str_starts_with($eventType, 'sdtg_')) {
-            return 'sdtg';
         }
         if ($eventType === 'seo') {
             return 'seo';

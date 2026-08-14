@@ -40,7 +40,7 @@
                         </label>
                     @endif
                     <input id="background_image" name="background_image" type="file" accept="image/jpeg,image/png,image/webp" class="block w-full text-sm">
-                    <p class="text-xs text-gray-500">JPG, PNG, or WebP up to 5 MB. Upload only — no URL.</p>
+                    <p class="text-xs text-gray-500">JPG, PNG, or WebP up to 5 MB. Upload only — no URL or path.</p>
                 </div>
                 <div class="flex gap-3">
                     <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-semibold">Save hero</button>

@@ -1,7 +1,7 @@
 @php
     $social = $church['social'] ?? [];
     $publicIdentity = config('identity.public');
-    $fallbackShortName = (string) ($publicIdentity['short_name'] ?? 'AG Ikenebgu');
+    $fallbackShortName = (string) ($publicIdentity['short_name'] ?? 'AGC Ikenegbu');
     $nameParts = preg_split('/\s+/', trim(($church['short_name'] ?? '') !== '' ? $church['short_name'] : ($church['church_name'] ?? $fallbackShortName))) ?: ['AG', 'Ikenebgu'];
     $brandLead = (string) ($nameParts[0] ?? 'AG');
     $brandRest = trim(implode(' ', array_slice($nameParts, 1)));
@@ -71,8 +71,31 @@
                 </div>
             </div>
             <div class="row mt-5 pt-4 border-top border-secondary border-opacity-25">
-                <div class="col-12 text-center">
-                    <p class="mb-0 text-light-50 small">&copy; {{ date('Y') }} {{ $church['church_name'] }}. All rights reserved.</p>
+                <div class="col-lg-5 mb-4 mb-lg-0">
+                    <h4 class="text-light mb-3">Stay Connected</h4>
+                    <p class="footer-text small mb-3">Get devotionals and church updates in your inbox.</p>
+                    <form id="agFooterNewsletter" data-newsletter data-source="footer" data-api="{{ route('public.newsletter.subscribe') }}" class="footer-newsletter">
+                        @csrf
+                        <input type="text" name="website" value="" tabindex="-1" autocomplete="off" class="d-none" aria-hidden="true">
+                        <div class="input-group">
+                            <input type="email" name="email" class="form-control" placeholder="Your email" required aria-label="Email for newsletter">
+                            <button type="submit" class="btn btn-primary">Subscribe</button>
+                        </div>
+                        <p class="small mt-2 mb-0" data-newsletter-status role="status"></p>
+                    </form>
+                </div>
+                <div class="col-lg-7 text-lg-end">
+                    <nav class="footer-legal mb-3" aria-label="Legal and site links">
+                        <a href="{{ route('public.privacy') }}">Privacy</a>
+                        <a href="{{ route('public.terms') }}">Terms</a>
+                        <a href="{{ route('public.cookie-policy') }}">Cookie Policy</a>
+                        <a href="{{ route('public.faq') }}">FAQ</a>
+                        <a href="{{ route('public.leadership') }}">Leadership</a>
+                        <a href="{{ route('public.statement-of-faith') }}">Statement of Faith</a>
+                        <a href="{{ route('public.sitemap') }}">Sitemap</a>
+                    </nav>
+                    <p class="mb-1 text-light-50 small">&copy; {{ date('Y') }} {{ $church['church_name'] }}. All rights reserved.</p>
+                    <p class="mb-0 text-light-50 small">Developed by <span class="text-primary">ERIBS Tech</span></p>
                 </div>
             </div>
         </div>

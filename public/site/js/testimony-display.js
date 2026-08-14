@@ -1,5 +1,5 @@
 /**
- * AG Ikenebgu — load approved testimonies into page carousels
+ * AGC Ikenegbu — load approved testimonies into page carousels
  */
 (function () {
     'use strict';

@@ -3,7 +3,7 @@
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Site Testimonies</h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Review testimonies submitted from AGC Ikenebgu public pages.</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Review testimonies submitted from AGC Ikenegbu public pages.</p>
             </div>
         </div>
     </x-slot>

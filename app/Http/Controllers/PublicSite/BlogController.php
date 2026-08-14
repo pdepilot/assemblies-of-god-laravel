@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\PublicSite\PublicAssetResolver;
 use App\Services\PublicSite\PublicHomepageReadService;
 use App\Services\Website\BlogReadService;
+use App\Services\Website\SchemaBuilder;
 use App\Services\Website\SeoReadService;
 use App\Services\Website\WebsitePagesReadService;
 use Illuminate\Http\Request;
@@ -20,54 +21,54 @@ final class BlogController extends Controller
         private readonly WebsitePagesReadService $pages,
         private readonly PublicAssetResolver $assets,
         private readonly SeoReadService $seo,
+        private readonly SchemaBuilder $schema,
     ) {}
 
     public function index(Request $request): View
     {
-        $brandShortName = (string) config('identity.public.short_name', 'AG Ikenebgu');
-        $pageNum = max(1, (int) $request->query('page', 1));
-        $posts = $this->blog->listPublished('', '', $pageNum, 9);
-        $payload = $this->homepage->payload();
-        $page = $this->hydratePageChrome($this->pages->getPage('blog'));
+        return $this->listing($request, '', '', 'Blog');
+    }
 
-        $posts['items'] = array_map(fn (array $post) => $this->hydratePost($post), $posts['items']);
-
-        $seo = $this->seo->forKey('blog', url('/blog'));
-        $defaultHeading = (string) ($this->pages->defaultPageContent('blog')['heading'] ?? 'Blog');
-        $pageHeading = trim((string) ($page['heading'] ?? ''));
-        if ($pageHeading !== '' && strcasecmp($pageHeading, $defaultHeading) !== 0) {
-            $seo['title'] = $pageHeading.' | '.$brandShortName;
-        }
-        if (trim((string) ($page['intro'] ?? '')) !== '') {
-            $seo['meta_description'] = \Illuminate\Support\Str::limit(strip_tags((string) $page['intro']), 160, '');
-        }
-        if (trim((string) ($page['hero_image'] ?? '')) !== '') {
-            $seo['og_image'] = (string) $page['hero_image'];
+    public function category(Request $request, string $category): View
+    {
+        if (! isset(BlogReadService::categoryLabels()[$category])) {
+            throw new NotFoundHttpException('Category not found.');
         }
 
-        return view('public.blog.index', [
-            'church' => $payload['church'],
-            'posts' => $posts,
-            'page' => $page,
-            'legacy_api_base' => $payload['legacy_api_base'],
-            'traffic_beacon_url' => $payload['traffic_beacon_url'],
-            'seo' => $seo,
-            'testimonySourcePage' => 'blog',
-        ]);
+        return $this->listing($request, $category, '', BlogReadService::categoryLabels()[$category]);
+    }
+
+    public function tag(Request $request, string $tag): View
+    {
+        return $this->listing($request, '', $tag, 'Tag: '.$tag);
     }
 
     public function show(string $slug): View
     {
-        $brandShortName = (string) config('identity.public.short_name', 'AG Ikenebgu');
+        $brandShortName = (string) config('identity.public.short_name', 'AGC Ikenegbu');
         $post = $this->blog->getPublishedBySlug($slug);
         if ($post === null) {
             throw new NotFoundHttpException('Blog post not found.');
         }
 
+        $this->blog->incrementViews((int) $post['id']);
         $post = $this->hydratePost($post);
+        $toc = $this->blog->tableOfContents((string) ($post['body_html'] ?? ''));
+        $post['body_html'] = $this->blog->injectHeadingIds((string) ($post['body_html'] ?? ''), $toc);
+        $related = array_map(fn (array $p) => $this->hydratePost($p), $this->blog->relatedPosts($post));
+        $adjacent = $this->blog->adjacentPosts($post);
+        if ($adjacent['previous']) {
+            $adjacent['previous'] = $this->hydratePost($adjacent['previous']);
+        }
+        if ($adjacent['next']) {
+            $adjacent['next'] = $this->hydratePost($adjacent['next']);
+        }
+
         $payload = $this->homepage->payload();
-        $seo = $this->seo->forKey('blog', url('/blog/'.$slug));
-        $seo['title'] = trim((string) ($post['title'] ?? 'Blog')).' | '.$brandShortName;
+        $canonical = url('/blog/'.$slug);
+        $seo = $this->seo->forKey('blog', $canonical);
+        $seoTitle = trim((string) ($post['seo_title'] ?? ''));
+        $seo['title'] = ($seoTitle !== '' ? $seoTitle : trim((string) ($post['title'] ?? 'Blog'))).' | '.$brandShortName;
         if (trim((string) ($post['meta_description'] ?? '')) !== '') {
             $seo['meta_description'] = (string) $post['meta_description'];
         } elseif (trim((string) ($post['excerpt'] ?? '')) !== '') {
@@ -80,9 +81,55 @@ final class BlogController extends Controller
         return view('public.blog.show', [
             'church' => $payload['church'],
             'post' => $post,
+            'toc' => $toc,
+            'related' => $related,
+            'adjacent' => $adjacent,
             'legacy_api_base' => $payload['legacy_api_base'],
             'traffic_beacon_url' => $payload['traffic_beacon_url'],
             'seo' => $seo,
+            'schemaGraphs' => [
+                $this->schema->article($post, $canonical, (string) ($post['image_url'] ?? '')),
+                $this->schema->breadcrumbs([
+                    ['name' => 'Home', 'url' => url('/')],
+                    ['name' => 'Blog', 'url' => route('public.blog')],
+                    ['name' => (string) $post['title'], 'url' => $canonical],
+                ]),
+            ],
+            'bodyClass' => 'has-reading-progress',
+            'testimonySourcePage' => 'blog',
+        ]);
+    }
+
+    private function listing(Request $request, string $category, string $tag, string $headingOverride): View
+    {
+        $brandShortName = (string) config('identity.public.short_name', 'AGC Ikenegbu');
+        $pageNum = max(1, (int) $request->query('page', 1));
+        $query = trim((string) $request->query('q', ''));
+        $posts = $this->blog->listPublished($query, $category, $pageNum, 9, $tag);
+        $payload = $this->homepage->payload();
+        $page = $this->hydratePageChrome($this->pages->getPage('blog'));
+        $posts['items'] = array_map(fn (array $post) => $this->hydratePost($post), $posts['items']);
+
+        $seo = $this->seo->forKey('blog', url()->current());
+        if ($headingOverride !== 'Blog') {
+            $seo['title'] = $headingOverride.' | '.$brandShortName;
+        }
+
+        return view('public.blog.index', [
+            'church' => $payload['church'],
+            'posts' => $posts,
+            'page' => $page,
+            'listingHeading' => $headingOverride,
+            'activeCategory' => $category,
+            'activeTag' => $tag,
+            'searchQuery' => $query,
+            'popular' => array_map(fn (array $p) => $this->hydratePost($p), $this->blog->popular(5)),
+            'recent' => array_map(fn (array $p) => $this->hydratePost($p), $this->blog->recent(5)),
+            'categories' => BlogReadService::categoryLabels(),
+            'legacy_api_base' => $payload['legacy_api_base'],
+            'traffic_beacon_url' => $payload['traffic_beacon_url'],
+            'seo' => $seo,
+            'schemaGraphs' => $this->schema->organizationAndChurch(),
             'testimonySourcePage' => 'blog',
         ]);
     }
@@ -107,6 +154,9 @@ final class BlogController extends Controller
         $post['published_display'] = ! empty($post['published_at'])
             ? date('M j, Y', strtotime((string) $post['published_at']))
             : '';
+        $post['image_alt'] = trim((string) ($post['featured_image_alt'] ?? '')) !== ''
+            ? (string) $post['featured_image_alt']
+            : (string) ($post['title'] ?? 'Blog image');
 
         return $post;
     }

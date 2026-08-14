@@ -100,7 +100,7 @@ test('compose email fails clearly when smtp is not configured', function () {
         'id' => 1,
         'provider' => 'smtp',
         'from_email' => 'office@agikenebgu.com',
-        'from_name' => 'AG Ikenebgu Office',
+        'from_name' => 'AGC Ikenegbu Office',
     ]);
     DB::table('email_settings')->where('id', 1)->update([
         'smtp_host' => null,
@@ -130,7 +130,7 @@ test('communications officer can create communication template', function () {
         'name' => 'Welcome Email',
         'channel' => 'email',
         'category_slug' => 'welcome',
-        'subject' => 'Welcome to AG Ikenebgu',
+        'subject' => 'Welcome to AGC Ikenegbu',
         'body_text' => 'Hello {{FirstName}}',
     ])->assertRedirect();
 
@@ -216,6 +216,28 @@ test('communications officer can manage contact submission', function () {
         'status' => 'in_progress',
         'admin_notes' => 'Assigned to prayer team',
     ]);
+});
+
+test('communications officer can delete contact submission', function () {
+    $admin = Admin::factory()->create(['role' => 'communications_officer']);
+
+    $id = DB::table('contact_submissions')->insertGetId([
+        'submission_code' => 'CNT-TEST-DEL',
+        'inquiry_type' => 'general',
+        'full_name' => 'Delete Me',
+        'email' => 'delete-me@example.com',
+        'subject' => 'Please remove',
+        'message' => 'This message should be deleted from the inbox.',
+        'status' => 'new',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $this->actingAs($admin, 'admin')
+        ->delete(route('contact.submissions.destroy', $id))
+        ->assertRedirect(route('contact.submissions.index'));
+
+    $this->assertDatabaseMissing('contact_submissions', ['id' => $id]);
 });
 
 test('communications officer can view and email reply to contact submission', function () {
@@ -331,7 +353,7 @@ test('communications officer can email selected newsletter subscribers', functio
         'audience' => 'selected',
         'subscriber_ids' => [$subscriberId],
         'subject' => 'July Church News',
-        'body' => 'Blessings from AG Ikenebgu this month.',
+        'body' => 'Blessings from AGC Ikenegbu this month.',
     ])->assertRedirect();
 
     $this->assertDatabaseHas('email_history', [
@@ -393,13 +415,13 @@ test('communications officer can compose sms from sms center', function () {
     $this->actingAs($admin, 'admin')->post(route('communication-hub.sms-center.compose'), [
         'phone' => '08012345678',
         'name' => 'Guest',
-        'message' => 'Welcome to AG Ikenebgu',
+        'message' => 'Welcome to AGC Ikenegbu',
         'priority' => 'normal',
     ])->assertRedirect(route('communication-hub.sms-center.index'));
 
     $this->assertDatabaseHas('sms_logs', [
         'recipient_phone' => '2348012345678',
-        'message_body' => 'Welcome to AG Ikenebgu',
+        'message_body' => 'Welcome to AGC Ikenegbu',
         'status' => 'sent',
         'provider' => 'termii',
     ]);
@@ -437,7 +459,7 @@ test('hub mail configurator applies hostinger smtp from email settings table', f
         'id' => 1,
         'provider' => 'smtp',
         'from_email' => 'office@agcikenegbu.org',
-        'from_name' => 'AG Ikenebgu',
+        'from_name' => 'AGC Ikenegbu',
         'smtp_host' => 'smtp.hostinger.com',
         'smtp_port' => 465,
         'smtp_user' => 'office@agcikenegbu.org',
@@ -471,7 +493,7 @@ test('communications officer can save email and sms hub settings', function () {
     $this->actingAs($admin, 'admin')->put(route('communication-hub.settings.update'), [
         'default_channel' => 'email',
         'from_email' => 'office@agikenebgu.com',
-        'from_name' => 'AG Ikenebgu Office',
+        'from_name' => 'AGC Ikenegbu Office',
         'smtp_host' => 'smtp.mail.test',
         'smtp_port' => 587,
         'smtp_user' => 'smtp-user',

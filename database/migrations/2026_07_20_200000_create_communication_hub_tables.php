@@ -305,10 +305,10 @@ return new class extends Migration
         ]);
 
         $smsTemplates = [
-            ['birthday_sms', 'Birthday SMS', 'general', 'Happy Birthday {{FirstName}}! Celebrating you today from AG Ikenebgu. God bless you richly.'],
-            ['anniversary_sms', 'Wedding Anniversary SMS', 'general', 'Happy Wedding Anniversary {{FirstName}}! Celebrating {{years}} year(s) of marriage today from AG Ikenebgu. God bless your home.'],
-            ['event_reminder_sms', 'Event Reminder SMS', 'event', 'Reminder: {{EventName}} is coming up. See you there! — AG Ikenebgu'],
-            ['donation_thanks_sms', 'Donation Thanks SMS', 'donation', 'Thank you {{FirstName}} for your gift of {{Amount}}. God bless you. — AG Ikenebgu'],
+            ['birthday_sms', 'Birthday SMS', 'general', 'Happy Birthday {{FirstName}}! Celebrating you today from AGC Ikenegbu. God bless you richly.'],
+            ['anniversary_sms', 'Wedding Anniversary SMS', 'general', 'Happy Wedding Anniversary {{FirstName}}! Celebrating {{years}} year(s) of marriage today from AGC Ikenegbu. God bless your home.'],
+            ['event_reminder_sms', 'Event Reminder SMS', 'event', 'Reminder: {{EventName}} is coming up. See you there! — AGC Ikenegbu'],
+            ['donation_thanks_sms', 'Donation Thanks SMS', 'donation', 'Thank you {{FirstName}} for your gift of {{Amount}}. God bless you. — AGC Ikenegbu'],
         ];
         foreach ($smsTemplates as [$slug, $name, $cat, $body]) {
             DB::table('communication_templates')->insertOrIgnore([

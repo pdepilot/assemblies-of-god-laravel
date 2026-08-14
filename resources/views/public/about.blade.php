@@ -18,20 +18,15 @@
     };
 @endphp
 
-
 @include('public.partials.site-chrome', ['navActive' => 'about'])
 
-<div class="container-fluid page-header py-5" @if ($heroUrl) style="background-image:linear-gradient(rgba(26,43,92,.75),rgba(26,43,92,.75)),url('{{ $heroUrl }}');background-size:cover;background-position:center;" @endif>
-    <div class="container text-center py-5">
-        <h1 class="display-2 text-white mb-3 animated slideInDown">{{ $headerTitle }}</h1>
-        <nav aria-label="breadcrumb" class="animated slideInDown">
-            <ol class="breadcrumb justify-content-center mb-0">
-                <li class="breadcrumb-item"><a href="{{ url('/') }}">{{ $hero['breadcrumb_home_label'] ?? 'Home' }}</a></li>
-                <li class="breadcrumb-item text-white active" aria-current="page">{{ $hero['breadcrumb_current'] ?? 'About' }}</li>
-            </ol>
-        </nav>
-    </div>
-</div>
+@include('public.partials.page-hero', [
+    'heroTitle' => $headerTitle,
+    'breadcrumbHome' => $hero['breadcrumb_home_label'] ?? 'Home',
+    'breadcrumbParent' => $hero['breadcrumb_parent_label'] ?? 'Pages',
+    'breadcrumbCurrent' => $hero['breadcrumb_current'] ?? 'About',
+    'heroUrl' => $heroUrl,
+])
 
 @if ($pageEyebrow !== '' || $pageIntro !== '')
     <div class="container-fluid pt-5">
@@ -49,6 +44,8 @@
 @endif
 
 @include('public.partials.about')
+
+@include('public.partials.team')
 
 @if (! empty($cta['title']) || ! empty($cta['cta_label']) || ! empty($page['cta_label']))
     <div class="container-fluid py-5 bg-primary">

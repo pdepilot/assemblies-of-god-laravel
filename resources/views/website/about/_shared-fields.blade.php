@@ -49,12 +49,11 @@
         <div class="grid gap-4 sm:grid-cols-2 border-t border-gray-100 dark:border-gray-800 pt-4 first:border-0 first:pt-0">
             <div>
                 <label class="block text-sm font-medium">Image {{ $i + 1 }}</label>
-                <input type="hidden" name="{{ $prefix }}[gallery][{{ $i }}][image]" value="{{ $imagePath }}">
                 @if ($imageUrl)
                     <img src="{{ $imageUrl }}" alt="" class="mt-2 h-24 w-36 rounded object-cover border">
                 @endif
                 <input type="file" name="{{ $prefix }}_gallery_{{ $i }}" accept="image/jpeg,image/png,image/webp,image/gif" class="mt-2 block w-full text-sm">
-                <p class="text-xs text-gray-500 mt-1">Upload only — no URL.</p>
+                <p class="text-xs text-gray-500 mt-1">JPG, PNG, WebP, or GIF up to 5 MB. Upload only — no URL or path.</p>
             </div>
             <div>
                 <label class="block text-sm font-medium">Alt text</label>
@@ -73,12 +72,11 @@
     <div class="grid gap-4 sm:grid-cols-2">
         <div>
             <label class="block text-sm font-medium">Image</label>
-            <input type="hidden" name="{{ $prefix }}[highlight][image]" value="{{ $highlightPath }}">
             @if ($highlightUrl)
                 <img src="{{ $highlightUrl }}" alt="" class="mt-2 h-24 w-36 rounded object-cover border">
             @endif
             <input type="file" name="{{ $prefix }}_highlight" accept="image/jpeg,image/png,image/webp,image/gif" class="mt-2 block w-full text-sm">
-            <p class="text-xs text-gray-500 mt-1">Upload only — no URL.</p>
+            <p class="text-xs text-gray-500 mt-1">JPG, PNG, WebP, or GIF up to 5 MB. Upload only — no URL or path.</p>
         </div>
         <div>
             <label class="block text-sm font-medium">Image alt</label>

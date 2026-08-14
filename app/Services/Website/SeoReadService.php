@@ -82,6 +82,10 @@ final class SeoReadService
             'meta_description' => $description,
             'og_image' => $ogImage,
             'canonical' => $canonical ?: $this->defaultCanonical($pageKey),
+            'include_in_sitemap' => array_key_exists('include_in_sitemap', $page)
+                ? (bool) $page['include_in_sitemap']
+                : true,
+            'robots_notes' => trim((string) ($page['robots_notes'] ?? '')),
         ];
     }
 
@@ -89,10 +93,6 @@ final class SeoReadService
     {
         $path = strtolower(trim(str_replace('\\', '/', $legacyPath), '/'));
         $path = preg_replace('/\.php$/i', '', $path) ?? $path;
-
-        if ($area === 'sdtg' || str_starts_with($path, 'sdgt')) {
-            return 'sdtg';
-        }
 
         return match (true) {
             $path === '' || $path === 'index' => 'home',
@@ -136,7 +136,14 @@ final class SeoReadService
             'privacy' => url('/privacy'),
             'terms' => url('/terms'),
             'sermons' => url('/sermons'),
-            'sdtg' => url('/sdgt'),
+            'cookie-policy' => url('/cookie-policy'),
+            'leadership' => url('/leadership'),
+            'statement-of-faith' => url('/statement-of-faith'),
+            'mission-vision' => url('/mission-vision'),
+            'editorial-policy' => url('/editorial-policy'),
+            'accessibility' => url('/accessibility'),
+            'disclaimer' => url('/disclaimer'),
+            'faq' => url('/faq'),
             default => url('/'.$pageKey),
         };
     }
@@ -145,25 +152,40 @@ final class SeoReadService
     private function defaultPages(): array
     {
         $identity = config('identity.public');
-        $shortName = (string) ($identity['short_name'] ?? 'AG Ikenebgu');
-        $siteName = (string) ($identity['site_name'] ?? 'AG Ikenebgu Assemblies of God');
-        $defaultTitle = (string) ($identity['default_title'] ?? 'AG Ikenebgu | Assemblies of God Church Owerri — Worship & Community');
-        $defaultDescription = (string) ($identity['default_description'] ?? 'AG Ikenebgu Assemblies of God in Owerri, Nigeria — spirit-filled worship, Bible teaching, family ministries, and community outreach. Join us Sundays 8:00 AM & 10:30 AM.');
-        $tagline = (string) ($identity['tagline'] ?? 'Assemblies of God Church Owerri');
-        $sdtgLabel = (string) ($identity['sdtg_label'] ?? 'Send Down Thy Glory');
+        $shortName = (string) ($identity['short_name'] ?? 'AGC Ikenegbu');
+        $siteName = (string) ($identity['site_name'] ?? 'AGC Ikenegbu Assemblies of God');
+        $defaultTitle = (string) ($identity['default_title'] ?? 'AGC Ikenegbu | Assemblies of God Church Owerri — Worship & Community');
+        $defaultDescription = (string) ($identity['default_description'] ?? 'AGC Ikenegbu Assemblies of God in Owerri, Nigeria — spirit-filled worship, Bible teaching, family ministries, and community outreach. Join us Sundays 8:00 AM & 10:30 AM.');
+
+        $page = static fn (string $key, string $title, string $description): array => [
+            'key' => $key,
+            'site' => 'ag',
+            'title' => $title,
+            'meta_description' => $description,
+            'og_image' => '',
+            'include_in_sitemap' => true,
+            'robots_notes' => '',
+        ];
 
         return [
-            ['key' => 'home', 'site' => 'ag', 'title' => $defaultTitle, 'meta_description' => $defaultDescription, 'og_image' => ''],
-            ['key' => 'about', 'site' => 'ag', 'title' => 'About Us | '.$siteName, 'meta_description' => 'Learn about '.$shortName.' — our vision, mission, and church family in Ikenegbu, Owerri.', 'og_image' => ''],
-            ['key' => 'contact', 'site' => 'ag', 'title' => 'Contact | '.$shortName, 'meta_description' => 'Contact '.$siteName.' in Owerri. Plan your visit or reach our church office.', 'og_image' => ''],
-            ['key' => 'blog', 'site' => 'ag', 'title' => 'Blog | '.$shortName, 'meta_description' => 'Church news, devotionals, and updates from '.$siteName.'.', 'og_image' => ''],
-            ['key' => 'activity', 'site' => 'ag', 'title' => 'Ministries | '.$shortName, 'meta_description' => 'Explore ministries and activities at '.$shortName.' — serving every generation in Christ.', 'og_image' => ''],
-            ['key' => 'event', 'site' => 'ag', 'title' => 'Events | '.$shortName, 'meta_description' => 'Upcoming worship services, programs, and church events at '.$shortName.'.', 'og_image' => ''],
-            ['key' => 'donate', 'site' => 'ag', 'title' => 'Give | '.$shortName, 'meta_description' => 'Support the mission of '.$shortName.' through tithes, offerings, and special gifts.', 'og_image' => ''],
-            ['key' => 'privacy', 'site' => 'ag', 'title' => 'Privacy Policy | '.$shortName, 'meta_description' => 'Privacy policy for the '.$shortName.' website.', 'og_image' => ''],
-            ['key' => 'terms', 'site' => 'ag', 'title' => 'Terms of Use | '.$shortName, 'meta_description' => 'Terms of use for the '.$shortName.' website.', 'og_image' => ''],
-            ['key' => 'sermons', 'site' => 'ag', 'title' => 'Sermons | '.$shortName, 'meta_description' => 'Watch and listen to sermons from '.$siteName.'.', 'og_image' => ''],
-            ['key' => 'sdtg', 'site' => 'ag', 'title' => $sdtgLabel.' | '.$shortName, 'meta_description' => $sdtgLabel.' International Music Crusade — worship, registration, and livestream.', 'og_image' => ''],
+            $page('home', $defaultTitle, $defaultDescription),
+            $page('about', 'About Us | '.$siteName, 'Learn about '.$shortName.' — our vision, mission, and church family in Ikenegbu, Owerri.'),
+            $page('contact', 'Contact | '.$shortName, 'Contact '.$siteName.' in Owerri. Plan your visit or reach our church office.'),
+            $page('blog', 'Blog | '.$shortName, 'Church news, devotionals, and updates from '.$siteName.'.'),
+            $page('activity', 'Ministries | '.$shortName, 'Explore ministries and activities at '.$shortName.' — serving every generation in Christ.'),
+            $page('event', 'Events | '.$shortName, 'Upcoming worship services, programs, and church events at '.$shortName.'.'),
+            $page('donate', 'Give | '.$shortName, 'Support the mission of '.$shortName.' through tithes, offerings, and special gifts.'),
+            $page('privacy', 'Privacy Policy | '.$shortName, 'Privacy policy for the '.$shortName.' website.'),
+            $page('terms', 'Terms of Use | '.$shortName, 'Terms of use for the '.$shortName.' website.'),
+            $page('sermons', 'Sermons | '.$shortName, 'Watch and listen to sermons from '.$siteName.'.'),
+            $page('cookie-policy', 'Cookie Policy | '.$shortName, 'How '.$shortName.' uses cookies and how you can manage preferences.'),
+            $page('leadership', 'Leadership Team | '.$shortName, 'Meet the pastoral and ministry leaders serving '.$shortName.'.'),
+            $page('statement-of-faith', 'Statement of Faith | '.$shortName, 'What '.$shortName.' believes — Assemblies of God doctrines and our confession of faith.'),
+            $page('mission-vision', 'Mission & Vision | '.$shortName, 'The mission and vision of '.$shortName.' in Owerri and beyond.'),
+            $page('editorial-policy', 'Editorial Policy | '.$shortName, 'How '.$shortName.' reviews and publishes website content.'),
+            $page('accessibility', 'Accessibility | '.$shortName, 'Accessibility commitments for the '.$shortName.' public website.'),
+            $page('disclaimer', 'Disclaimer | '.$shortName, 'Website disclaimer for '.$shortName.' ministry content.'),
+            $page('faq', 'FAQ | '.$shortName, 'Frequently asked questions about visiting and worshipping with '.$shortName.'.'),
         ];
     }
 
@@ -171,8 +193,8 @@ final class SeoReadService
     private function defaults(): array
     {
         return [
-            'title' => (string) config('identity.public.default_og_title', 'AG Ikenebgu | Assemblies of God Church Owerri'),
-            'description' => (string) config('identity.public.default_og_description', 'AG Ikenebgu Assemblies of God in Owerri, Nigeria — spirit-filled worship, Bible teaching, and community outreach.'),
+            'title' => (string) config('identity.public.default_og_title', 'AGC Ikenegbu | Assemblies of God Church Owerri'),
+            'description' => (string) config('identity.public.default_og_description', 'AGC Ikenegbu Assemblies of God in Owerri, Nigeria — spirit-filled worship, Bible teaching, and community outreach.'),
         ];
     }
 }

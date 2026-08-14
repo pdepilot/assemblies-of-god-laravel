@@ -36,7 +36,7 @@ final class ContactMailService
         $subjectLine = (string) ($submission['subject'] ?? '');
         $settings = $this->publicSettings();
 
-        $church = (string) ($settings['church_name'] ?? 'AGC Ikenebgu');
+        $church = (string) ($settings['church_name'] ?? 'AGC Ikenegbu');
         $phone = (string) (($settings['phone_display'] ?? '') ?: ($settings['phone'] ?? ''));
         $officeEmail = (string) ($settings['email'] ?? '');
         $sunday = (string) ($settings['sunday_worship'] ?? '');
@@ -93,7 +93,7 @@ final class ContactMailService
         $name = (string) ($submission['full_name'] ?? '');
         $code = (string) ($submission['submission_code'] ?? '');
         $settings = $this->publicSettings();
-        $church = (string) ($settings['church_name'] ?? 'AGC Ikenebgu');
+        $church = (string) ($settings['church_name'] ?? 'AGC Ikenegbu');
         $phone = (string) (($settings['phone_display'] ?? '') ?: ($settings['phone'] ?? ''));
         $officeEmail = (string) ($settings['email'] ?? '');
 
@@ -137,7 +137,7 @@ final class ContactMailService
     public function publicSettings(): array
     {
         $defaults = [
-            'church_name' => 'AGC Ikenebgu',
+            'church_name' => 'AGC Ikenegbu',
             'phone' => '',
             'phone_display' => '',
             'email' => '',

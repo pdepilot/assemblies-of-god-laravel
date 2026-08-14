@@ -4,6 +4,7 @@ namespace App\Services\Portal;
 
 use App\Models\Admin;
 use App\Services\Auth\RbacNavAccessService;
+use App\Support\RbacPlatform;
 use Illuminate\Support\Facades\Route;
 
 final class PortalNavService
@@ -13,21 +14,26 @@ final class PortalNavService
     ) {}
 
     /** @return array<string, mixed> */
-    public function cmsConfig(?Admin $admin = null): array
+    public function cmsConfig(?Admin $admin = null, ?string $platform = null): array
     {
+        $platform = RbacPlatform::normalize($platform ?? RbacPlatform::current(), RbacPlatform::AG);
+
         return [
-            'brand' => config('portal.brand'),
-            'nav' => $this->navForAdmin($admin),
+            'brand' => [], // Filled by CmsShellBootService from identity.php
+            'nav' => $this->navForAdmin($admin, $platform),
             'notifications' => config('portal.notifications'),
+            'platform' => $platform,
         ];
     }
 
     /**
      * Preferred landing href when a scoped admin logs in or is bounced from a denied page.
      */
-    public function homeHrefForAdmin(?Admin $admin): string
+    public function homeHrefForAdmin(?Admin $admin, ?string $platform = null): string
     {
+        $platform = RbacPlatform::normalize($platform ?? RbacPlatform::current(), RbacPlatform::AG);
         $dashboard = $this->route('dashboard');
+
         if ($admin === null || ! $this->navAccess->isScoped($admin)) {
             return $dashboard;
         }
@@ -36,11 +42,22 @@ final class PortalNavService
         if ($homeNavId !== 'dashboard') {
             $href = $this->navAccess->hrefForNavId($homeNavId);
             if ($href !== '#' && $this->navAccess->canShowNavItem($admin, $homeNavId)) {
-                return $href;
+                // Only use preferred home when it belongs to the active platform nav.
+                foreach ($this->navForAdmin($admin, $platform) as $item) {
+                    if (($item['type'] ?? null) === 'group') {
+                        foreach ($item['children'] ?? [] as $child) {
+                            if ((string) ($child['id'] ?? '') === $homeNavId) {
+                                return $href;
+                            }
+                        }
+                    } elseif ((string) ($item['id'] ?? '') === $homeNavId) {
+                        return $href;
+                    }
+                }
             }
         }
 
-        foreach ($this->navForAdmin($admin) as $item) {
+        foreach ($this->navForAdmin($admin, $platform) as $item) {
             if (($item['type'] ?? null) === 'group') {
                 foreach ($item['children'] ?? [] as $child) {
                     $id = (string) ($child['id'] ?? '');
@@ -69,13 +86,15 @@ final class PortalNavService
     }
 
     /**
-     * Sidebar tree filtered by the admin's roles when RBAC enforcement is on.
+     * Sidebar tree filtered by platform context, then by RBAC when enforcement is on.
      *
      * @return list<array<string, mixed>>
      */
-    public function navForAdmin(?Admin $admin): array
+    public function navForAdmin(?Admin $admin, ?string $platform = null): array
     {
-        $nav = $this->fullNav();
+        $platform = RbacPlatform::normalize($platform ?? RbacPlatform::current(), RbacPlatform::AG);
+        $nav = $this->filterNavByPlatform($this->fullNav($platform), $platform);
+
         if ($admin === null
             || ! $this->navAccess->isEnforcementEnabled()
             || $this->navAccess->shouldBypass($admin)) {
@@ -107,8 +126,9 @@ final class PortalNavService
         return $filtered;
     }
 
-    public function resolveActivePage(?string $path = null): string
+    public function resolveActivePage(?string $path = null, ?string $platform = null): string
     {
+        $platform = RbacPlatform::normalize($platform ?? RbacPlatform::current(), RbacPlatform::AG);
         $path = trim((string) ($path ?? request()->path()), '/');
 
         if ($path === '' || $path === 'dashboard' || $path === 'admin/dashboard' || $path === 'admin') {
@@ -118,7 +138,7 @@ final class PortalNavService
         $bestId = null;
         $bestLength = -1;
 
-        foreach ($this->fullNav() as $item) {
+        foreach ($this->filterNavByPlatform($this->fullNav($platform), $platform) as $item) {
             if (($item['type'] ?? null) === 'group') {
                 foreach ($item['children'] ?? [] as $child) {
                     $length = $this->hrefMatchLength($child['href'] ?? '', $path);
@@ -141,12 +161,7 @@ final class PortalNavService
             return $bestId;
         }
 
-        return $this->aliasActivePage($path) ?? 'dashboard';
-    }
-
-    private function hrefMatches(string $href, string $path): bool
-    {
-        return $this->hrefMatchLength($href, $path) >= 0;
+        return $this->aliasActivePage($path, $platform) ?? 'dashboard';
     }
 
     private function hrefMatchLength(string $href, string $path): int
@@ -170,7 +185,7 @@ final class PortalNavService
         return -1;
     }
 
-    private function aliasActivePage(string $path): ?string
+    private function aliasActivePage(string $path, string $platform): ?string
     {
         $aliases = [
             'admin/sunday-school/attendance' => 'attendance',
@@ -186,8 +201,6 @@ final class PortalNavService
             'newsletter-subscribers' => 'newsletter-subscribers',
             'admin/testimonies' => 'ag-testimonies',
             'sermons' => 'sermons',
-            'sdtg/gallery' => 'gallery',
-            'sdtg' => 'speakers',
             'financial-erp' => 'erp-launch',
             'registration-portals' => 'rp-portals',
             'website' => 'pages',
@@ -210,6 +223,7 @@ final class PortalNavService
             'security/bans' => 'security-bans',
             'security/activity-logs' => 'activity-logs',
             'ministries/settings' => 'ministry-settings',
+            'ministries/age-transfers' => 'ministry-age-transfers',
             'ministries/children' => 'children',
             'ministries/teens' => 'teens',
             'ministries/youths' => 'youths',
@@ -232,18 +246,55 @@ final class PortalNavService
         return null;
     }
 
-    /** @return list<array<string, mixed>> */
-    private function fullNav(): array
+    /**
+     * @param  list<array<string, mixed>>  $nav
+     * @return list<array<string, mixed>>
+     */
+    private function filterNavByPlatform(array $nav, string $platform): array
     {
+        $out = [];
+        foreach ($nav as $item) {
+            $itemPlatform = RbacPlatform::normalize(
+                (string) ($item['platform'] ?? RbacPlatform::AG),
+                RbacPlatform::AG
+            );
+            // "shared" reserved for future; shared-system is topbar-only, not sidebar business modules.
+            if ($itemPlatform === RbacPlatform::BOTH) {
+                $out[] = $item;
+                continue;
+            }
+            if ($itemPlatform === $platform) {
+                $out[] = $item;
+            }
+        }
+
+        return $out;
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function fullNav(string $platform): array
+    {
+        $dashboardHref = $this->route('dashboard');
+
+        $agBrand = (string) config('identity.admin.brand_name', config('portal.brand.name', 'AGC IKENEGBU'));
+
         return [
-            ['id' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'fa-gauge-high', 'href' => $this->route('dashboard')],
+            [
+                'id' => 'dashboard',
+                'label' => 'Dashboard',
+                'icon' => 'fa-gauge-high',
+                'href' => $dashboardHref,
+                'platform' => $platform,
+            ],
             [
                 'id' => 'ag',
-                'label' => (string) config('portal.brand.name', 'AGC IKENEGBU'),
+                'label' => $agBrand,
                 'type' => 'group',
+                'platform' => RbacPlatform::AG,
                 'children' => [
                     $this->item('members', 'Members', 'fa-users', 'members.index'),
                     $this->item('ministry-settings', 'Ministry Settings', 'fa-sliders', 'ministries.settings.index'),
+                    $this->item('ministry-age-transfers', 'Age Transfers', 'fa-people-arrows', 'ministries.age-transfers.index'),
                     $this->ministry('children', 'Children Ministry', 'fa-child', 'children'),
                     $this->item('sunday-school', 'Sunday School', 'fa-book-open', 'ss.analytics.index'),
                     $this->ministry('teens', 'Teen Ministry', 'fa-user-graduate', 'teens'),
@@ -276,6 +327,7 @@ final class PortalNavService
                 'id' => 'communication-hub',
                 'label' => 'COMMUNICATION HUB',
                 'type' => 'group',
+                'platform' => RbacPlatform::AG,
                 'children' => [
                     $this->item('ch-dashboard', 'Communication Dashboard', 'fa-gauge-high', 'communication-hub.dashboard'),
                     $this->item('ch-birthdays', 'Birthday Calendar', 'fa-cake-candles', 'communication-hub.birthdays.index'),
@@ -295,30 +347,10 @@ final class PortalNavService
                 ],
             ],
             [
-                'id' => 'sdtg',
-                'label' => 'SEND DOWN THY GLORY',
-                'type' => 'group',
-                'sdtg' => true,
-                'children' => [
-                    $this->item('speakers', 'Speakers', 'fa-microphone', 'sdtg.speakers.index'),
-                    $this->item('registrations', 'Registrations', 'fa-ticket', 'sdtg.registrations.index'),
-                    $this->item('gallery', 'Gallery', 'fa-images', 'sdtg.gallery.index'),
-                    $this->item('announcements', 'Announcements', 'fa-bullhorn', 'sdtg.announcements.index'),
-                    $this->item('sdtg-content', 'Page Content', 'fa-pen-ruler', 'sdtg.content.index'),
-                    $this->legacy('sdtg-sponsors', 'Partners & Sponsors', 'fa-handshake', 'sdtg/sponsors'),
-                    $this->item('livestream', 'Livestream', 'fa-tower-broadcast', 'sdtg.livestream.index'),
-                    $this->legacy('volunteers', 'Volunteers', 'fa-hands-helping', 'sdtg/volunteers'),
-                    $this->item('testimonies', 'Testimonies', 'fa-quote-left', 'sdtg.community.index'),
-                    $this->item('prayer-requests', 'Prayer Requests', 'fa-pray', 'sdtg.community.index'),
-                    $this->legacy('memory-submissions', 'Memory Submissions', 'fa-cloud-upload-alt', 'sdtg/memory-submissions'),
-                    $this->legacy('sdtg-donations', 'Donate Page', 'fa-coins', 'sdtg/donations'),
-                    $this->item('sdtg-media-library', 'Media Library', 'fa-photo-film', 'sdtg.media-library.index'),
-                ],
-            ],
-            [
                 'id' => 'financial-erp',
                 'label' => 'FINANCIAL ERP',
                 'type' => 'group',
+                'platform' => RbacPlatform::AG,
                 'children' => [
                     $this->item('erp-launch', 'Open Financial ERP', 'fa-chart-line', 'financial-erp.launch'),
                 ],
@@ -327,6 +359,7 @@ final class PortalNavService
                 'id' => 'registration-portals',
                 'label' => 'REGISTRATION PORTALS',
                 'type' => 'group',
+                'platform' => RbacPlatform::AG,
                 'children' => [
                     $this->item('rp-portals', 'All Portals', 'fa-door-open', 'registration-portals.index'),
                     $this->item('rp-create', 'Create Portal', 'fa-plus-circle', 'registration-portals.create'),
@@ -336,8 +369,9 @@ final class PortalNavService
                 'id' => 'website',
                 'label' => 'WEBSITE MANAGEMENT',
                 'type' => 'group',
+                'platform' => RbacPlatform::AG,
                 'children' => [
-                    $this->item('pages', 'Pages', 'fa-file-lines', 'website.pages.index'),
+                    $this->item('pages', 'Page Manager', 'fa-file-lines', 'website.pages.index'),
                     $this->item('blog', 'Blog', 'fa-newspaper', 'website.blog.index'),
                     $this->item('about-content', 'About Content', 'fa-church', 'website.about.edit'),
                     $this->item('team-section', 'Team Sections', 'fa-people-group', 'website.team.index'),
@@ -350,6 +384,7 @@ final class PortalNavService
                 'id' => 'system',
                 'label' => 'SYSTEM',
                 'type' => 'group',
+                'platform' => RbacPlatform::AG,
                 'children' => [
                     $this->item('cutover', 'Migration Cutover', 'fa-route', 'analytics.cutover.index'),
                     $this->item('settings', 'Settings', 'fa-gear', 'settings.index'),
@@ -368,6 +403,17 @@ final class PortalNavService
             'label' => $label,
             'icon' => $icon,
             'href' => $this->route($routeName),
+        ];
+    }
+
+    /** @return array{id: string, label: string, icon: string, href: string} */
+    private function hrefItem(string $id, string $label, string $icon, string $href): array
+    {
+        return [
+            'id' => $id,
+            'label' => $label,
+            'icon' => $icon,
+            'href' => $href,
         ];
     }
 
@@ -405,6 +451,6 @@ final class PortalNavService
 
     private function legacyUrl(string $path): string
     {
-        return rtrim((string) config('portal.legacy_admin_base'), '/') . '/' . ltrim($path, '/');
+        return rtrim((string) config('portal.legacy_admin_base'), '/').'/'.ltrim($path, '/');
     }
 }

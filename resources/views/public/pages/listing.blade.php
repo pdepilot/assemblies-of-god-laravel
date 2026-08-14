@@ -26,17 +26,11 @@
 @section('content')
 @include('public.partials.site-chrome', ['navActive' => $navActive ?? ''])
 
-<div class="container-fluid page-header py-5" @if ($heroUrl) style="background-image:linear-gradient(rgba(26,43,92,.75),rgba(26,43,92,.75)),url('{{ $heroUrl }}');background-size:cover;background-position:center;" @endif>
-    <div class="container text-center py-5">
-        <h1 class="display-2 text-white mb-3 animated slideInDown">{{ $heading }}</h1>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb justify-content-center mb-0">
-                <li class="breadcrumb-item"><a href="{{ url('/') }}">Home</a></li>
-                <li class="breadcrumb-item text-white active" aria-current="page">{{ $heading }}</li>
-            </ol>
-        </nav>
-    </div>
-</div>
+@include('public.partials.page-hero', [
+    'heroTitle' => $heading,
+    'breadcrumbCurrent' => $heading,
+    'heroUrl' => $heroUrl,
+])
 
 <div class="container-fluid py-5">
     <div class="container py-5">

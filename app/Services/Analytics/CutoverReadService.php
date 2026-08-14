@@ -76,7 +76,7 @@ PHP;
             ['key' => 'M6', 'label' => 'Donations & stewardship', 'status' => 'done'],
             ['key' => 'M7', 'label' => 'Financial ERP', 'status' => 'done'],
             ['key' => 'M8', 'label' => 'Communication hub', 'status' => 'done'],
-            ['key' => 'M9', 'label' => 'Media, SDTG, website CMS', 'status' => 'done'],
+            ['key' => 'M9', 'label' => 'Media & website CMS', 'status' => 'done'],
             ['key' => 'M10', 'label' => 'Analytics & cutover', 'status' => 'done'],
         ];
 

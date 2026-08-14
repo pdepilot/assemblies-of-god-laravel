@@ -23,9 +23,13 @@ final class RbacRolesController
 
         return view('settings.rbac.edit-role', [
             'role' => null,
-            'permissionModules' => $this->rbac->listPermissionsGrouped()['modules'],
-            'dashboardTypes' => $this->rbac->dashboardTypes(),
+            'permissionModules' => $this->rbac->listPermissionsGrouped(\App\Support\RbacPlatform::AG)['modules'],
+            'dashboardTypes' => $this->rbac->dashboardTypes(\App\Support\RbacPlatform::AG),
             'selectedPermissionIds' => [],
+            'fixedPlatform' => \App\Support\RbacPlatform::AG,
+            'formStoreRoute' => route('settings.rbac.roles.store'),
+            'formUpdateRoute' => null,
+            'backRoute' => route('settings.index', ['tab' => 'roles']),
         ]);
     }
 
@@ -34,12 +38,20 @@ final class RbacRolesController
         $this->policy->requireManageRbac($this->admin());
         $row = $this->rbac->getRole($role);
         abort_if($row === null, 404);
+        abort_if(
+            ($row['platform'] ?? '') === \App\Support\RbacPlatform::SDTG,
+            404
+        );
 
         return view('settings.rbac.edit-role', [
             'role' => $row,
-            'permissionModules' => $this->rbac->listPermissionsGrouped()['modules'],
-            'dashboardTypes' => $this->rbac->dashboardTypes(),
+            'permissionModules' => $this->rbac->listPermissionsGrouped(\App\Support\RbacPlatform::AG)['modules'],
+            'dashboardTypes' => $this->rbac->dashboardTypes(\App\Support\RbacPlatform::AG),
             'selectedPermissionIds' => $row['permission_ids'] ?? [],
+            'fixedPlatform' => \App\Support\RbacPlatform::AG,
+            'formStoreRoute' => route('settings.rbac.roles.store'),
+            'formUpdateRoute' => route('settings.rbac.roles.update', $role),
+            'backRoute' => route('settings.index', ['tab' => 'roles']),
         ]);
     }
 
@@ -87,6 +99,7 @@ final class RbacRolesController
                 (int) $data['admin_id'],
                 array_map('intval', $data['role_ids'] ?? []),
                 (int) $admin->id,
+                \App\Support\RbacPlatform::AG,
             );
         } catch (InvalidArgumentException $e) {
             return redirect()
@@ -109,6 +122,7 @@ final class RbacRolesController
             'slug' => ['nullable', 'string', 'max:64'],
             'description' => ['nullable', 'string', 'max:1000'],
             'dashboard_type' => ['required', 'string', 'max:64'],
+            'platform' => ['nullable', 'in:ag,both'],
             'is_active' => ['nullable', 'boolean'],
             'permission_ids' => ['nullable', 'array'],
             'permission_ids.*' => ['integer', 'min:1'],
@@ -118,6 +132,10 @@ final class RbacRolesController
             $data['id'] = $roleId;
         }
         $data['is_active'] = $request->boolean('is_active', true);
+        $data['platform'] = \App\Support\RbacPlatform::normalize(
+            (string) ($data['platform'] ?? \App\Support\RbacPlatform::AG),
+            \App\Support\RbacPlatform::AG
+        );
 
         try {
             $saved = $this->rbac->saveRole(

@@ -2,7 +2,7 @@
 @import url("site-portal-nav.css");
 
 /**
- * AG Ikenebgu — Assemblies of God brand palette (from ag-logo.jpeg)
+ * AGC Ikenegbu — Assemblies of God brand palette (from ag-logo.jpeg)
  * Primary gold · Navy dark · Silver accent
  */
 :root {
@@ -765,10 +765,10 @@ body {
     font-size: clamp(1.15rem, 2.2vw, 1.55rem);
     font-weight: 500;
     line-height: 1.65;
-    color: #fff;
+    color: #000;
     margin-bottom: 0.65rem;
     font-style: italic;
-    text-shadow: 0 2px 12px rgba(26, 43, 92, 0.2);
+    text-shadow: none;
 }
 
 .ag-scripture-ref {
@@ -778,15 +778,15 @@ body {
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--ag-navy);
-    background: rgba(255, 255, 255, 0.92);
+    color: #000;
+    background: rgba(255, 255, 255, 0.55);
     padding: 0.35rem 0.85rem;
 }
 
 .ag-scripture-progress {
     display: block;
     height: 3px;
-    background: rgba(255, 255, 255, 0.35);
+    background: rgba(0, 0, 0, 0.2);
     margin-top: 1.25rem;
     overflow: hidden;
 }
@@ -795,7 +795,7 @@ body {
     display: block;
     height: 100%;
     width: 0;
-    background: var(--ag-navy);
+    background: #000;
     animation: agScriptureProgress 7s linear forwards;
 }
 
@@ -825,7 +825,7 @@ body {
     width: 10px;
     height: 10px;
     padding: 0;
-    border: 2px solid rgba(255, 255, 255, 0.85);
+    border: 2px solid rgba(0, 0, 0, 0.55);
     border-radius: 50%;
     background: transparent;
     transition: background 0.35s ease, transform 0.35s ease;
@@ -833,8 +833,8 @@ body {
 
 .ag-scripture-dots button.active,
 .ag-scripture-dots button:hover {
-    background: var(--ag-navy);
-    border-color: var(--ag-navy);
+    background: #000;
+    border-color: #000;
     transform: scale(1.2);
 }
 

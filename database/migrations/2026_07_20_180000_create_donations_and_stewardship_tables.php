@@ -153,7 +153,6 @@ return new class extends Migration
             ['charity', 'Charity & Welfare', 'welfare', 3],
             ['building_fund', 'Building Fund', 'building_fund', 4],
             ['project_fund', 'Project Fund', 'missions', 5],
-            ['sdtg', 'SDTG Crusade', 'sdtg', 6],
         ];
 
         foreach ($rows as [$slug, $name, $legacy, $sort]) {

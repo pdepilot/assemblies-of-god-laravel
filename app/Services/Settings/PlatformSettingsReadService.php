@@ -79,10 +79,10 @@ final class PlatformSettingsReadService
             'members' => Schema::hasTable('members') ? (int) DB::table('members')->count() : 0,
             'roles' => Schema::hasTable('roles') ? (int) DB::table('roles')->count() : 0,
             'sessions' => Schema::hasTable('admin_sessions') ? (int) DB::table('admin_sessions')->count() : 0,
-            'church_name' => (string) ($this->getGroup('church')['name'] ?? config('identity.public.site_name', 'AG Ikenebgu Assemblies of God')),
+            'church_name' => (string) ($this->getGroup('church')['name'] ?? config('identity.public.site_name', 'AGC Ikenegbu Assemblies of God')),
             'short_name' => (string) ($this->getGroup('church')['short_name'] ?? config('identity.admin.brand_name', 'AGC IKENEGBU')),
             'rbac_enabled' => (bool) ($rbac['enforcement_enabled'] ?? false),
-            'platform_name' => (string) config('app.name', 'AG IKENEGBU Church ERP'),
+            'platform_name' => (string) config('app.name', 'AGC IKENEGBU Church ERP'),
         ];
     }
 
@@ -142,7 +142,7 @@ final class PlatformSettingsReadService
                 'records_per_page' => 25,
             ],
             'church' => [
-                'name' => (string) config('identity.public.site_name', 'AG Ikenebgu Assemblies of God'),
+                'name' => (string) config('identity.public.site_name', 'AGC Ikenegbu Assemblies of God'),
                 'short_name' => (string) config('identity.admin.brand_name', 'AGC IKENEGBU'),
                 'pastor' => '',
                 'founded_year' => 1988,

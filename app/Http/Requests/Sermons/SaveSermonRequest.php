@@ -24,6 +24,12 @@ class SaveSermonRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'content_html' => ['nullable', 'string'],
             'scripture_refs' => ['nullable', 'string', 'max:500'],
+            'seo_title' => ['nullable', 'string', 'max:255'],
+            'seo_description' => ['nullable', 'string', 'max:500'],
+            'seo_keywords' => ['nullable', 'string', 'max:500'],
+            'tags' => ['nullable'],
+            'youtube_url' => ['nullable', 'string', 'max:1000'],
+            'audio_stream_url' => ['nullable', 'string', 'max:1000'],
         ];
     }
 }

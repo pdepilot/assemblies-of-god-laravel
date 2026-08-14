@@ -67,16 +67,10 @@ final class PublicHomepageReadService
             'terms' => '/terms',
             'sermon-library/' => '/sermons',
             'sermon-library/index' => '/sermons',
-            'sdgt/' => '/sdgt',
-            'sdgt' => '/sdgt',
         ];
 
         if (isset($map[$path])) {
             return url($map[$path]);
-        }
-
-        if (str_starts_with($path, 'sdgt/')) {
-            return url('/'.rtrim($path, '/'));
         }
 
         return url('/'.$path);
@@ -220,13 +214,13 @@ final class PublicHomepageReadService
     {
         $publicIdentity = config('identity.public');
         $defaults = [
-            'church_name' => (string) ($publicIdentity['site_name'] ?? 'AG Ikenebgu Assemblies of God'),
-            'short_name' => (string) ($publicIdentity['short_name'] ?? 'AG Ikenebgu'),
+            'church_name' => (string) ($publicIdentity['site_name'] ?? 'AGC Ikenegbu Assemblies of God'),
+            'short_name' => (string) ($publicIdentity['short_name'] ?? 'AGC Ikenegbu'),
             'phone' => '+2348034567890',
             'phone_display' => '+234 803 456 7890',
             'phone_tel' => '+2348034567890',
             'email' => 'info@agikenebgu.org',
-            'address_full' => 'AG Ikenegbu, Ikenebgu Layout, Owerri, Imo State',
+            'address_full' => 'AGC Ikenegbu, Ikenebgu Layout, Owerri, Imo State',
             'sunday_worship' => '8:00 AM & 10:30 AM',
             'midweek_service' => 'Wednesday Bible Study — 6:00 PM',
             'prayer_meeting' => 'Friday Prayer — 6:00 PM',
@@ -268,7 +262,7 @@ final class PublicHomepageReadService
 
         return [
             'church_name' => $name !== '' ? $name : $defaults['church_name'],
-            'short_name' => $name !== '' ? $name : $defaults['short_name'],
+            'short_name' => $defaults['short_name'],
             'phone' => $phoneTel !== '' ? $phoneTel : $defaults['phone'],
             'phone_display' => $phoneDisplay !== '' ? $phoneDisplay : $defaults['phone_display'],
             'phone_tel' => $phoneTel !== '' ? $phoneTel : $defaults['phone_tel'],
@@ -297,19 +291,30 @@ final class PublicHomepageReadService
             'title' => 'A Church Family Rooted in Faith, Love, and Service',
             'intro' => sprintf(
                 '%s is a spirit-filled Assemblies of God church in Owerri, welcoming every heart to worship, grow, and serve.',
-                (string) ($publicIdentity['short_name'] ?? 'AG Ikenebgu')
+                (string) ($publicIdentity['short_name'] ?? 'AGC Ikenegbu')
             ),
             'vision_title' => 'Our Vision',
             'vision_text' => 'To raise disciples who know Christ and make Him known.',
             'mission_title' => 'Our Mission',
             'mission_text' => 'Proclaim the full Gospel through worship, teaching, fellowship, and compassion.',
             'gallery' => [
-                ['image' => 'images/main1.jpg', 'alt' => ((string) ($publicIdentity['short_name'] ?? 'AG Ikenebgu')).' church'],
+                ['image' => 'images/main1.jpg', 'alt' => ((string) ($publicIdentity['short_name'] ?? 'AGC Ikenegbu')).' church'],
                 ['image' => 'images/main2.jpg', 'alt' => 'Worship gathering'],
                 ['image' => 'images/church2.webp', 'alt' => 'Church community'],
             ],
             'highlight' => [],
             'features' => [],
+            'scripture_banner' => [
+                'cta_label' => 'Learn More',
+                'cta_url' => 'about',
+                'verses' => [
+                    ['quote' => 'For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.', 'reference' => 'John 3:16 (KJV)'],
+                    ['quote' => 'Trust in the LORD with all thine heart; and lean not unto thine own understanding. In all thy ways acknowledge him, and he shall direct thy paths.', 'reference' => 'Proverbs 3:5–6 (KJV)'],
+                    ['quote' => 'I can do all things through Christ which strengtheneth me.', 'reference' => 'Philippians 4:13 (KJV)'],
+                    ['quote' => 'The LORD bless thee, and keep thee: the LORD make his face shine upon thee, and be gracious unto thee: the LORD lift up his countenance upon thee, and give thee peace.', 'reference' => 'Numbers 6:24–26 (KJV)'],
+                    ['quote' => 'Come unto me, all ye that labour and are heavy laden, and I will give you rest.', 'reference' => 'Matthew 11:28 (KJV)'],
+                ],
+            ],
         ];
 
         if (! Schema::hasTable('ag_site_content')) {
@@ -438,13 +443,15 @@ final class PublicHomepageReadService
                 $dateLabel = $ts ? date('d M Y', $ts) : (string) $sermon['sermon_date'];
             }
 
+            $slug = trim((string) ($sermon['slug'] ?? ''));
+
             return [
                 'title' => (string) ($sermon['title'] ?? 'Sermon'),
                 'description' => \Illuminate\Support\Str::limit(strip_tags((string) ($sermon['description'] ?? $sermon['content_html'] ?? '')), 220),
                 'image_url' => $this->siteAsset($image),
                 'date_label' => $dateLabel,
                 'author' => (string) ($sermon['minister_name'] ?? 'Pastor'),
-                'link' => $this->legacyUrl('sermon-library/'),
+                'link' => $slug !== '' ? route('public.sermons.show', $slug) : route('public.sermons'),
                 'has_video' => true,
                 'has_audio' => true,
                 'has_pdf' => true,

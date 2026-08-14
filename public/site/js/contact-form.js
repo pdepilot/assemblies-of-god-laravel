@@ -1,5 +1,5 @@
 /**
- * AG Ikenebgu — public contact form submission
+ * AGC Ikenegbu — public contact form submission
  */
 (function () {
     'use strict';

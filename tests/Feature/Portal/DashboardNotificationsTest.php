@@ -94,3 +94,37 @@ test('dashboard notifications include hub items and support since_id polling', f
     expect($ids)->toContain($secondId);
     expect($ids)->not->toContain($firstId);
 });
+
+test('public contact testimony and newsletter create dashboard notifications', function () {
+    $admin = Admin::factory()->create(['role' => 'admin']);
+
+    $this->postJson(route('public.contact.submit'), [
+        'action' => 'submit',
+        'inquiry_type' => 'general',
+        'name' => 'Bell Contact',
+        'email' => 'bell-contact@example.com',
+        'subject' => 'Hello church',
+        'message' => 'This is a long enough contact message for the inbox.',
+        'ag_hp_trap' => '',
+    ])->assertOk()->assertJsonPath('success', true);
+
+    $this->postJson(route('public.testimony.submit'), [
+        'name' => 'Bell Testimony',
+        'email' => 'bell-testimony@example.com',
+        'role' => 'Member',
+        'testimony' => 'God has been faithful through every season of my life at church.',
+        'source_page' => 'index',
+    ])->assertOk()->assertJsonPath('success', true);
+
+    $this->postJson(route('public.newsletter.subscribe'), [
+        'email' => 'bell-news@example.com',
+        'source' => 'footer',
+        'website' => '',
+    ])->assertOk()->assertJsonPath('success', true);
+
+    $response = $this->actingAs($admin, 'admin')->getJson('/admin/handlers/dashboard-handler?action=notifications');
+    $response->assertOk()->assertJsonPath('success', true);
+    $response->assertJsonFragment(['title' => 'Contact Message']);
+    $response->assertJsonFragment(['title' => 'New Testimony']);
+    $response->assertJsonFragment(['title' => 'Newsletter']);
+});

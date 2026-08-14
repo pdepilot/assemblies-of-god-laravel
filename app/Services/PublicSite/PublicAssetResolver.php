@@ -19,7 +19,7 @@ final class PublicAssetResolver
         }
 
         // Root-absolute media paths from legacy markup → treat as site-relative.
-        if (str_starts_with($path, '/') && preg_match('#^/(images|img|uploads|videos|css|js|lib|site/sdgt|sdgt)/#i', $path) === 1) {
+        if (str_starts_with($path, '/') && preg_match('#^/(images|img|uploads|videos|css|js|lib)/#i', $path) === 1) {
             $path = ltrim($path, '/');
         } elseif (str_starts_with($path, '/')) {
             return $path;
@@ -32,20 +32,8 @@ final class PublicAssetResolver
             $relative = substr($relative, 5);
         }
 
-        if (str_starts_with($relative, 'uploads/') || str_starts_with($relative, 'sdtg-gallery/') || str_starts_with($relative, 'sdtg-media/')) {
+        if (str_starts_with($relative, 'uploads/')) {
             return $this->uploadUrl($relative);
-        }
-
-        // SDTG assets live under public/site/sdgt (not public/sdgt — that would shadow the /sdgt route).
-        if (str_starts_with($relative, 'sdgt/')) {
-            $sdgtLocal = public_path('site/'.$relative);
-            if (is_file($sdgtLocal)) {
-                return asset('site/'.$relative);
-            }
-
-            $mediaBase = rtrim((string) config('portal.media_base'), '/');
-
-            return $mediaBase.'/'.$relative;
         }
 
         $local = public_path('site/'.$relative);
@@ -56,16 +44,6 @@ final class PublicAssetResolver
         $mediaBase = rtrim((string) config('portal.media_base'), '/');
 
         return $mediaBase.'/'.$relative;
-    }
-
-    public function sdtgUrl(string $path): string
-    {
-        $path = ltrim(str_replace('\\', '/', trim($path)), '/');
-        if ($path === '') {
-            return asset('site/sdgt');
-        }
-
-        return $this->url('sdgt/'.$path);
     }
 
     /** Resolve admin-uploaded media (events, etc.). */

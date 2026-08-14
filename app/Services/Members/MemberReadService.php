@@ -15,7 +15,7 @@ final class MemberReadService
         "Men's Ministry", "Women's Ministry", 'Widowers Ministry', 'Widows Ministry',
         'Music', 'Music Department', 'Choir', 'Ushering', 'Media', 'Media Team',
         'Prayer', 'Prayer Chain', 'Welfare', 'Welfare Ministry', 'Discipleship',
-        'Evangelism', 'Evangelism & Outreach', 'SDTG / Crusade Ministry',
+        'Evangelism', 'Evangelism & Outreach', 'Crusade Ministry',
     ];
 
     public const STATUSES = [

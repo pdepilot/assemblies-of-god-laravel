@@ -1,5 +1,5 @@
 /* ============================================================
-   AGC Ikenebgu & SDTG — Church Management System
+   AGC Ikenegbu & SDTG — Church Management System
    Enterprise SaaS · Dark Luxury · Glass · Gold
    ============================================================ */
 
@@ -1510,6 +1510,52 @@ select.cms-input {
     color: #fff;
 }
 
+/* Classic delete / confirm alert (replaces browser “localhost says…”) */
+.cms-confirm-modal {
+    z-index: 13000;
+}
+
+.cms-confirm-modal .cms-modal__dialog,
+.cms-confirm-modal__dialog {
+    width: min(420px, 100%);
+    text-align: center;
+    padding-top: 8px;
+    animation: cmsConfirmIn 0.22s ease-out both;
+}
+
+.cms-confirm-modal__icon {
+    width: 56px;
+    height: 56px;
+    margin: 22px auto 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.45rem;
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.14);
+    border: 1px solid rgba(251, 191, 36, 0.35);
+}
+
+.cms-confirm-modal--danger .cms-confirm-modal__icon {
+    color: #f87171;
+    background: rgba(248, 113, 113, 0.14);
+    border-color: rgba(248, 113, 113, 0.4);
+}
+
+.cms-confirm-modal__head {
+    border-bottom: none;
+    justify-content: center;
+    padding-bottom: 4px;
+    position: relative;
+}
+
+.cms-confirm-modal__head .cms-modal__close {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+}
+
 .cms-confirm-modal__message {
     margin: 0;
     line-height: 1.55;
@@ -1517,8 +1563,38 @@ select.cms-input {
     font-size: 0.95rem;
 }
 
-.cms-confirm-modal .cms-modal__dialog {
-    animation: cmsConfirmIn 0.22s ease-out both;
+.cms-confirm-modal .cms-modal__body {
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+.cms-confirm-modal .cms-modal__foot {
+    justify-content: center;
+    border-top: none;
+    background: transparent;
+    padding-top: 8px;
+    padding-bottom: 22px;
+}
+
+body.cms-app[data-mode="light"] .cms-confirm-modal .cms-modal__dialog {
+    background: #fff;
+    border-color: rgba(15, 23, 42, 0.12);
+    box-shadow: 0 24px 64px rgba(15, 23, 42, 0.18);
+}
+
+body.cms-app[data-mode="light"] .cms-confirm-modal__message,
+body.cms-app[data-mode="light"] .cms-confirm-modal .cms-modal__title {
+    color: #0f172a;
+}
+
+body.cms-app[data-mode="light"] .cms-confirm-modal .cms-modal__close {
+    color: #64748b;
+}
+
+body.cms-app[data-mode="light"] .cms-confirm-modal .cms-btn--ghost {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #334155;
 }
 
 @keyframes cmsConfirmIn {

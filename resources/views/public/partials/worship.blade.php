@@ -4,7 +4,7 @@
         <div class="text-center mx-auto mb-5 wow fadeIn" data-wow-delay="0.1s" style="max-width: 720px;">
             <p class="fs-5 text-uppercase text-primary">{{ $homePage['worship_eyebrow'] ?? 'Plan Your Visit' }}</p>
             <h1 class="display-3">{{ $homePage['worship_title'] ?? 'Join Us In Worship' }}</h1>
-            <p class="mb-0">{{ $homePage['worship_intro'] ?? 'Everyone is welcome. Come worship with us at '.($church['short_name'] ?? config('identity.public.short_name', 'AG Ikenebgu')).' - Ikenegbu Layout, Owerri.' }}</p>
+            <p class="mb-0">{{ $homePage['worship_intro'] ?? 'Everyone is welcome. Come worship with us at '.($church['short_name'] ?? config('identity.public.short_name', 'AGC Ikenegbu')).' - Ikenegbu Layout, Owerri.' }}</p>
         </div>
         <div class="row g-4 justify-content-center">
             <div class="col-lg-6 col-xl-4">

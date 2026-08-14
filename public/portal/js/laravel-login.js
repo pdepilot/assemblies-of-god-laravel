@@ -102,7 +102,7 @@
             'Manage Your Church With Excellence',
             'Lead With Insight',
             'Track Growth In Real Time',
-            'Powering AGC IKENEGBU & SDTG'
+            'Powering AGC IKENEGBU'
         ], 3800);
         initPasswordToggle();
         initSubmitOverlay();

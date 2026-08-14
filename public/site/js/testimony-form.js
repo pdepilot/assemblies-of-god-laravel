@@ -1,5 +1,5 @@
 /**
- * AG Ikenebgu — testimony modal (injected once) + form handling
+ * AGC Ikenegbu — testimony modal (injected once) + form handling
  */
 (function () {
     "use strict";
@@ -18,7 +18,7 @@
         '        <div>' +
         '          <span class="ag-testimony-modal__badge">Share Your Story</span>' +
         '          <h5 class="modal-title" id="agTestimonyModalLabel">Write Your Testimony</h5>' +
-        '          <p class="ag-testimony-modal__sub mb-0">How has God worked in your life through AG Ikenebgu?</p>' +
+        '          <p class="ag-testimony-modal__sub mb-0">How has God worked in your life through AGC Ikenegbu?</p>' +
         "        </div>" +
         '        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>' +
         "      </div>" +
@@ -61,7 +61,7 @@
         '              <div class="col-12">' +
         '                <div class="form-check">' +
         '                  <input class="form-check-input" type="checkbox" id="testimonyConsent" name="consent" required>' +
-        '                  <label class="form-check-label" for="testimonyConsent">I give AG Ikenebgu permission to review and may share my testimony on the website or in church services.</label>' +
+        '                  <label class="form-check-label" for="testimonyConsent">I give AGC Ikenegbu permission to review and may share my testimony on the website or in church services.</label>' +
         "                </div>" +
         "              </div>" +
         "            </div>" +
@@ -254,7 +254,6 @@
 
             var csrfMeta = document.querySelector('meta[name="csrf-token"]');
             var csrf = csrfMeta ? csrfMeta.getAttribute("content") : "";
-            var apiBase = document.body.getAttribute("data-api-base") || "api";
             var sourcePage = document.body.getAttribute("data-testimony-source") || "index";
 
             var payload = {
@@ -269,9 +268,15 @@
                 payload.photo = currentPhotoData;
             }
 
-            fetch(apiBase.replace(/\/$/, "") + "/submit-site-testimony.php", {
+            fetch("/api/testimony/submit", {
                 method: "POST",
-                headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "X-CSRF-TOKEN": csrf,
+                    "X-Requested-With": "XMLHttpRequest"
+                },
                 body: JSON.stringify(payload)
             }).then(function (res) {
                 return res.json().then(function (data) {

@@ -39,7 +39,7 @@ final class SettingsController
         // Eager-load for super admins: settings tabs switch client-side without a reload.
         if ($canManageRbac) {
             $assignAdminId = max(0, (int) request()->query('assign_admin', 0));
-            $assignmentAdmins = $this->rbac->listAdminsForAssignment();
+            $assignmentAdmins = $this->rbac->listAdminsForAssignment(\App\Support\RbacPlatform::AG);
             $selectedAdmin = null;
             foreach ($assignmentAdmins as $row) {
                 if ((int) $row['id'] === $assignAdminId) {
@@ -52,10 +52,10 @@ final class SettingsController
             }
 
             $rbacPayload = [
-                'roles' => $this->rbac->listRoles(),
+                'roles' => $this->rbac->listRoles(\App\Support\RbacPlatform::AG),
                 'admins' => $assignmentAdmins,
                 'selected_admin' => $selectedAdmin,
-                'permission_count' => count($this->rbac->listPermissionsGrouped()['items']),
+                'permission_count' => count($this->rbac->listPermissionsGrouped(\App\Support\RbacPlatform::AG)['items']),
             ];
 
             $managedAdmins = $this->admins->listAdmins($adminsQuery);

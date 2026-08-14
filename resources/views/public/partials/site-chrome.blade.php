@@ -1,7 +1,6 @@
 @php
     $publicIdentity = config('identity.public');
-    $shortName = (string) ($church['short_name'] ?? ($publicIdentity['short_name'] ?? 'AG Ikenebgu'));
-    $sdtgLabel = (string) ($publicIdentity['sdtg_label'] ?? 'Send Down Thy Glory');
+    $shortName = (string) ($church['short_name'] ?? ($publicIdentity['short_name'] ?? 'AGC Ikenegbu'));
     $logoVideoUrl = asset('site/'.ltrim((string) ($publicIdentity['logo_video_path'] ?? 'videos/Create_a_cinematic_D_animatio.mp4'), '/'));
 @endphp
 <div class="container-fluid fixed-top">
@@ -24,8 +23,17 @@
             <div class="collapse navbar-collapse bg-white" id="navbarCollapse">
                 @include('public.partials.nav', ['navActive' => $navActive ?? ''])
                 <div class="navbar-cta-group align-items-center flex-shrink-0">
-                    <a href="{{ route('public.sdtg') }}" class="btn btn-sdtg-nav"><i class="fas fa-globe-africa" aria-hidden="true"></i><span>{{ $sdtgLabel }}</span></a>
-                    <a href="{{ route('public.donate') }}" class="btn btn-primary py-2 px-4">Give</a>
+                    <a
+                        href="{{ rtrim((string) ($publicIdentity['sdtg_site_url'] ?? 'https://senddownthyglory.org'), '/') }}"
+                        class="btn btn-sdtg-nav"
+                        title="Visit {{ $publicIdentity['sdtg_site_label'] ?? 'Send Down Thy Glory' }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <i class="fas fa-globe-africa" aria-hidden="true"></i>
+                        <span>{{ $publicIdentity['sdtg_site_label'] ?? 'Send Down Thy Glory' }}</span>
+                    </a>
+                    <a href="{{ route('public.donate') }}" class="btn btn-primary py-2 px-4{{ ($navActive ?? '') === 'donate' ? ' is-give-active' : '' }}"@if (($navActive ?? '') === 'donate') aria-current="page"@endif>Give</a>
                 </div>
             </div>
         </nav>

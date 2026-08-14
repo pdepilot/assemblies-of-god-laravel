@@ -1,5 +1,5 @@
 /**
- * AG Ikenebgu — Sermon Library + SermonAudioManager
+ * AGC Ikenegbu — Sermon Library + SermonAudioManager
  */
 
 (function () {

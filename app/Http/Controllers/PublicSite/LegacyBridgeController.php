@@ -103,19 +103,6 @@ final class LegacyBridgeController extends Controller
         return redirect()->route('public.member-portal.login', ['mode' => 'join']);
     }
 
-    public function sdtgIndex(): Response
-    {
-        return $this->html($this->bridge->render('sdgt/', 'sdtg'));
-    }
-
-    public function sdtgPage(string $path): Response
-    {
-        $path = trim($path, '/');
-        $legacyPath = str_contains($path, '.') ? 'sdgt/'.$path : 'sdgt/'.$path.'.php';
-
-        return $this->html($this->bridge->render($legacyPath, 'sdtg'));
-    }
-
     private function html(string $body): Response
     {
         return response($body, 200)->header('Content-Type', 'text/html; charset=UTF-8');

@@ -26,6 +26,8 @@ final class ReportWriteService
         'attendance',
         'department',
         'ministries',
+        'ministry_age_transfers',
+        'ministry_age_eligibility',
         'sunday_school',
         'admins',
         'events',
@@ -39,7 +41,6 @@ final class ReportWriteService
         'testimonies',
         'communication',
         'registration_portals',
-        'sdtg',
     ];
 
     public const FORMATS = ['csv', 'pdf', 'docx'];
@@ -60,6 +61,8 @@ final class ReportWriteService
                     ['value' => 'attendance', 'label' => 'Attendance'],
                     ['value' => 'department', 'label' => 'Departments (Members by Department)'],
                     ['value' => 'ministries', 'label' => 'Ministry Rosters (Children, Youth, Choir, …)'],
+                    ['value' => 'ministry_age_transfers', 'label' => 'Ministry Age Transfers (completed)'],
+                    ['value' => 'ministry_age_eligibility', 'label' => 'Ministry Age Eligibility (due / missing DOB)'],
                     ['value' => 'sunday_school', 'label' => 'Sunday School'],
                     ['value' => 'admins', 'label' => 'Administrators'],
                 ],
@@ -93,7 +96,6 @@ final class ReportWriteService
                 'group' => 'Programs & Portals',
                 'options' => [
                     ['value' => 'registration_portals', 'label' => 'Registration Portals'],
-                    ['value' => 'sdtg', 'label' => 'SDTG Registrations'],
                 ],
             ],
         ];
@@ -225,11 +227,12 @@ final class ReportWriteService
             'membership' => $this->buildMembershipPayload($range),
             'events' => $this->buildEventsPayload($range),
             'financial' => $this->buildFinancialPayload($range),
-            'sdtg' => $this->buildSdtgPayload($range),
             'visitors' => $this->buildVisitorsPayload($range),
             'attendance' => $this->buildAttendancePayload($range),
             'department' => $this->buildDepartmentPayload($range),
             'ministries' => $this->buildMinistriesPayload($range),
+            'ministry_age_transfers' => $this->buildMinistryAgeTransfersPayload($range),
+            'ministry_age_eligibility' => $this->buildMinistryAgeEligibilityPayload($range),
             'sunday_school' => $this->buildSundaySchoolPayload($range),
             'admins' => $this->buildAdminsPayload($range),
             'sermons' => $this->buildSermonsPayload($range),
@@ -344,31 +347,6 @@ final class ReportWriteService
                 'total_expense' => $totalExpense,
                 'net' => $totalIncome - $totalExpense,
             ],
-        ];
-    }
-
-    /** @param  array<string, mixed>  $range */
-    private function buildSdtgPayload(array $range): array
-    {
-        $year = (int) ($range['year'] ?? date('Y'));
-        $registrations = $this->fetchSdtgRegistrations($year);
-
-        return [
-            'title' => 'SDTG '.$year.' Summary Report',
-            'headers' => ['Section', 'Name', 'Email', 'Phone', 'Country', 'Ticket', 'Volunteer', 'Status', 'Date'],
-            'rows' => array_map(static fn (array $row): array => [
-                'Registration',
-                $row['full_name'] ?? '',
-                $row['email'] ?? '',
-                $row['phone'] ?? '',
-                $row['country'] ?? '',
-                $row['ticket_type'] ?? '',
-                ! empty($row['is_volunteer']) ? 'Yes' : 'No',
-                $row['status'] ?? '',
-                $row['registration_date'] ?? '',
-            ], $registrations),
-            'row_count' => count($registrations),
-            'meta' => ['year' => $year, 'registrations' => count($registrations)],
         ];
     }
 
@@ -540,19 +518,6 @@ HTML;
         }
 
         return $query->get()->map(fn ($row) => (array) $row)->all();
-    }
-
-    /** @return list<array<string, mixed>> */
-    private function fetchSdtgRegistrations(int $year): array
-    {
-        return DB::table('sdtg_registrations')
-            ->whereYear('registration_date', $year)
-            ->orderByDesc('registration_date')
-            ->orderByDesc('id')
-            ->limit(10000)
-            ->get()
-            ->map(fn ($row) => (array) $row)
-            ->all();
     }
 
     /** @return list<array<string, mixed>> */

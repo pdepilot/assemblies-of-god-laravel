@@ -21,6 +21,12 @@ final class ChurchContentReadService
             }
         }
 
+        // If About Page has never been saved, inherit shared body fields from the
+        // Homepage About section so CMS edits are not "lost" on /about.
+        if (! isset($stored['about_page']) && isset($stored['homepage_about'])) {
+            $stored['about_page'] = $this->sharedBodyFrom($stored['homepage_about']);
+        }
+
         $merged = [];
         foreach ($defaults as $key => $value) {
             $merged[$key] = isset($stored[$key])
@@ -29,6 +35,31 @@ final class ChurchContentReadService
         }
 
         return $merged;
+    }
+
+    /**
+     * Shared body fields used by both homepage About and the About Us page.
+     *
+     * @param  array<string, mixed>  $source
+     * @return array<string, mixed>
+     */
+    private function sharedBodyFrom(array $source): array
+    {
+        $keys = [
+            'eyebrow', 'title', 'intro',
+            'vision_title', 'vision_text',
+            'mission_title', 'mission_text',
+            'gallery', 'highlight', 'features',
+        ];
+
+        $out = [];
+        foreach ($keys as $key) {
+            if (array_key_exists($key, $source)) {
+                $out[$key] = $source[$key];
+            }
+        }
+
+        return $out;
     }
 
     /** @return array<string, mixed> */
@@ -52,7 +83,7 @@ final class ChurchContentReadService
     private function defaultHomepageAbout(): array
     {
         return [
-            'eyebrow' => 'About AG Ikenebgu',
+            'eyebrow' => 'About AGC Ikenegbu',
             'title' => 'Growing Together in Faith, Hope, and Love',
             'intro' => 'We are a spirit-filled Assemblies of God family committed to preaching the full Gospel, nurturing believers, and reaching our community with the love of Jesus Christ. Whether you are new to faith or returning home, you belong here.',
             'vision_title' => 'Our Vision',
@@ -60,13 +91,13 @@ final class ChurchContentReadService
             'mission_title' => 'Our Mission',
             'mission_text' => 'To worship God, disciple believers, strengthen families, and serve Ikenegbu with compassion and hope.',
             'gallery' => [
-                ['image' => 'images/main1.jpg', 'alt' => 'Congregation worshiping at AG Ikenebgu church'],
+                ['image' => 'images/main1.jpg', 'alt' => 'Congregation worshiping at AGC Ikenegbu church'],
                 ['image' => 'images/rev1.jpg', 'alt' => 'Church worship gathering'],
                 ['image' => 'images/rev2.jpg', 'alt' => 'Prayer and fellowship'],
             ],
             'highlight' => [
                 'image' => 'images/rev1.jpg',
-                'image_alt' => "Children's ministry at AG Ikenebgu",
+                'image_alt' => "Children's ministry at AGC Ikenegbu",
                 'quote' => 'Together we are building lives, families, and our community on the foundation of Christ.',
                 'stat_value' => '500+',
                 'stat_label' => 'Members',
@@ -103,7 +134,7 @@ final class ChurchContentReadService
                 'breadcrumb_parent_url' => '#',
                 'breadcrumb_current' => 'About',
             ],
-            'eyebrow' => 'About AG Ikenebgu',
+            'eyebrow' => 'About AGC Ikenegbu',
             'title' => 'Growing Together in Faith, Hope, and Love',
             'intro' => 'We are a spirit-filled Assemblies of God family committed to preaching the full Gospel, nurturing believers, and reaching our community with the love of Jesus Christ.',
             'vision_title' => 'Our Vision',
@@ -111,16 +142,16 @@ final class ChurchContentReadService
             'mission_title' => 'Our Mission',
             'mission_text' => 'To proclaim Christ, disciple believers, and serve our city with compassion and holy fire.',
             'gallery' => [
-                ['image' => 'images/main1.jpg', 'alt' => 'Congregation worshiping at AG Ikenebgu church'],
+                ['image' => 'images/main1.jpg', 'alt' => 'Congregation worshiping at AGC Ikenegbu church'],
                 ['image' => 'images/rev1.jpg', 'alt' => 'Church worship gathering'],
                 ['image' => 'images/rev2.jpg', 'alt' => 'Prayer and fellowship'],
             ],
             'highlight' => [
-                'image' => 'img/about-child.jpg',
-                'image_alt' => "Children's ministry at AG Ikenebgu",
+                'image' => 'images/rev1.jpg',
+                'image_alt' => "Children's ministry at AGC Ikenegbu",
                 'quote' => 'Every child deserves to know they are loved by God. Your generosity helps us nurture young hearts in faith, hope, and eternal purpose.',
-                'stat_value' => '$20,46',
-                'stat_label' => 'Raised',
+                'stat_value' => '500+',
+                'stat_label' => 'Members',
             ],
             'features' => [
                 'Charity & Donation',

@@ -21,7 +21,6 @@ final class DashboardNotificationService
         'attendance_recorded',
         'donation_recorded',
         'event_created',
-        'sdtg_registration',
         'session_timeout',
         'login_success',
         'login_failed',
@@ -30,6 +29,8 @@ final class DashboardNotificationService
         'hub_notification',
         'ss_attendance',
         'newsletter_subscriber',
+        'contact_submission',
+        'site_testimony_submitted',
     ];
 
     /** @return array{notifications: list<array<string, mixed>>, unread_count: int, latest_id: int, last_read_id: int} */
@@ -182,7 +183,6 @@ final class DashboardNotificationService
             'attendance_recorded' => 'Attendance Recorded',
             'donation_recorded' => 'Donation Recorded',
             'event_created' => 'Event Scheduled',
-            'sdtg_registration' => 'SDTG Registration',
             'session_timeout' => 'Session Expired',
             'login_success' => 'Admin Login',
             'login_failed' => 'Failed Login',
@@ -191,6 +191,8 @@ final class DashboardNotificationService
             'hub_notification' => 'Communication Hub',
             'ss_attendance' => 'Sunday School Attendance',
             'newsletter_subscriber' => 'Newsletter',
+            'contact_submission' => 'Contact Message',
+            'site_testimony_submitted' => 'New Testimony',
             default => 'System Activity',
         };
     }
@@ -203,9 +205,10 @@ final class DashboardNotificationService
 
         return match ($eventType) {
             'member_created', 'member_updated', 'member_death_recorded', 'visitor_promoted',
-            'attendance_recorded', 'donation_recorded', 'event_created', 'sdtg_registration',
+            'attendance_recorded', 'donation_recorded', 'event_created',
             'ss_attendance', 'newsletter_subscriber' => 'green',
-            'visitor_created', 'visitor_return_visit', 'visitor_updated', 'hub_notification' => 'blue',
+            'visitor_created', 'visitor_return_visit', 'visitor_updated', 'hub_notification',
+            'contact_submission', 'site_testimony_submitted' => 'blue',
             'login_failed', 'device_banned', 'erp_alert' => 'gold',
             default => 'gold',
         };

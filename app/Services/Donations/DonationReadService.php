@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 final class DonationReadService
 {
-    public const FUND_SCOPES = ['church', 'sdtg'];
+    public const FUND_SCOPES = ['church'];
 
     public const PAYMENT_METHODS = ['cash', 'bank_transfer', 'cheque', 'pos', 'online'];
 

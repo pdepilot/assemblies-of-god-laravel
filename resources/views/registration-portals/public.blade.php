@@ -34,7 +34,7 @@
 <header class="rp-public__hero"{!! $heroStyleAttr !!}>
     <div class="rp-public__hero-overlay"></div>
     <div class="rp-public__hero-inner">
-        <img src="{{ asset('site/'.ltrim((string) config('identity.public.logo_path', 'images/ag-logo.jpeg'), '/')) }}" alt="{{ config('identity.public.short_name', 'AG Ikenebgu') }}" class="rp-public__logo">
+        <img src="{{ asset('site/'.ltrim((string) config('identity.public.logo_path', 'images/ag-logo.jpeg'), '/')) }}" alt="{{ config('identity.public.short_name', 'AGC Ikenegbu') }}" class="rp-public__logo">
         <p class="rp-public__eyebrow">{{ $portal['category'] ?: 'Event Registration' }}</p>
         <h1>{{ ($landing['hero_title'] ?? '') ?: $portal['event_name'] }}</h1>
         @if (!empty($landing['hero_subtitle']) || !empty($portal['event_subtitle']))
@@ -82,7 +82,7 @@
 </main>
 
 <footer class="rp-public__footer">
-    <p>{{ ($landing['footer_text'] ?? '') ?: config('identity.public.site_name', 'AG Ikenebgu Assemblies of God') }}</p>
+    <p>{{ ($landing['footer_text'] ?? '') ?: config('identity.public.site_name', 'AGC Ikenegbu Assemblies of God') }}</p>
     @if (!empty($portal['contact_email']))
         <p><a href="mailto:{{ $portal['contact_email'] }}">{{ $portal['contact_email'] }}</a></p>
     @endif

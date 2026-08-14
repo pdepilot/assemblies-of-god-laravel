@@ -404,6 +404,6 @@ final class SiteTrafficReadService
     {
         $area = strtolower(trim($area));
 
-        return in_array($area, ['ag', 'sdgt', 'sermon', 'register'], true) ? $area : 'all';
+        return in_array($area, ['ag', 'sermon', 'register'], true) ? $area : 'all';
     }
 }

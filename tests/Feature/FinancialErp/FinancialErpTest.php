@@ -108,19 +108,46 @@ test('laravel erp login route proxies legacy login html', function () {
     $response->assertDontSee('/AG_IKENEGBU_CHURCH_WEBSITE/erp/assets');
 });
 
-test('laravel erp dashboard rewrites church management link to admin dashboard', function () {
+test('laravel erp login rewrites legacy redirect query to /erp path', function () {
     Illuminate\Support\Facades\Http::fake([
-        '*/erp/dashboard*' => Illuminate\Support\Facades\Http::response(
-            '<!DOCTYPE html><html><body class="erp-app"><a href="/AG_IKENEGBU_CHURCH_WEBSITE/portal/">Church Management</a></body></html>',
-            200,
-            ['Content-Type' => 'text/html; charset=UTF-8']
+        '*/erp/settings*' => Illuminate\Support\Facades\Http::response(
+            '',
+            302,
+            ['Location' => '/AG_IKENEGBU_CHURCH_WEBSITE/erp/login?redirect=%2FAG_IKENEGBU_CHURCH_WEBSITE%2Ferp%2Fsettings']
         ),
     ]);
 
-    $response = $this->get('/erp/dashboard');
+    $response = $this->get('/erp/settings');
+
+    $response->assertRedirect();
+    $location = (string) $response->headers->get('Location');
+    expect($location)->toContain('/erp/login');
+    expect($location)->toContain('redirect=');
+    expect($location)->toContain(urlencode('/erp/settings'));
+    expect($location)->not->toContain('AG_IKENEGBU_CHURCH_WEBSITE');
+});
+
+test('laravel erp login json redirect is rewritten off the xampp tree', function () {
+    Illuminate\Support\Facades\Http::fake([
+        '*/erp/handlers/auth-handler*' => Illuminate\Support\Facades\Http::response(
+            json_encode([
+                'success' => true,
+                'message' => 'Welcome',
+                'redirect' => '/AG_IKENEGBU_CHURCH_WEBSITE/erp/settings',
+            ]),
+            200,
+            ['Content-Type' => 'application/json']
+        ),
+    ]);
+
+    $response = $this->post('/erp/handlers/auth-handler', [
+        'action' => 'login',
+        'email' => 'finance@example.com',
+        'password' => 'secret',
+    ]);
 
     $response->assertOk();
-    $response->assertSee('Church Management');
-    $response->assertSee('/admin/dashboard');
-    $response->assertDontSee('/AG_IKENEGBU_CHURCH_WEBSITE/portal');
+    $payload = $response->json();
+    expect($payload['redirect'] ?? '')->toContain('/erp/settings');
+    expect($payload['redirect'] ?? '')->not->toContain('AG_IKENEGBU_CHURCH_WEBSITE');
 });

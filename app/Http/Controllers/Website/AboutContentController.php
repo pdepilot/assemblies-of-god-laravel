@@ -28,7 +28,7 @@ final class AboutContentController
         return view('website.about.edit', [
             'homepage' => $content['homepage_about'] ?? [],
             'aboutPage' => $content['about_page'] ?? [],
-            'activeTab' => request()->query('tab', 'homepage_about'),
+            'activeTab' => request()->query('tab', 'about_page'),
         ]);
     }
 

@@ -33,7 +33,7 @@ test('admin can update church settings group', function () {
 
     $this->actingAs($admin, 'admin')->post(route('settings.group.update'), [
         'group' => 'church',
-        'name' => 'AG Ikenebgu Updated',
+        'name' => 'AGC Ikenegbu Updated',
         'short_name' => 'AGI',
         'city' => 'Owerri',
         'state' => 'Imo',
@@ -42,7 +42,7 @@ test('admin can update church settings group', function () {
     $raw = DB::table('platform_setting_groups')->where('group_key', 'church')->value('settings');
     $decoded = json_decode((string) $raw, true);
 
-    expect($decoded['name'] ?? null)->toBe('AG Ikenebgu Updated');
+    expect($decoded['name'] ?? null)->toBe('AGC Ikenegbu Updated');
     expect($decoded['short_name'] ?? null)->toBe('AGI');
 });
 
@@ -53,7 +53,7 @@ test('admin can upload church logo instead of typing a path', function () {
     $this->actingAs($admin, 'admin')
         ->post(route('settings.group.update'), [
             'group' => 'church',
-            'name' => 'AG Ikenebgu',
+            'name' => 'AGC Ikenegbu',
             'short_name' => 'AGI',
             'logo' => $file,
         ])

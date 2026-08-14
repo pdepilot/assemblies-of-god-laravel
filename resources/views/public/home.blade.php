@@ -14,9 +14,8 @@
     $preloaderVideo = $toAsset(trim((string) ($preloader['video_url'] ?? $welcomeVideoPath)));
     $preloaderShowSkip = filter_var($preloader['show_skip'] ?? false, FILTER_VALIDATE_BOOL);
     $preloaderMaxWait = max(3000, min(300000, (int) ($preloader['max_wait_ms'] ?? 120000)));
-    $shortName = (string) ($church['short_name'] ?? ($publicIdentity['short_name'] ?? 'AG Ikenebgu'));
-    $welcomeVideoLabel = (string) ($publicIdentity['welcome_video_label'] ?? 'AG Ikenebgu welcome video');
-    $sdtgLabel = (string) ($publicIdentity['sdtg_label'] ?? 'Send Down Thy Glory');
+    $shortName = (string) ($church['short_name'] ?? ($publicIdentity['short_name'] ?? 'AGC Ikenegbu'));
+    $welcomeVideoLabel = (string) ($publicIdentity['welcome_video_label'] ?? 'AGC Ikenegbu welcome video');
     $logoVideoUrl = asset('site/'.$logoVideoPath);
     $iconClass = static function (string $icon): string {
         $icon = trim($icon);
@@ -62,9 +61,15 @@
             <div class="collapse navbar-collapse bg-white" id="navbarCollapse">
                 @include('public.partials.nav', ['navActive' => 'home'])
                 <div class="navbar-cta-group align-items-center flex-shrink-0">
-                    <a href="{{ route('public.sdtg') }}" class="btn btn-sdtg-nav" title="Visit {{ $sdtgLabel }} International Music Crusade">
+                    <a
+                        href="{{ rtrim((string) ($publicIdentity['sdtg_site_url'] ?? 'https://senddownthyglory.org'), '/') }}"
+                        class="btn btn-sdtg-nav"
+                        title="Visit {{ $publicIdentity['sdtg_site_label'] ?? 'Send Down Thy Glory' }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
                         <i class="fas fa-globe-africa" aria-hidden="true"></i>
-                        <span>{{ $sdtgLabel }}</span>
+                        <span>{{ $publicIdentity['sdtg_site_label'] ?? 'Send Down Thy Glory' }}</span>
                     </a>
                     <a href="{{ route('public.donate') }}" class="btn btn-primary py-2 px-4">Give</a>
                 </div>
@@ -140,10 +145,10 @@
 <nav class="seo-internal-nav container" aria-label="Related pages">
     <h3>Explore More</h3>
     <div class="seo-internal-nav__grid">
-        <a href="{{ route('public.sdtg.page', ['path' => 'registration']) }}">SDTG Registration</a>
-        <a href="{{ route('public.sdtg.page', ['path' => 'donate']) }}">SDTG Donate</a>
-        <a href="{{ route('public.sdtg.page', ['path' => 'gallery']) }}">SDTG Gallery</a>
-        <a href="{{ route('public.sdtg.page', ['path' => 'livestream']) }}">SDTG Livestream</a>
+        <a href="{{ route('public.about') }}">About Us</a>
+        <a href="{{ route('public.sermons') }}">Sermons</a>
+        <a href="{{ route('public.event') }}">Events</a>
+        <a href="{{ route('public.donate') }}">Give</a>
         <a href="{{ route('public.contact') }}">Contact Us</a>
     </div>
 </nav>

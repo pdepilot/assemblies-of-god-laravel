@@ -98,6 +98,7 @@
                                     <strong>{{ $roleOption['name'] }}</strong>
                                     <span style="display:block;font-size:0.8rem;color:var(--cms-text-muted)">
                                         {{ $roleOption['dashboard_label'] }}
+                                        · {{ strtoupper($roleOption['platform'] ?? 'ag') }}
                                         · {{ number_format((int) $roleOption['permission_count']) }} permissions
                                         @if (! empty($roleOption['is_system'])) · system @endif
                                     </span>
@@ -135,6 +136,7 @@
                 <thead>
                     <tr>
                         <th>Role</th>
+                        <th>Platform</th>
                         <th>Dashboard</th>
                         <th>Admins</th>
                         <th>Permissions</th>
@@ -149,6 +151,7 @@
                                 <strong>{{ $roleRow['name'] }}</strong>
                                 <div style="font-size:0.78rem;color:var(--cms-text-muted);font-family:monospace">{{ $roleRow['slug'] }}</div>
                             </td>
+                            <td>{{ strtoupper($roleRow['platform'] ?? 'ag') }}</td>
                             <td>{{ $roleRow['dashboard_label'] }}</td>
                             <td>{{ number_format((int) $roleRow['admin_count']) }}</td>
                             <td>{{ number_format((int) $roleRow['permission_count']) }}</td>
@@ -176,7 +179,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="cms-table__empty">No roles found.</td></tr>
+                        <tr><td colspan="7" class="cms-table__empty">No roles found.</td></tr>
                     @endforelse
                 </tbody>
             </table>

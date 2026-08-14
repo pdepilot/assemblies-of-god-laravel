@@ -3,8 +3,7 @@ window.CMS_CONFIG = {
     brand: {
         name: 'AGC IKENEGBU',
         subtitle: 'Church Management System',
-        agVideo: '../videos/3D_video.mp4',
-        sdtgVideo: '../sdgt/videos/3d-logo.mp4'
+        agVideo: '../videos/3D_video.mp4'
     },
 
     nav: [
@@ -61,23 +60,6 @@ window.CMS_CONFIG = {
             ]
         },
         {
-            id: 'sdtg', label: 'SEND DOWN THY GLORY', type: 'group', sdtg: true, children: [
-                { id: 'speakers', label: 'Speakers', icon: 'fa-microphone', href: 'sdtg/speakers' },
-                { id: 'registrations', label: 'Registrations', icon: 'fa-ticket', href: 'sdtg/registrations', badge: '248' },
-                { id: 'gallery', label: 'Gallery', icon: 'fa-images', href: 'sdtg/gallery' },
-                { id: 'announcements', label: 'Announcements', icon: 'fa-bullhorn', href: 'sdtg/announcements' },
-                { id: 'sdtg-content', label: 'Page Content', icon: 'fa-pen-ruler', href: 'sdtg/content' },
-                { id: 'sdtg-sponsors', label: 'Partners & Sponsors', icon: 'fa-handshake', href: 'sdtg/sponsors' },
-                { id: 'livestream', label: 'Livestream', icon: 'fa-tower-broadcast', href: 'sdtg/livestream' },
-                { id: 'volunteers', label: 'Volunteers', icon: 'fa-hands-helping', href: 'sdtg/volunteers' },
-                { id: 'testimonies', label: 'Testimonies', icon: 'fa-quote-left', href: 'sdtg/testimonies' },
-                { id: 'prayer-requests', label: 'Prayer Requests', icon: 'fa-pray', href: 'sdtg/prayer-requests' },
-                { id: 'memory-submissions', label: 'Memory Submissions', icon: 'fa-cloud-upload-alt', href: 'sdtg/memory-submissions' },
-                { id: 'sdtg-donations', label: 'Donate Page', icon: 'fa-coins', href: 'sdtg/donations' },
-                { id: 'sdtg-media-library', label: 'Media Library', icon: 'fa-photo-film', href: 'sdtg/media-library' }
-            ]
-        },
-        {
             id: 'financial-erp', label: 'FINANCIAL ERP', type: 'group', children: [
                 { id: 'erp-launch', label: 'Open Financial ERP', icon: 'fa-chart-line', href: 'financial-erp/launch' } // opens erp/login
             ]
@@ -114,7 +96,6 @@ window.CMS_CONFIG = {
     ],
 
     notifications: [
-        { icon: 'gold', title: 'New SDTG Registration', text: 'Emmanuel O. registered from Ghana', time: '2 min ago' },
         { icon: 'blue', title: 'Attendance Submitted', text: 'Youth Department - 142 present', time: '18 min ago' },
         { icon: 'green', title: 'Donation Received', text: 'N50,000 - Building Fund', time: '1 hr ago' },
         { icon: 'gold', title: 'SEO Audit Complete', text: 'Score improved to 87/100', time: '3 hrs ago' }
@@ -127,19 +108,5 @@ window.CMS_CONFIG = {
         { id: 'AGCI-00004', name: 'Blessing Adeyemi', email: 'blessing.a@email.com', dept: 'Ushering', status: 'inactive', joined: '2021-05-08' },
         { id: 'AGCI-00005', name: 'Chioma Ibe', email: 'chioma.ibe@email.com', dept: 'Children', status: 'active', joined: '2022-09-30' },
         { id: 'AGCI-00006', name: 'Samuel Uche', email: 'samuel.u@email.com', dept: 'Media', status: 'active', joined: '2023-02-14' }
-    ],
-
-    speakers: [
-        { name: 'Dr. Paul Enenche', ministry: 'Dunamis International', country: 'Nigeria', year: '2025', bio: 'Founder of Dunamis International Gospel Centre.' },
-        { name: 'Bishop David Oyedepo', ministry: 'Living Faith Church', country: 'Nigeria', year: '2024', bio: 'Chancellor of Covenant University and renowned preacher.' },
-        { name: 'Rev. Dr. Cindy Trimm', ministry: 'Trim Ministries', country: 'USA', year: '2024', bio: 'International speaker and bestselling author.' },
-        { name: 'Pastor Matthew Ashimolowo', ministry: 'KICC London', country: 'UK', year: '2023', bio: 'Senior Pastor of Kingsway International Christian Centre.' }
-    ],
-
-    registrations: [
-        { id: 'R-1042', name: 'John Mensah', country: 'Ghana', type: 'General', volunteer: 'Yes', date: '2025-05-28' },
-        { id: 'R-1041', name: 'Sarah Johnson', country: 'USA', type: 'VIP', volunteer: 'No', date: '2025-05-27' },
-        { id: 'R-1040', name: 'Peter Okafor', country: 'Nigeria', type: 'General', volunteer: 'Yes', date: '2025-05-27' },
-        { id: 'R-1039', name: 'Mary Wanjiku', country: 'Kenya', type: 'Group', volunteer: 'No', date: '2025-05-26' }
     ]
 };

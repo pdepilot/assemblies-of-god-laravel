@@ -1,8 +1,13 @@
 /**
- * AG footer / site newsletter subscribe
+ * AG footer / site newsletter subscribe (Laravel endpoint)
  */
 (function () {
     'use strict';
+
+    function csrfToken() {
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        return meta ? meta.getAttribute('content') : '';
+    }
 
     function bindForm(form) {
         if (!form || form.getAttribute('data-newsletter-bound') === '1') {
@@ -10,11 +15,10 @@
         }
         form.setAttribute('data-newsletter-bound', '1');
 
-        var api = form.getAttribute('data-api') || 'handlers/newsletter-handler';
+        var api = form.getAttribute('data-api') || '/api/newsletter/subscribe';
         var emailInput = form.querySelector('input[type="email"], input[name="email"]');
         var statusEl = form.querySelector('[data-newsletter-status]');
         var btn = form.querySelector('button[type="submit"], button.btn');
-        var csrfInput = form.querySelector('input[name="csrf_token"]');
 
         function setStatus(message, type) {
             if (!statusEl) {
@@ -25,26 +29,6 @@
             if (type) {
                 statusEl.classList.add(type === 'error' ? 'is-error' : 'is-success');
             }
-        }
-
-        function ensureCsrf() {
-            if (csrfInput && csrfInput.value) {
-                return Promise.resolve(csrfInput.value);
-            }
-            return fetch(api + '?action=csrf', {
-                credentials: 'same-origin',
-                headers: { Accept: 'application/json' }
-            })
-                .then(function (res) { return res.json(); })
-                .then(function (data) {
-                    if (!data.success || !data.csrf_token) {
-                        throw new Error(data.message || 'Unable to start subscription.');
-                    }
-                    if (csrfInput) {
-                        csrfInput.value = data.csrf_token;
-                    }
-                    return data.csrf_token;
-                });
         }
 
         form.addEventListener('submit', function (e) {
@@ -63,25 +47,34 @@
             }
             setStatus('Subscribing…', null);
 
-            ensureCsrf()
-                .then(function (token) {
-                    var body = new FormData(form);
-                    body.set('action', 'subscribe');
-                    body.set('csrf_token', token);
-                    if (!body.get('source')) {
-                        body.set('source', form.getAttribute('data-source') || 'footer');
-                    }
-                    return fetch(api, {
-                        method: 'POST',
-                        credentials: 'same-origin',
-                        body: body
+            var body = new FormData(form);
+            if (!body.get('source')) {
+                body.set('source', form.getAttribute('data-source') || 'footer');
+            }
+
+            fetch(api, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': csrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: body
+            })
+                .then(function (res) {
+                    return res.json().then(function (data) {
+                        if (!res.ok || !data.success) {
+                            var msg = data.message;
+                            if (!msg && data.errors && data.errors.email) {
+                                msg = data.errors.email[0];
+                            }
+                            throw new Error(msg || 'Subscription failed.');
+                        }
+                        return data;
                     });
                 })
-                .then(function (res) { return res.json(); })
                 .then(function (data) {
-                    if (!data.success) {
-                        throw new Error(data.message || 'Subscription failed.');
-                    }
                     setStatus(data.message || 'Subscribed successfully.', 'success');
                     if (emailInput) {
                         emailInput.value = '';

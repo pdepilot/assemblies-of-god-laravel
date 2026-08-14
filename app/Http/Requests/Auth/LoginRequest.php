@@ -102,7 +102,7 @@ class LoginRequest extends FormRequest
             $audit->recordAttempt($this, $admin, false, 'platform_denied', $source);
 
             throw ValidationException::withMessages([
-                'email' => 'This account is not authorized for the AG IKENEGBU Church ERP.',
+                'email' => 'This account is not authorized for the AGC IKENEGBU Church ERP.',
             ]);
         }
 

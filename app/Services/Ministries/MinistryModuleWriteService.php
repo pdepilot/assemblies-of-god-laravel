@@ -15,6 +15,7 @@ final class MinistryModuleWriteService
 
     public function __construct(
         private readonly MinistrySettingsReadService $settings,
+        private readonly MinistryAgeTransferService $ageTransfers,
     ) {}
 
     /**
@@ -72,6 +73,8 @@ final class MinistryModuleWriteService
             'linked_member_id' => null,
         ]);
 
+        $this->ageTransfers->syncRosterPerson((int) $person->id, 'on_save', $adminId);
+
         return $person->fresh()->toArray();
     }
 
@@ -127,6 +130,8 @@ final class MinistryModuleWriteService
 
             $member = DB::table('members')->where('id', $memberId)->first();
 
+            $this->ageTransfers->syncMember($memberId, 'on_save', $adminId);
+
             return [
                 'id' => $memberId,
                 'source' => 'member',
@@ -156,6 +161,9 @@ final class MinistryModuleWriteService
             'notes' => $notes,
             'linked_member_id' => $memberId,
         ]);
+
+        $this->ageTransfers->syncRosterPerson((int) $person->id, 'on_save', $adminId);
+        $this->ageTransfers->syncMember($memberId, 'on_save', $adminId);
 
         return $person->fresh()->toArray();
     }

@@ -22,7 +22,7 @@ final class EnforceRbacPageAccess
     public function handle(Request $request, Closure $next): Response
     {
         /** @var Admin|null $admin */
-        $admin = auth('admin')->user();
+        $admin = \App\Support\RbacPlatform::authenticatedAdmin();
         if ($admin === null || ! $this->access->isEnforcementEnabled() || $this->access->shouldBypass($admin)) {
             return $next($request);
         }

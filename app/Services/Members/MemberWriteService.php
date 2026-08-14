@@ -4,6 +4,7 @@ namespace App\Services\Members;
 
 use App\Models\Member;
 use App\Models\MemberStatusHistory;
+use App\Services\Ministries\MinistryAgeTransferService;
 use App\Services\Security\SecurityAuditService;
 use DateTimeImmutable;
 use Illuminate\Http\UploadedFile;
@@ -24,6 +25,7 @@ final class MemberWriteService
     public function __construct(
         private readonly MemberReadService $read,
         private readonly SecurityAuditService $audit,
+        private readonly MinistryAgeTransferService $ageTransfers,
     ) {}
 
     /**
@@ -60,7 +62,9 @@ final class MemberWriteService
             ['member_id' => (int) $member->id, 'member_code' => $memberCode],
         );
 
-        return $this->read->getMember((int) $member->id) ?? $member->toArray();
+        $this->ageTransfers->syncMember((int) $member->id, 'on_save', $adminId);
+
+        return $this->read->getMember((int) $member->id) ?? $member->fresh()->toArray();
     }
 
     /**
@@ -90,7 +94,9 @@ final class MemberWriteService
             $adminId,
         );
 
-        return $this->read->getMember((int) $member->id) ?? $member->toArray();
+        $this->ageTransfers->syncMember((int) $member->id, 'on_save', $adminId);
+
+        return $this->read->getMember((int) $member->id) ?? $member->fresh()->toArray();
     }
 
     /**
@@ -148,6 +154,8 @@ final class MemberWriteService
                 ['member_id' => $id],
             );
         }
+
+        $this->ageTransfers->syncMember($id, 'on_save', $adminId);
 
         return $this->read->getMember($id) ?? $member->fresh()->toArray();
     }

@@ -68,6 +68,8 @@ final class SeoWriteService
             'title' => trim((string) ($page['title'] ?? '')),
             'meta_description' => trim((string) ($page['meta_description'] ?? '')),
             'og_image' => $currentOg,
+            'include_in_sitemap' => (bool) ($page['include_in_sitemap'] ?? true),
+            'robots_notes' => trim((string) ($page['robots_notes'] ?? '')),
         ];
 
         if ($existingIndex !== null) {

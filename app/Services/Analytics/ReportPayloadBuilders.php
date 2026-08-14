@@ -148,6 +148,80 @@ trait ReportPayloadBuilders
     }
 
     /** @param  array<string, mixed>  $range */
+    private function buildMinistryAgeTransfersPayload(array $range): array
+    {
+        $rows = [];
+        if (Schema::hasTable('ministry_age_transfers')) {
+            $query = DB::table('ministry_age_transfers')->orderByDesc('transferred_at')->limit(10000);
+            if (! empty($range['start'])) {
+                $query->where('transferred_at', '>=', $range['start'].' 00:00:00');
+            }
+            if (! empty($range['end'])) {
+                $query->where('transferred_at', '<=', $range['end'].' 23:59:59');
+            }
+            $rows = $query->get()->map(fn ($row) => (array) $row)->all();
+        }
+
+        return [
+            'title' => 'Ministry Age Transfers — '.$range['label'],
+            'headers' => ['Transferred At', 'Full Name', 'From', 'To', 'Age', 'DOB', 'Source', 'Member ID', 'Roster ID'],
+            'rows' => array_map(static fn (array $row): array => [
+                $row['transferred_at'] ?? '',
+                $row['full_name'] ?? '',
+                $row['from_key'] ?? '',
+                $row['to_key'] ?? '',
+                $row['age_at_transfer'] ?? '',
+                $row['date_of_birth'] ?? '',
+                $row['source'] ?? '',
+                $row['member_id'] ?? '',
+                $row['roster_person_id'] ?? '',
+            ], $rows),
+            'row_count' => count($rows),
+            'meta' => ['type' => 'ministry_age_transfers'],
+        ];
+    }
+
+    /** @param  array<string, mixed>  $range */
+    private function buildMinistryAgeEligibilityPayload(array $range): array
+    {
+        $preview = app(\App\Services\Ministries\MinistryAgeTransferService::class)->preview();
+        $rows = [];
+
+        foreach ($preview['due'] as $row) {
+            $rows[] = [
+                'Due',
+                $row['full_name'] ?? '',
+                $row['from_key'] ?? '',
+                $row['to_key'] ?? '',
+                $row['age'] ?? '',
+                $row['date_of_birth'] ?? '',
+                $row['member_id'] ?? '',
+                $row['roster_person_id'] ?? '',
+            ];
+        }
+        foreach ($preview['missing_dob'] as $row) {
+            $rows[] = [
+                'Missing DOB',
+                $row['full_name'] ?? '',
+                $row['from_key'] ?? '',
+                '',
+                '',
+                '',
+                $row['member_id'] ?? '',
+                $row['roster_person_id'] ?? '',
+            ];
+        }
+
+        return [
+            'title' => 'Ministry Age Eligibility — '.$range['label'],
+            'headers' => ['Status', 'Full Name', 'From', 'To', 'Age', 'DOB', 'Member ID', 'Roster ID'],
+            'rows' => $rows,
+            'row_count' => count($rows),
+            'meta' => ['type' => 'ministry_age_eligibility'],
+        ];
+    }
+
+    /** @param  array<string, mixed>  $range */
     private function buildSundaySchoolPayload(array $range): array
     {
         $rows = [];

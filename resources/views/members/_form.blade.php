@@ -200,6 +200,7 @@
         @endif
         <input id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp"
                class="block mt-1 w-full text-sm text-gray-600 dark:text-gray-400" />
+        <p class="mt-1 text-xs text-gray-500">JPG, PNG, or WebP up to 5 MB. Upload only — no URL or path.</p>
     </div>
 
     <div class="flex items-center gap-3 pt-2">

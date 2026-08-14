@@ -22,7 +22,7 @@ final class AboutController extends Controller
 
     public function show(): View
     {
-        $brandShortName = (string) config('identity.public.short_name', 'AG Ikenebgu');
+        $brandShortName = (string) config('identity.public.short_name', 'AGC Ikenegbu');
         $about = $this->resolveMedia($this->content->getSection('about_page'));
         $payload = $this->homepage->payload();
         $page = $this->hydratePageChrome($this->pages->getPage('about'));
@@ -43,6 +43,7 @@ final class AboutController extends Controller
             'church' => $payload['church'],
             'about' => $about,
             'page' => $page,
+            'team' => $payload['team'] ?? ['settings' => [], 'featured' => null, 'members' => []],
             'legacy_api_base' => $payload['legacy_api_base'],
             'traffic_beacon_url' => $payload['traffic_beacon_url'],
             'seo' => $seo,

@@ -5,7 +5,7 @@
 (function () {
     'use strict';
 
-    var CONSENT_KEYS = ['ag_ikenebgu_cookie_consent', 'sdtg_cookie_consent'];
+    var CONSENT_KEYS = ['ag_ikenebgu_cookie_consent'];
     var VISITOR_KEY = 'ag_site_visitor_key';
     var SESSION_KEY = 'ag_site_session_key';
     var HEARTBEAT_MS = 20000;
@@ -68,7 +68,6 @@
 
     function detectSiteArea(path) {
         var p = (path || '').toLowerCase();
-        if (p.indexOf('/sdgt') !== -1) return 'sdgt';
         if (p.indexOf('/sermon-library') !== -1) return 'sermon';
         if (p.indexOf('/register') !== -1) return 'register';
         return 'ag';
@@ -174,13 +173,6 @@
     }
 
     window.addEventListener('ag:cookie-consent', function (ev) {
-        var detail = (ev && ev.detail) || {};
-        if (detail.analytics) {
-            startTracking();
-        }
-    });
-
-    window.addEventListener('sdtg:cookie-consent', function (ev) {
         var detail = (ev && ev.detail) || {};
         if (detail.analytics) {
             startTracking();

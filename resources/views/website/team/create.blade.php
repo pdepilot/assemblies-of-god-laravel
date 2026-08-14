@@ -23,7 +23,7 @@
                 <div>
                     <label class="block text-sm font-medium" for="photo">Photo</label>
                     <input id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" class="mt-1 w-full text-sm">
-                    <p class="text-xs text-gray-500 mt-1">JPG, PNG, or WebP up to 5 MB. Upload only — no URL.</p>
+                    <p class="text-xs text-gray-500 mt-1">JPG, PNG, or WebP up to 5 MB. Upload only — no URL or path.</p>
                 </div>
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>

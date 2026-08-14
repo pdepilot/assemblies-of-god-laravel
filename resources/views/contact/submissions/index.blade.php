@@ -74,7 +74,7 @@
                             @php
                                 $mailto = 'mailto:'.rawurlencode((string) $row['email'])
                                     .'?subject='.rawurlencode('Re: '.(string) $row['subject'])
-                                    .'&body='.rawurlencode('Dear '.(string) $row['full_name'].",\n\nThank you for contacting AGC Ikenebgu.\n\n");
+                                    .'&body='.rawurlencode('Dear '.(string) $row['full_name'].",\n\nThank you for contacting AGC Ikenegbu.\n\n");
                             @endphp
                             <tr class="border-b {{ ($row['status'] ?? '') === 'new' ? 'font-semibold bg-amber-50/60 dark:bg-amber-900/10' : '' }}">
                                 <td class="px-4 py-3">
@@ -99,6 +99,15 @@
                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-indigo-600 text-white text-xs hover:bg-indigo-700">
                                                 <i class="fas fa-reply"></i> Reply
                                             </a>
+                                            <form method="POST" action="{{ route('contact.submissions.destroy', $row['id']) }}" class="inline"
+                                                  onsubmit="return confirm('Delete this message permanently?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-red-300 text-red-700 text-xs hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                            </form>
                                         @else
                                             <a href="{{ $mailto }}"
                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-indigo-600 text-white text-xs hover:bg-indigo-700">

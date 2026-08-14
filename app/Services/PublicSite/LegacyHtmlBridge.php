@@ -12,7 +12,6 @@ final class LegacyHtmlBridge
 {
     public function __construct(
         private readonly PublicAssetResolver $assets,
-        private readonly \App\Services\Sdtg\SdtgPublicGalleryReadService $sdtgGallery,
         private readonly \App\Services\Website\SeoReadService $seo,
     ) {}
 
@@ -214,30 +213,15 @@ final class LegacyHtmlBridge
         $legacyBase = rtrim((string) config('portal.legacy_public_base'), '/');
         $mediaBase = rtrim((string) config('portal.media_base'), '/');
         $siteAsset = url('/site');
-        $sdtgAsset = url('/site/sdgt');
 
         $agDirs = 'css|js|lib|images|img|videos|uploads';
-        $sdtgDirs = 'css|js|img|videos';
 
-        // 1) Absolute legacy asset URLs → local /site (or /site/sdgt) — do this BEFORE swapping page bases.
-        if ($area === 'sdtg') {
-            $html = preg_replace(
-                '#'.preg_quote($legacyBase, '#').'/sdgt/('.$sdtgDirs.')/#i',
-                $sdtgAsset.'/$1/',
-                $html
-            ) ?? $html;
-            $html = preg_replace(
-                '#'.preg_quote($legacyBase, '#').'/('.$agDirs.')/#i',
-                $siteAsset.'/$1/',
-                $html
-            ) ?? $html;
-        } else {
-            $html = preg_replace(
-                '#'.preg_quote($legacyBase, '#').'/('.$agDirs.')/#i',
-                $siteAsset.'/$1/',
-                $html
-            ) ?? $html;
-        }
+        // 1) Absolute legacy asset URLs → local /site — do this BEFORE swapping page bases.
+        $html = preg_replace(
+            '#'.preg_quote($legacyBase, '#').'/('.$agDirs.')/#i',
+            $siteAsset.'/$1/',
+            $html
+        ) ?? $html;
 
         // Same for common localhost variants if config base differs slightly.
         foreach ([$mediaBase, 'http://localhost/AG_IKENEGBU_CHURCH_WEBSITE', 'http://127.0.0.1/AG_IKENEGBU_CHURCH_WEBSITE'] as $base) {
@@ -245,33 +229,22 @@ final class LegacyHtmlBridge
             if ($base === '' || $base === $legacyBase) {
                 continue;
             }
-            if ($area === 'sdtg') {
-                $html = preg_replace('#'.preg_quote($base, '#').'/sdgt/('.$sdtgDirs.')/#i', $sdtgAsset.'/$1/', $html) ?? $html;
-            }
             $html = preg_replace('#'.preg_quote($base, '#').'/('.$agDirs.')/#i', $siteAsset.'/$1/', $html) ?? $html;
         }
 
         // 2) Relative asset paths.
-        if ($area === 'sdtg') {
-            $html = preg_replace('#\b(href|src|data-src|poster)=([\'"])(css|js|img|videos)/#i', '$1=$2'.$sdtgAsset.'/$3/', $html) ?? $html;
-            $html = preg_replace('#\b(href|src|data-src)=([\'"])\.\./(css|js|lib|images|img|videos|uploads)/#i', '$1=$2'.$siteAsset.'/$3/', $html) ?? $html;
-            // JS playlist-style strings: '../videos/glory1.mp4' inside inline scripts
-            $html = preg_replace('#([\'"])\.\./videos/#i', '$1'.$siteAsset.'/videos/', $html) ?? $html;
-            $html = preg_replace('#([\'"])videos/#i', '$1'.$sdtgAsset.'/videos/', $html) ?? $html;
-        } else {
-            $html = preg_replace('#\b(href|src|data-src|poster)=([\'"])\.\./(css|js|lib|images|img|videos|uploads)/#i', '$1=$2'.$siteAsset.'/$3/', $html) ?? $html;
-            $html = preg_replace('#\b(href|src|data-src|poster)=([\'"])(css|js|lib|images|img|videos|uploads)/#i', '$1=$2'.$siteAsset.'/$3/', $html) ?? $html;
-            // sermon-library local assets (style.css / script.js next to index)
-            $html = preg_replace('#\b(href|src)=([\'"])(style\.css|script\.js)\2#i', '$1=$2'.$siteAsset.'/sermon-library/$3$2', $html) ?? $html;
-            $html = preg_replace('#url\(([\'"]?)\.\./(images|img|videos)/#i', 'url($1'.$siteAsset.'/$2/', $html) ?? $html;
-            $html = preg_replace('#url\(([\'"]?)(images|img|videos)/#i', 'url($1'.$siteAsset.'/$2/', $html) ?? $html;
-            // Member portal may load portal JS from the legacy admin tree.
-            $html = preg_replace(
-                '#'.preg_quote($legacyBase, '#').'/portal/#i',
-                $mediaBase.'/portal/',
-                $html
-            ) ?? $html;
-        }
+        $html = preg_replace('#\b(href|src|data-src|poster)=([\'"])\.\./(css|js|lib|images|img|videos|uploads)/#i', '$1=$2'.$siteAsset.'/$3/', $html) ?? $html;
+        $html = preg_replace('#\b(href|src|data-src|poster)=([\'"])(css|js|lib|images|img|videos|uploads)/#i', '$1=$2'.$siteAsset.'/$3/', $html) ?? $html;
+        // sermon-library local assets (style.css / script.js next to index)
+        $html = preg_replace('#\b(href|src)=([\'"])(style\.css|script\.js)\2#i', '$1=$2'.$siteAsset.'/sermon-library/$3$2', $html) ?? $html;
+        $html = preg_replace('#url\(([\'"]?)\.\./(images|img|videos)/#i', 'url($1'.$siteAsset.'/$2/', $html) ?? $html;
+        $html = preg_replace('#url\(([\'"]?)(images|img|videos)/#i', 'url($1'.$siteAsset.'/$2/', $html) ?? $html;
+        // Member portal may load portal JS from the legacy admin tree.
+        $html = preg_replace(
+            '#'.preg_quote($legacyBase, '#').'/portal/#i',
+            $mediaBase.'/portal/',
+            $html
+        ) ?? $html;
 
         // Member portal: pin API + page globals to Laravel same-origin routes (API is proxied).
         if ($area === 'member') {
@@ -299,6 +272,13 @@ final class LegacyHtmlBridge
                 'window.MEMBER_JOIN_API = '.json_encode($joinApi, JSON_UNESCAPED_SLASHES).';',
                 $html
             ) ?? $html;
+
+            $brandShort = (string) config('identity.public.short_name', 'AGC Ikenegbu');
+            $html = str_replace(
+                ['AG Ikenebgu', 'AG Ikenegbu', 'AG IKENEGBU'],
+                [$brandShort, $brandShort, strtoupper($brandShort)],
+                $html
+            );
         }
 
         // 3) Page URL host swaps (non-asset links still on legacy host).
@@ -338,68 +318,41 @@ final class LegacyHtmlBridge
         // 4) Fix any leftover app-root asset URLs caused by host swaps
         // e.g. http://127.0.0.1:8000/css/blog.css → /site/css/blog.css
         $html = preg_replace('#'.preg_quote($appBase, '#').'/('.$agDirs.')/#i', $siteAsset.'/$1/', $html) ?? $html;
-        $html = preg_replace('#'.preg_quote($appBase, '#').'/sdgt/('.$sdtgDirs.')/#i', $sdtgAsset.'/$1/', $html) ?? $html;
 
         // 5) Nav / CTA path normalization.
-        if ($area === 'sdtg') {
-            $sdtgLinks = [
-                'about', 'speakers', 'gallery', 'livestream', 'contact',
-                'registration', 'donate', 'privacy', 'terms', 'index',
-            ];
-            foreach ($sdtgLinks as $page) {
-                $target = $page === 'index' ? $appBase.'/sdgt' : $appBase.'/sdgt/'.$page;
-                $html = str_replace(
-                    ['href="'.$page.'"', "href='".$page."'", 'href="'.$page.'.php"', "href='".$page.".php'"],
-                    ['href="'.$target.'"', "href='".$target."'", 'href="'.$target.'"', "href='".$target."'"],
-                    $html
-                );
-            }
-            $html = str_replace(
-                ['href="./"', "href='./'", 'href="index.php"', "href='index.php'"],
-                ['href="'.$appBase.'/sdgt"', "href='".$appBase."/sdgt'", 'href="'.$appBase.'/sdgt"', "href='".$appBase."/sdgt'"],
-                $html
-            );
-        } else {
-            $linkMap = [
-                'href="about.php"' => 'href="'.$appBase.'/about"',
-                "href='about.php'" => "href='".$appBase."/about'",
-                'href="about"' => 'href="'.$appBase.'/about"',
-                'href="./"' => 'href="'.$appBase.'/"',
-                'href="activity"' => 'href="'.$appBase.'/activity"',
-                'href="activity.php"' => 'href="'.$appBase.'/activity"',
-                'href="event"' => 'href="'.$appBase.'/event"',
-                'href="event.php"' => 'href="'.$appBase.'/event"',
-                'href="blog"' => 'href="'.$appBase.'/blog"',
-                'href="blog.php"' => 'href="'.$appBase.'/blog"',
-                'href="contact"' => 'href="'.$appBase.'/contact"',
-                'href="contact.php"' => 'href="'.$appBase.'/contact"',
-                'href="donate"' => 'href="'.$appBase.'/donate"',
-                'href="donate.php"' => 'href="'.$appBase.'/donate"',
-                'href="privacy"' => 'href="'.$appBase.'/privacy"',
-                'href="terms"' => 'href="'.$appBase.'/terms"',
-                'href="sermon-library/"' => 'href="'.$appBase.'/sermons"',
-                'href="sermon-library/index"' => 'href="'.$appBase.'/sermons"',
-                'href="sermon-library/index.php"' => 'href="'.$appBase.'/sermons"',
-                'href="sermon.php"' => 'href="'.$appBase.'/sermons"',
-                'href="/sdgt/"' => 'href="'.$appBase.'/sdgt"',
-                'href="/sdgt"' => 'href="'.$appBase.'/sdgt"',
-                'href="member-portal/login"' => 'href="'.$appBase.'/member-portal/login"',
-                'href="member-portal/"' => 'href="'.$appBase.'/member-portal"',
-                'href="member-portal"' => 'href="'.$appBase.'/member-portal"',
-                'href="member-portal/login.php"' => 'href="'.$appBase.'/member-portal/login"',
-            ];
-            $html = str_replace(array_keys($linkMap), array_values($linkMap), $html);
-        }
+        $linkMap = [
+            'href="about.php"' => 'href="'.$appBase.'/about"',
+            "href='about.php'" => "href='".$appBase."/about'",
+            'href="about"' => 'href="'.$appBase.'/about"',
+            'href="./"' => 'href="'.$appBase.'/"',
+            'href="activity"' => 'href="'.$appBase.'/activity"',
+            'href="activity.php"' => 'href="'.$appBase.'/activity"',
+            'href="event"' => 'href="'.$appBase.'/event"',
+            'href="event.php"' => 'href="'.$appBase.'/event"',
+            'href="blog"' => 'href="'.$appBase.'/blog"',
+            'href="blog.php"' => 'href="'.$appBase.'/blog"',
+            'href="contact"' => 'href="'.$appBase.'/contact"',
+            'href="contact.php"' => 'href="'.$appBase.'/contact"',
+            'href="donate"' => 'href="'.$appBase.'/donate"',
+            'href="donate.php"' => 'href="'.$appBase.'/donate"',
+            'href="privacy"' => 'href="'.$appBase.'/privacy"',
+            'href="terms"' => 'href="'.$appBase.'/terms"',
+            'href="sermon-library/"' => 'href="'.$appBase.'/sermons"',
+            'href="sermon-library/index"' => 'href="'.$appBase.'/sermons"',
+            'href="sermon-library/index.php"' => 'href="'.$appBase.'/sermons"',
+            'href="sermon.php"' => 'href="'.$appBase.'/sermons"',
+            'href="member-portal/login"' => 'href="'.$appBase.'/member-portal/login"',
+            'href="member-portal/"' => 'href="'.$appBase.'/member-portal"',
+            'href="member-portal"' => 'href="'.$appBase.'/member-portal"',
+            'href="member-portal/login.php"' => 'href="'.$appBase.'/member-portal/login"',
+        ];
+        $html = str_replace(array_keys($linkMap), array_values($linkMap), $html);
 
         $html = str_replace(
             'href="'.$siteAsset.'/images/ag-logo.jpeg"',
             'href="'.$this->assets->url('images/ag-logo.jpeg').'"',
             $html
         );
-
-        if ($area === 'sdtg' && preg_match('#(^|/)gallery(\.php)?$#i', trim($legacyPath, '/')) === 1) {
-            $html = $this->injectSdtgGalleryBootstrap($html);
-        }
 
         return $this->applySeoMeta($html, $legacyPath, $area);
     }
@@ -422,7 +375,6 @@ final class LegacyHtmlBridge
             'privacy' => url('/privacy'),
             'terms' => url('/terms'),
             'sermons' => url('/sermons'),
-            'sdtg' => url('/sdgt'),
             default => url('/'),
         };
         $meta = $this->seo->forKey($key, $canonical);
@@ -497,57 +449,9 @@ final class LegacyHtmlBridge
         return $html;
     }
 
-    private function injectSdtgGalleryBootstrap(string $html): string
-    {
-        $payload = json_encode(
-            $this->sdtgGallery->bootstrap(),
-            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
-        );
-
-        if ($payload === false) {
-            return $html;
-        }
-
-        $script = '<script>window.SDTG_GALLERY_BOOTSTRAP = '.$payload.';</script>';
-
-        if (preg_match('#<script>\s*window\.SDTG_GALLERY_BOOTSTRAP\s*=#i', $html) === 1) {
-            $html = preg_replace(
-                '#<script>\s*window\.SDTG_GALLERY_BOOTSTRAP\s*=.*?</script>#is',
-                $script,
-                $html,
-                1
-            ) ?? $html;
-        } else {
-            $html = str_ireplace('</body>', $script.'</body>', $html);
-        }
-
-        $apiUrl = url('/api/sdtg-gallery');
-        $html = preg_replace(
-            "#const API_URL = ['\"][^'\"]*['\"]#",
-            "const API_URL = '".$apiUrl."'",
-            $html
-        ) ?? $html;
-
-        $memoryUrl = url('/api/sdtg-memory');
-        $html = preg_replace(
-            "#fetch\\(['\"]\\.\\./api/submit-sdtg-memory\\.php['\"]#",
-            "fetch('".$memoryUrl."'",
-            $html
-        ) ?? $html;
-        $html = preg_replace(
-            "#fetch\\(['\"]/api/submit-sdtg-memory\\.php['\"]#",
-            "fetch('".$memoryUrl."'",
-            $html
-        ) ?? $html;
-
-        return $html;
-    }
-
     private function fallbackPage(string $legacyPath, string $area, string $message): string
     {
-        $title = $area === 'sdtg'
-            ? (string) config('identity.public.sdtg_label', 'Send Down Thy Glory')
-            : (string) config('identity.public.short_name', 'AG Ikenebgu');
+        $title = (string) config('identity.public.short_name', 'AGC Ikenegbu');
         $home = e(url('/'));
         $legacy = e(rtrim((string) config('portal.legacy_public_base'), '/').'/'.ltrim($legacyPath, '/'));
         $msg = e($message);

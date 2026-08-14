@@ -133,8 +133,10 @@
         function finishScripture(nextIndex) {
             $scriptureCards.removeClass('active is-leaving is-entering');
             $scriptureCards.eq(nextIndex).addClass('active');
-            $scriptureDots.removeClass('active');
-            $scriptureDots.eq(nextIndex).addClass('active');
+            if ($scriptureDots.length) {
+                $scriptureDots.removeClass('active');
+                $scriptureDots.eq(nextIndex).addClass('active');
+            }
             scriptureCurrent = nextIndex;
             scriptureAnimating = false;
             syncScriptureHeight();
@@ -174,16 +176,20 @@
         }
 
         $scriptureCards.filter('.active').length || $scriptureCards.first().addClass('active');
-        $scriptureDots.eq(scriptureCurrent).addClass('active');
+        if ($scriptureDots.length) {
+            $scriptureDots.eq(scriptureCurrent).addClass('active');
+        }
         syncScriptureHeight();
         restartScriptureProgress();
         startScriptureAutoplay();
         $(window).on('resize', syncScriptureHeight);
 
-        $scriptureDots.on('click', function () {
-            goToScripture($(this).data('verse'));
-            resetScriptureAutoplay();
-        });
+        if ($scriptureDots.length) {
+            $scriptureDots.on('click', function () {
+                goToScripture($(this).data('verse'));
+                resetScriptureAutoplay();
+            });
+        }
 
         $scriptureRotator.on('mouseenter focusin', function () {
             $scriptureRotator.addClass('is-paused');

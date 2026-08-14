@@ -31,6 +31,18 @@
                     <textarea name="body_html" rows="8" class="mt-1 w-full rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900">{{ old('body_html', $post['body_html'] ?? '') }}</textarea>
                 </div>
                 <div>
+                    <label class="block text-sm font-medium">SEO title (optional)</label>
+                    <input name="seo_title" value="{{ old('seo_title', $post['seo_title'] ?? '') }}" class="mt-1 w-full rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">Meta description</label>
+                    <textarea name="meta_description" rows="2" maxlength="255" class="mt-1 w-full rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900">{{ old('meta_description', $post['meta_description'] ?? '') }}</textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">Tags (comma-separated)</label>
+                    <input name="tags" value="{{ old('tags', is_array($post['tags'] ?? null) ? implode(', ', $post['tags']) : '') }}" class="mt-1 w-full rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900" placeholder="prayer, faith, family">
+                </div>
+                <div>
                     <label class="block text-sm font-medium">Author</label>
                     <input name="author" value="{{ old('author', $post['author'] ?? '') }}" class="mt-1 w-full rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900">
                 </div>
@@ -46,6 +58,8 @@
                         </label>
                     @endif
                     <input id="featured_image" name="featured_image" type="file" accept="image/jpeg,image/png,image/webp" class="block w-full text-sm">
+                    <label class="block text-sm font-medium mt-2">Featured image ALT text</label>
+                    <input name="featured_image_alt" value="{{ old('featured_image_alt', $post['featured_image_alt'] ?? '') }}" class="mt-1 w-full rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900">
                     <p class="text-xs text-gray-500">JPG, PNG, or WebP up to 5 MB. Upload only — no path or URL.</p>
                 </div>
                 <div class="flex gap-3">

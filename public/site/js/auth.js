@@ -1,5 +1,5 @@
 /**
- * AG Ikenebgu & SDTG — Enterprise Admin Login
+ * AGC Ikenegbu — Enterprise Admin Login
  */
 (function () {
     'use strict';
@@ -10,11 +10,11 @@
         'Manage Your Church With Excellence',
         'Lead With Insight',
         'Track Growth In Real Time',
-        'Powering AG IKENEGBU & SDTG'
+        'Powering AGC IKENEGBU'
     ];
 
     var HIGHLIGHTS = [
-        'Unified dashboard for church & crusade operations',
+        'Unified dashboard for church operations',
         'Real-time attendance and registration analytics',
         'Enterprise-grade role-based access control',
         'SEO, livestream, and donation management in one place'
@@ -25,7 +25,7 @@
         { icon: 'fa-search', type: 'seo', text: 'SEO Audit Completed' },
         { icon: 'fa-chart-line', type: 'gold', text: 'Attendance Report Generated' },
         { icon: 'fa-hand-holding-heart', type: 'gold', text: '₦2.4M Donations Tracked This Month' },
-        { icon: 'fa-broadcast-tower', type: '', text: 'SDTG Livestream Control Ready' }
+        { icon: 'fa-broadcast-tower', type: '', text: 'Livestream Control Ready' }
     ];
 
     var METRICS = [

@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div>
             <h1 class="cms-page__title">Dashboard</h1>
-            <p class="cms-page__subtitle">Welcome back, {{ $admin->display_name }}. Live overview of AGC Ikenebgu and SDTG.</p>
+            <p class="cms-page__subtitle">Welcome back, {{ $admin->display_name }}. Live overview of AGC Ikenegbu.</p>
         </div>
         <div class="cms-page__actions">
             <span class="cms-badge cms-badge--muted">{{ now()->format('D, M j · g:i A') }}</span>
@@ -19,7 +19,7 @@
             </div>
             <div class="cms-stat__value">{{ number_format($stats['members']) }}</div>
             <div class="cms-stat__label">Total Members</div>
-            <span class="cms-stat__brand cms-stat__brand--ag">AGC Ikenebgu</span>
+            <span class="cms-stat__brand cms-stat__brand--ag">AGC Ikenegbu</span>
         </article>
         <article class="cms-stat cms-card">
             <div class="cms-stat__top">
@@ -27,7 +27,7 @@
             </div>
             <div class="cms-stat__value">{{ number_format($stats['visitors']) }}</div>
             <div class="cms-stat__label">Registered Visitors</div>
-            <span class="cms-stat__brand cms-stat__brand--ag">AGC Ikenebgu</span>
+            <span class="cms-stat__brand cms-stat__brand--ag">AGC Ikenegbu</span>
         </article>
         <article class="cms-stat cms-card">
             <div class="cms-stat__top">
@@ -35,7 +35,7 @@
             </div>
             <div class="cms-stat__value">{{ number_format($stats['events']) }}</div>
             <div class="cms-stat__label">Published Events</div>
-            <span class="cms-stat__brand cms-stat__brand--ag">AGC Ikenebgu</span>
+            <span class="cms-stat__brand cms-stat__brand--ag">AGC Ikenegbu</span>
         </article>
         <article class="cms-stat cms-card">
             <div class="cms-stat__top">
@@ -43,43 +43,7 @@
             </div>
             <div class="cms-stat__value">{{ number_format($stats['ss_students']) }}</div>
             <div class="cms-stat__label">Sunday School Students</div>
-            <span class="cms-stat__brand cms-stat__brand--ag">AGC Ikenebgu</span>
-        </article>
-    </div>
-
-    <p class="cms-section-label cms-section-label--sdtg">SEND DOWN THY GLORY — Crusade Metrics</p>
-    <div class="cms-stats">
-        <article class="cms-stat cms-card cms-stat--sdtg">
-            <div class="cms-stat__top">
-                <div class="cms-stat__icon cms-stat__icon--gold"><i class="fas fa-ticket" aria-hidden="true"></i></div>
-            </div>
-            <div class="cms-stat__value">{{ number_format($stats['sdtg_registrations']) }}</div>
-            <div class="cms-stat__label">Total Registrations</div>
-            <span class="cms-stat__brand cms-stat__brand--sdtg">SDTG</span>
-        </article>
-        <article class="cms-stat cms-card cms-stat--sdtg">
-            <div class="cms-stat__top">
-                <div class="cms-stat__icon cms-stat__icon--blue"><i class="fas fa-microphone" aria-hidden="true"></i></div>
-            </div>
-            <div class="cms-stat__value">{{ number_format($stats['sdtg_speakers']) }}</div>
-            <div class="cms-stat__label">Total Speakers</div>
-            <span class="cms-stat__brand cms-stat__brand--sdtg">SDTG</span>
-        </article>
-        <article class="cms-stat cms-card cms-stat--sdtg">
-            <div class="cms-stat__top">
-                <div class="cms-stat__icon cms-stat__icon--green"><i class="fas fa-hand-holding-heart" aria-hidden="true"></i></div>
-            </div>
-            <div class="cms-stat__value">₦{{ number_format($stats['donations_month'], 0) }}</div>
-            <div class="cms-stat__label">Donations This Month</div>
-            <span class="cms-stat__brand cms-stat__brand--sdtg">Finance</span>
-        </article>
-        <article class="cms-stat cms-card cms-stat--sdtg">
-            <div class="cms-stat__top">
-                <div class="cms-stat__icon cms-stat__icon--purple"><i class="fas fa-chart-area" aria-hidden="true"></i></div>
-            </div>
-            <div class="cms-stat__value">{{ number_format($stats['site_sessions_today']) }}</div>
-            <div class="cms-stat__label">Site Sessions Today</div>
-            <span class="cms-stat__brand cms-stat__brand--sdtg">Traffic</span>
+            <span class="cms-stat__brand cms-stat__brand--ag">AGC Ikenegbu</span>
         </article>
     </div>
 
@@ -93,7 +57,6 @@
                 <a href="{{ route('members.create') }}" class="cms-btn cms-btn--ghost" style="justify-content:flex-start"><i class="fas fa-user-plus" aria-hidden="true"></i> Add Member</a>
                 <a href="{{ route('ss.attendance.index') }}" class="cms-btn cms-btn--ghost" style="justify-content:flex-start"><i class="fas fa-clipboard-check" aria-hidden="true"></i> Sunday School Attendance</a>
                 <a href="{{ route('donations.create') }}" class="cms-btn cms-btn--ghost" style="justify-content:flex-start"><i class="fas fa-hand-holding-heart" aria-hidden="true"></i> Record Donation</a>
-                <a href="{{ route('sdtg.registrations.index') }}" class="cms-btn cms-btn--ghost" style="justify-content:flex-start"><i class="fas fa-ticket" aria-hidden="true"></i> SDTG Registrations</a>
                 <a href="{{ route('analytics.site-traffic.index') }}" class="cms-btn cms-btn--ghost" style="justify-content:flex-start"><i class="fas fa-chart-area" aria-hidden="true"></i> Site Traffic</a>
             </div>
         </article>

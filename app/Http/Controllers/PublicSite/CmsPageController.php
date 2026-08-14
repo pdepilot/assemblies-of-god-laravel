@@ -5,6 +5,7 @@ namespace App\Http\Controllers\PublicSite;
 use App\Http\Controllers\Controller;
 use App\Services\PublicSite\PublicAssetResolver;
 use App\Services\PublicSite\PublicHomepageReadService;
+use App\Services\Website\SchemaBuilder;
 use App\Services\Website\SeoReadService;
 use App\Services\Website\WebsitePagesReadService;
 use Illuminate\View\View;
@@ -17,11 +18,12 @@ final class CmsPageController extends Controller
         private readonly PublicHomepageReadService $homepage,
         private readonly PublicAssetResolver $assets,
         private readonly SeoReadService $seo,
+        private readonly SchemaBuilder $schema,
     ) {}
 
     public function show(string $pageKey): View
     {
-        $brandShortName = (string) config('identity.public.short_name', 'AG Ikenebgu');
+        $brandShortName = (string) config('identity.public.short_name', 'AGC Ikenegbu');
         $pageKey = strtolower(trim($pageKey));
         if (! $this->pages->isEditablePage($pageKey)) {
             throw new NotFoundHttpException('Page not found.');
@@ -35,14 +37,22 @@ final class CmsPageController extends Controller
 
         $page = $this->hydratePage($this->pages->getPage($pageKey));
         $payload = $this->homepage->payload();
-        $seo = $this->seo->forKey($pageKey, url('/'.$pageKey));
-        if (trim((string) ($page['heading'] ?? '')) !== '') {
+        $canonical = null;
+        try {
+            $routeName = (string) ($catalog['public_route'] ?? '');
+            $canonical = $routeName !== '' ? route($routeName) : url('/'.$pageKey);
+        } catch (\Throwable) {
+            $canonical = url('/'.$pageKey);
+        }
+        $seo = $this->seo->forKey($pageKey, $canonical);
+        // Prefer SEO manager / pages SEO tab. Only fill empties from page chrome.
+        if (trim((string) ($seo['title'] ?? '')) === '' && trim((string) ($page['heading'] ?? '')) !== '') {
             $seo['title'] = (string) $page['heading'].' | '.$brandShortName;
         }
-        if (trim((string) ($page['intro'] ?? '')) !== '') {
+        if (trim((string) ($seo['meta_description'] ?? '')) === '' && trim((string) ($page['intro'] ?? '')) !== '') {
             $seo['meta_description'] = \Illuminate\Support\Str::limit(strip_tags((string) $page['intro']), 160, '');
         }
-        if (trim((string) ($page['hero_image'] ?? '')) !== '') {
+        if (trim((string) ($seo['og_image'] ?? '')) === '' && trim((string) ($page['hero_image'] ?? '')) !== '') {
             $seo['og_image'] = (string) $page['hero_image'];
         }
 
@@ -54,6 +64,7 @@ final class CmsPageController extends Controller
             'legacy_api_base' => $payload['legacy_api_base'],
             'traffic_beacon_url' => $payload['traffic_beacon_url'],
             'seo' => $seo,
+            'schemaGraphs' => $this->schemaGraphsForPage($pageKey, $page, $canonical),
             'testimonySourcePage' => $pageKey,
         ];
 
@@ -99,5 +110,46 @@ final class CmsPageController extends Controller
             'contact' => 'contact',
             default => '',
         };
+    }
+
+    /**
+     * @param  array<string, mixed>  $page
+     * @return list<array<string, mixed>>
+     */
+    private function schemaGraphsForPage(string $pageKey, array $page, string $canonical): array
+    {
+        $graphs = $this->schema->organizationAndChurch();
+        $graphs[] = $this->schema->breadcrumbs([
+            ['name' => 'Home', 'url' => url('/')],
+            ['name' => (string) ($page['heading'] ?? ucfirst($pageKey)), 'url' => $canonical],
+        ]);
+
+        if ($pageKey === 'faq') {
+            $faqs = $this->extractFaqs((string) ($page['body_html'] ?? ''));
+            $faqSchema = $this->schema->faqPage($faqs);
+            if ($faqSchema !== null) {
+                $graphs[] = $faqSchema;
+            }
+        }
+
+        return $graphs;
+    }
+
+    /** @return list<array{question: string, answer: string}> */
+    private function extractFaqs(string $html): array
+    {
+        $faqs = [];
+        if (preg_match_all('/<h2[^>]*>(.*?)<\/h2>\s*<p[^>]*>(.*?)<\/p>/is', $html, $matches, PREG_SET_ORDER) === false) {
+            return [];
+        }
+        foreach ($matches as $match) {
+            $q = trim(strip_tags($match[1]));
+            $a = trim(strip_tags($match[2]));
+            if ($q !== '' && $a !== '') {
+                $faqs[] = ['question' => $q, 'answer' => $a];
+            }
+        }
+
+        return $faqs;
     }
 }

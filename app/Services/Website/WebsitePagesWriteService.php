@@ -125,6 +125,13 @@ final class WebsitePagesWriteService
                 'worship_eyebrow' => trim((string) ($payload['worship_eyebrow'] ?? $defaults['worship_eyebrow'])),
                 'worship_title' => trim((string) ($payload['worship_title'] ?? $defaults['worship_title'])),
                 'worship_intro' => trim((string) ($payload['worship_intro'] ?? $defaults['worship_intro'])),
+                'sermons_eyebrow' => trim((string) ($payload['sermons_eyebrow'] ?? $defaults['sermons_eyebrow'])),
+                'sermons_title' => trim((string) ($payload['sermons_title'] ?? $defaults['sermons_title'])),
+                'team_eyebrow' => trim((string) ($payload['team_eyebrow'] ?? $defaults['team_eyebrow'])),
+                'team_title' => trim((string) ($payload['team_title'] ?? $defaults['team_title'])),
+                'testimonials_eyebrow' => trim((string) ($payload['testimonials_eyebrow'] ?? $defaults['testimonials_eyebrow'])),
+                'testimonials_title' => trim((string) ($payload['testimonials_title'] ?? $defaults['testimonials_title'])),
+                'testimonials_intro' => trim((string) ($payload['testimonials_intro'] ?? $defaults['testimonials_intro'])),
             ],
             'header' => [
                 'heading' => trim((string) ($payload['heading'] ?? $defaults['heading'])),
@@ -134,6 +141,7 @@ final class WebsitePagesWriteService
                 'cta_label' => trim((string) ($payload['cta_label'] ?? '')),
                 'cta_url' => trim((string) ($payload['cta_url'] ?? '')),
             ],
+            'donate' => $this->donatePayload($payload, $defaults),
             default => [
                 'heading' => trim((string) ($payload['heading'] ?? $defaults['heading'])),
                 'eyebrow' => trim((string) ($payload['eyebrow'] ?? '')),
@@ -149,6 +157,35 @@ final class WebsitePagesWriteService
         $this->writeSettings($settings);
 
         return $saved;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @param  array<string, mixed>  $defaults
+     * @return array<string, string>
+     */
+    private function donatePayload(array $payload, array $defaults): array
+    {
+        $keys = [
+            'hero_badge', 'hero_title', 'hero_scripture', 'hero_ref', 'hero_cta_label',
+            'categories_eyebrow', 'categories_title', 'categories_lead',
+            'online_eyebrow', 'online_title', 'online_lead',
+            'pledge_eyebrow', 'pledge_title', 'pledge_lead',
+            'sponsorship_eyebrow', 'sponsorship_title', 'sponsorship_lead',
+            'trust_eyebrow', 'trust_title',
+            'impact_eyebrow', 'impact_title', 'impact_lead',
+            'donors_eyebrow', 'donors_title', 'donors_lead',
+            'stories_eyebrow', 'stories_title', 'stories_lead',
+            'final_cta_title', 'final_cta_text', 'final_cta_label',
+        ];
+
+        $out = [];
+        foreach ($keys as $key) {
+            $fallback = (string) ($defaults[$key] ?? '');
+            $out[$key] = trim((string) ($payload[$key] ?? $fallback));
+        }
+
+        return $out;
     }
 
     /** @return array<string, mixed> */

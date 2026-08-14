@@ -58,6 +58,51 @@ final class SermonReadService
         return $row ? (array) $row : null;
     }
 
+    /** @return array<string, mixed>|null */
+    public function getPublishedBySlug(string $slug): ?array
+    {
+        $slug = trim($slug);
+        if ($slug === '') {
+            return null;
+        }
+
+        $row = DB::table('sermons')
+            ->where('slug', $slug)
+            ->where('status', 'published')
+            ->first();
+
+        return $row ? (array) $row : null;
+    }
+
+    /** @return list<array<string, mixed>> */
+    public function related(array $sermon, int $limit = 3): array
+    {
+        $id = (int) ($sermon['id'] ?? 0);
+        $categoryId = $sermon['category_id'] ?? null;
+        $minister = trim((string) ($sermon['minister_name'] ?? ''));
+
+        $builder = DB::table('sermons')
+            ->where('status', 'published')
+            ->where('id', '<>', $id);
+
+        if ($categoryId) {
+            $builder->where('category_id', (int) $categoryId);
+        } elseif ($minister !== '') {
+            $builder->where('minister_name', $minister);
+        }
+
+        return $builder->orderByDesc('sermon_date')
+            ->limit($limit)
+            ->get()
+            ->map(fn ($row) => (array) $row)
+            ->all();
+    }
+
+    public function incrementViews(int $id): void
+    {
+        DB::table('sermons')->where('id', $id)->increment('view_count');
+    }
+
     /** @return list<array<string, mixed>> */
     public function listCategories(): array
     {

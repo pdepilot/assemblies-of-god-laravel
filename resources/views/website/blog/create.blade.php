@@ -11,10 +11,15 @@
             <div><label class="block text-sm font-medium">Title</label><input name="title" value="{{ old('title') }}" class="mt-1 w-full rounded border-gray-300" required></div>
             <div><label class="block text-sm font-medium">Category</label><select name="category" class="mt-1 w-full rounded border-gray-300">@foreach($categories as $slug => $label)<option value="{{ $slug }}">{{ $label }}</option>@endforeach</select></div>
             <div><label class="block text-sm font-medium">Excerpt</label><textarea name="excerpt" rows="3" class="mt-1 w-full rounded border-gray-300">{{ old('excerpt') }}</textarea></div>
+            <div><label class="block text-sm font-medium">SEO title (optional)</label><input name="seo_title" value="{{ old('seo_title') }}" class="mt-1 w-full rounded border-gray-300"></div>
+            <div><label class="block text-sm font-medium">Meta description</label><textarea name="meta_description" rows="2" maxlength="255" class="mt-1 w-full rounded border-gray-300">{{ old('meta_description') }}</textarea></div>
+            <div><label class="block text-sm font-medium">Tags (comma-separated)</label><input name="tags" value="{{ old('tags') }}" class="mt-1 w-full rounded border-gray-300" placeholder="prayer, faith, family"></div>
             <div><label class="block text-sm font-medium">Body HTML</label><textarea name="body_html" rows="8" class="mt-1 w-full rounded border-gray-300">{{ old('body_html') }}</textarea></div>
             <div class="space-y-2">
                 <label class="block text-sm font-medium" for="featured_image">Featured image</label>
                 <input id="featured_image" name="featured_image" type="file" accept="image/jpeg,image/png,image/webp" class="block w-full text-sm">
+                <label class="block text-sm font-medium">Featured image ALT text</label>
+                <input name="featured_image_alt" value="{{ old('featured_image_alt') }}" class="mt-1 w-full rounded border-gray-300">
                 <p class="text-xs text-gray-500">JPG, PNG, or WebP up to 5 MB. Upload only — no path or URL.</p>
             </div>
             <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-semibold">Save Post</button>

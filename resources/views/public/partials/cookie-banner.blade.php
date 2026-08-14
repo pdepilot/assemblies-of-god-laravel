@@ -25,7 +25,7 @@
         <div class="ag-cookie-banner__content">
             <p class="ag-cookie-banner__eyebrow">A Warm Welcome</p>
             <h2 id="agCookieTitle" class="ag-cookie-banner__title">Your Privacy, Our Covenant</h2>
-            <p id="agCookieDesc" class="ag-cookie-banner__text">{{ config('identity.public.short_name', 'AG Ikenebgu') }} uses cookies to remember your visit, improve our website, and serve you with grace and transparency - just as we welcome you into our church family.</p>
+            <p id="agCookieDesc" class="ag-cookie-banner__text">{{ config('identity.public.short_name', 'AGC Ikenegbu') }} uses cookies to remember your visit, improve our website, and serve you with grace and transparency - just as we welcome you into our church family.</p>
             <div class="ag-cookie-banner__actions">
                 <button type="button" class="ag-cookie-banner__btn ag-cookie-banner__btn--accept" data-action="accept-all">
                     <i class="fas fa-check-circle" aria-hidden="true"></i> Accept All
@@ -49,7 +49,7 @@
                 <i class="fas fa-times" aria-hidden="true"></i>
             </button>
             <h2 id="agCookieModalTitle" class="ag-cookie-modal__title">Cookie Preferences</h2>
-            <p class="ag-cookie-modal__desc">Choose how {{ config('identity.public.short_name', 'AG Ikenebgu') }} may use cookies. Essential cookies are always active so the site works properly.</p>
+            <p class="ag-cookie-modal__desc">Choose how {{ config('identity.public.short_name', 'AGC Ikenegbu') }} may use cookies. Essential cookies are always active so the site works properly.</p>
             <div class="ag-cookie-pref">
                 <div class="ag-cookie-pref__info">
                     <h4>Essential</h4>
@@ -84,7 +84,7 @@
             <div class="ag-cookie-pref">
                 <div class="ag-cookie-pref__info">
                     <h4>Personalization</h4>
-                    <p>Remembers your settings for a tailored experience.</p>
+                    <p>Remembers your settings and may show relevant ads via Google AdSense.</p>
                 </div>
                 <label class="ag-cookie-toggle">
                     <input type="checkbox" data-ag-cookie-pref="personalization" id="agCookiePersonalization">

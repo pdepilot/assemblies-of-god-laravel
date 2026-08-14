@@ -7,7 +7,7 @@
     while (count($gallery) < 3) {
         $gallery[] = [
             'image' => app(\App\Services\PublicSite\PublicAssetResolver::class)->url('images/main1.jpg'),
-            'alt' => ((string) ($church['short_name'] ?? config('identity.public.short_name', 'AG Ikenebgu'))).' church',
+            'alt' => ((string) ($church['short_name'] ?? config('identity.public.short_name', 'AGC Ikenegbu'))).' church',
         ];
     }
     $gallery = array_slice($gallery, 0, 3);

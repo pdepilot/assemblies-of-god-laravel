@@ -10,12 +10,10 @@ final class WebsiteMediaIndexReadService
     public function getCounts(): array
     {
         $sermonMedia = (int) DB::table('sermon_media_library')->count();
-        $sdtgMedia = (int) DB::table('sdtg_media_assets')->count();
 
         return [
             'sermon_media' => $sermonMedia,
-            'sdtg_media' => $sdtgMedia,
-            'total' => $sermonMedia + $sdtgMedia,
+            'total' => $sermonMedia,
         ];
     }
 }

@@ -12,7 +12,7 @@
         </div>
     </x-slot>
 
-    <div class="py-10" x-data="{ tab: '{{ old('section', $activeTab ?? 'homepage_about') }}' }">
+    <div class="py-10" x-data="{ tab: '{{ old('section', $activeTab ?? 'about_page') }}' }">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8 space-y-6">
             @if (session('status'))
                 <div class="rounded-md bg-green-50 dark:bg-green-900/30 p-4 text-sm text-green-800 dark:text-green-200">{{ session('status') }}</div>
@@ -25,9 +25,17 @@
 
             @include('website._nav', ['canManage' => true])
 
+            <div class="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/40 dark:border-amber-800 p-4 text-sm text-amber-950 dark:text-amber-100">
+                <p class="font-semibold mb-1">Two separate sections</p>
+                <ul class="list-disc pl-5 space-y-1">
+                    <li><strong>About Page</strong> — content shown on the public <a href="{{ route('public.about') }}" target="_blank" rel="noopener" class="underline">/about</a> page. Use this tab to edit About Us.</li>
+                    <li><strong>Homepage About Section</strong> — content shown only in the About block on the homepage.</li>
+                </ul>
+            </div>
+
             <div class="flex flex-wrap gap-2">
+                <button type="button" @click="tab = 'about_page'" :class="tab === 'about_page' ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800'" class="px-4 py-2 rounded-md border text-sm font-medium">About Page (/about)</button>
                 <button type="button" @click="tab = 'homepage_about'" :class="tab === 'homepage_about' ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800'" class="px-4 py-2 rounded-md border text-sm font-medium">Homepage About Section</button>
-                <button type="button" @click="tab = 'about_page'" :class="tab === 'about_page' ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800'" class="px-4 py-2 rounded-md border text-sm font-medium">About Page</button>
             </div>
 
             {{-- Homepage About --}}
@@ -37,6 +45,7 @@
                     @method('PUT')
                     <input type="hidden" name="section" value="homepage_about">
                     <h3 class="text-lg font-semibold">Homepage — About Section</h3>
+                    <p class="text-sm text-gray-500">These fields appear only in the About block on the homepage — not on /about.</p>
 
                     @include('website.about._shared-fields', ['prefix' => 'content', 'data' => $homepage])
 
@@ -86,7 +95,8 @@
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="section" value="about_page">
-                    <h3 class="text-lg font-semibold">About Page</h3>
+                    <h3 class="text-lg font-semibold">About Page (/about)</h3>
+                    <p class="text-sm text-gray-500">These fields appear on the public About Us page.</p>
 
                     @php $hero = is_array($aboutPage['hero'] ?? null) ? $aboutPage['hero'] : []; @endphp
                     <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-4">

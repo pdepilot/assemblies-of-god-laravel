@@ -18,7 +18,7 @@
                 <div>
                     <label class="block text-sm text-gray-600 dark:text-gray-400">Site area</label>
                     <select name="site_area" class="rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900">
-                        @foreach (['all' => 'All', 'ag' => 'Main site', 'sdgt' => 'SDTG', 'sermon' => 'Sermons', 'register' => 'Registration'] as $value => $label)
+                        @foreach (['all' => 'All', 'ag' => 'Main site', 'sermon' => 'Sermons', 'register' => 'Registration'] as $value => $label)
                             <option value="{{ $value }}" @selected($dashboard['filters']['site_area'] === $value)>{{ $label }}</option>
                         @endforeach
                     </select>

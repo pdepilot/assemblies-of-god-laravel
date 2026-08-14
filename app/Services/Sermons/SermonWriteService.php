@@ -41,9 +41,23 @@ final class SermonWriteService
             'status' => $status,
             'youtube_url' => trim((string) ($data['youtube_url'] ?? '')),
             'audio_stream_url' => trim((string) ($data['audio_stream_url'] ?? '')),
+            'seo_title' => trim((string) ($data['seo_title'] ?? '')),
+            'seo_description' => trim((string) ($data['seo_description'] ?? '')),
+            'seo_keywords' => trim((string) ($data['seo_keywords'] ?? '')),
             'updated_by' => $adminId > 0 ? $adminId : null,
             'updated_at' => now(),
         ];
+
+        $tags = $data['tags'] ?? [];
+        if (is_string($tags)) {
+            $tags = preg_split('/[,]+/', $tags) ?: [];
+        }
+        if (is_array($tags)) {
+            $payload['tags'] = json_encode(array_values(array_filter(array_map(
+                static fn ($t) => Str::slug(trim((string) $t)),
+                $tags
+            ))));
+        }
 
         if ($id > 0) {
             $existing = DB::table('sermons')->where('id', $id)->first();

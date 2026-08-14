@@ -1,9 +1,15 @@
-<x-app-layout>
-    @php
-        $isEdit = is_array($role ?? null);
-        $selected = collect(old('permission_ids', $selectedPermissionIds ?? []))->map(fn ($id) => (int) $id)->all();
-    @endphp
+@php
+    $isEdit = is_array($role ?? null);
+    $selected = collect(old('permission_ids', $selectedPermissionIds ?? []))->map(fn ($id) => (int) $id)->all();
+    $backHref = $backRoute ?? route('settings.index', ['tab' => 'roles']);
+    $storeHref = $formStoreRoute ?? route('settings.rbac.roles.store');
+    $updateHref = $formUpdateRoute ?? ($isEdit ? route('settings.rbac.roles.update', $role['id']) : $storeHref);
+    $fixedPlatform = $fixedPlatform ?? \App\Support\RbacPlatform::AG;
+    $platformValue = old('platform', $role['platform'] ?? $fixedPlatform);
+    $layoutComponent = $shellLayout ?? 'app-layout';
+@endphp
 
+<x-dynamic-component :component="$layoutComponent">
     <x-slot name="header">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -14,7 +20,7 @@
                     Choose a dashboard, then tick the permissions this role should grant.
                 </p>
             </div>
-            <a href="{{ route('settings.index', ['tab' => 'roles']) }}" class="px-4 py-2 text-sm rounded-md border">Back to Roles</a>
+            <a href="{{ $backHref }}" class="px-4 py-2 text-sm rounded-md border">Back to Roles</a>
         </div>
     </x-slot>
 
@@ -29,7 +35,7 @@
 
             <form
                 method="POST"
-                action="{{ $isEdit ? route('settings.rbac.roles.update', $role['id']) : route('settings.rbac.roles.store') }}"
+                action="{{ $isEdit ? $updateHref : $storeHref }}"
                 class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6 space-y-6"
                 id="rbacRoleForm"
             >
@@ -65,6 +71,20 @@
                                 </option>
                             @endforeach
                         </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium" for="platform">Platform</label>
+                        @if (($role['slug'] ?? '') === 'super_admin')
+                            <input type="hidden" name="platform" value="both">
+                            <div class="mt-1 rounded-md border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm bg-gray-50 dark:bg-gray-900">
+                                both (required)
+                            </div>
+                        @else
+                            <input type="hidden" name="platform" value="ag">
+                            <div class="mt-1 rounded-md border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm bg-gray-50 dark:bg-gray-900">
+                                AG
+                            </div>
+                        @endif
                     </div>
                     <div class="flex items-end pb-2">
                         <label class="inline-flex items-center gap-2 text-sm">
@@ -141,7 +161,7 @@
                     <button type="submit" class="px-4 py-2 rounded-md bg-indigo-600 text-white text-sm font-semibold">
                         {{ $isEdit ? 'Save role' : 'Create role' }}
                     </button>
-                    <a href="{{ route('settings.index', ['tab' => 'roles']) }}" class="px-4 py-2 rounded-md border text-sm">Cancel</a>
+                    <a href="{{ $backHref }}" class="px-4 py-2 rounded-md border text-sm">Cancel</a>
                 </div>
             </form>
         </div>
@@ -179,4 +199,4 @@
             });
         })();
     </script>
-</x-app-layout>
+</x-dynamic-component>

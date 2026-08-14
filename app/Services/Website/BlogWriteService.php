@@ -53,14 +53,31 @@ final class BlogWriteService
             'title' => $title,
             'excerpt' => trim((string) ($data['excerpt'] ?? '')),
             'body_html' => (string) ($data['body_html'] ?? ''),
-            'author' => trim((string) ($data['author'] ?? 'AG Ikenebgu')),
+            'author' => trim((string) ($data['author'] ?? 'AGC Ikenegbu')),
             'category' => $category,
             'meta_description' => trim((string) ($data['meta_description'] ?? '')),
+            'seo_title' => trim((string) ($data['seo_title'] ?? '')),
             'featured_image' => $currentImage,
+            'featured_image_alt' => trim((string) ($data['featured_image_alt'] ?? '')),
             'is_published' => (bool) ($data['is_published'] ?? false),
             'updated_by' => $adminId > 0 ? $adminId : null,
             'updated_at' => now(),
         ];
+
+        $tags = $data['tags'] ?? [];
+        if (is_string($tags)) {
+            $tags = preg_split('/[,]+/', $tags) ?: [];
+        }
+        if (is_array($tags)) {
+            $payload['tags'] = json_encode(array_values(array_filter(array_map(
+                static fn ($t) => Str::slug(trim((string) $t)),
+                $tags
+            ))));
+        }
+
+        $bodyText = trim(strip_tags((string) ($payload['body_html'] ?? '')));
+        $words = $bodyText === '' ? 0 : count(preg_split('/\s+/u', $bodyText) ?: []);
+        $payload['reading_time_minutes'] = max(1, (int) ceil($words / 200));
 
         if ($id > 0) {
             DB::table('ag_blog_posts')->where('id', $id)->update($payload);
@@ -68,6 +85,7 @@ final class BlogWriteService
             $slug = $this->slugify((string) ($data['slug'] ?? $title));
             DB::table('ag_blog_posts')->insert($payload + [
                 'slug' => $slug,
+                'view_count' => 0,
                 'created_by' => $adminId > 0 ? $adminId : null,
                 'created_at' => now(),
             ]);

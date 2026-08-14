@@ -46,7 +46,6 @@
                             <option value="last_quarter" @selected(old('period') === 'last_quarter')>Last quarter</option>
                             <option value="next_30_days" @selected(old('period') === 'next_30_days')>Next 30 days</option>
                             <option value="all_time" @selected(old('period') === 'all_time')>All time</option>
-                            <option value="sdtg_{{ now()->year }}" @selected(old('period') === 'sdtg_'.now()->year)>SDTG {{ now()->year }}</option>
                         </select>
                     </div>
                     <div>
@@ -60,7 +59,7 @@
                     <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm">Generate report</button>
                 </form>
                 <p class="text-sm text-gray-500 dark:text-gray-400 -mt-2">
-                    Choose any church module report above (members, ministries, giving, communications, SDTG, ERP, and more), then generate CSV, PDF, or Word.
+                    Choose any church module report above (members, ministries, giving, communications, ERP, and more), then generate CSV, PDF, or Word.
                 </p>
             @endif
             <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">

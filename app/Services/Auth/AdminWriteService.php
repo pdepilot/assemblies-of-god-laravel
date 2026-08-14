@@ -270,11 +270,15 @@ final class AdminWriteService
      *
      * @return list<array{id: int, slug: string, name: string, dashboard_type: string, is_system: bool}>
      */
-    public function listAssignableRoles(bool $includeSuperAdmin = false): array
+    public function listAssignableRoles(bool $includeSuperAdmin = false, ?string $platform = null): array
     {
         if (! Schema::hasTable('roles')) {
             return [];
         }
+
+        $platform = $platform !== null
+            ? \App\Support\RbacPlatform::normalize($platform, \App\Support\RbacPlatform::AG)
+            : \App\Support\RbacPlatform::AG;
 
         $query = DB::table('roles')
             ->where('is_active', 1)
@@ -285,13 +289,27 @@ final class AdminWriteService
             $query->where('slug', '!=', 'super_admin');
         }
 
+        if (Schema::hasColumn('roles', 'platform')) {
+            $query->where(function ($inner) use ($platform): void {
+                $inner->where('platform', \App\Support\RbacPlatform::BOTH)
+                    ->orWhere('platform', $platform)
+                    ->orWhereNull('platform');
+            });
+        }
+
+        $columns = ['id', 'slug', 'name', 'dashboard_type', 'is_system'];
+        if (Schema::hasColumn('roles', 'platform')) {
+            $columns[] = 'platform';
+        }
+
         return $query
-            ->get(['id', 'slug', 'name', 'dashboard_type', 'is_system'])
+            ->get($columns)
             ->map(fn ($row) => [
                 'id' => (int) $row->id,
                 'slug' => (string) $row->slug,
                 'name' => (string) $row->name,
                 'dashboard_type' => (string) ($row->dashboard_type ?? ''),
+                'platform' => \App\Support\RbacPlatform::normalize((string) ($row->platform ?? \App\Support\RbacPlatform::BOTH)),
                 'is_system' => ! empty($row->is_system),
             ])
             ->all();
@@ -320,13 +338,23 @@ final class AdminWriteService
     {
         $roleId = (int) ($data['rbac_role_id'] ?? $data['role_id'] ?? 0);
         if ($roleId > 0 && Schema::hasTable('roles')) {
-            $role = DB::table('roles')->where('id', $roleId)->where('is_active', 1)->first(['id', 'slug']);
+            $role = DB::table('roles')->where('id', $roleId)->where('is_active', 1)->first(['id', 'slug', 'platform']);
             if ($role === null) {
                 throw new InvalidArgumentException('Selected role was not found or is inactive.');
             }
             $slug = (string) $role->slug;
             if ($slug === 'super_admin' && ! $allowSuper) {
                 throw new InvalidArgumentException('Super Admin cannot be assigned from this form.');
+            }
+
+            $adminAccess = \App\Support\RbacPlatform::normalize((string) ($data['platform_access'] ?? \App\Support\RbacPlatform::BOTH));
+            $rolePlatform = \App\Support\RbacPlatform::normalize((string) ($role->platform ?? \App\Support\RbacPlatform::BOTH));
+            if (! \App\Support\RbacPlatform::adminCanReceiveRole($adminAccess, $rolePlatform)) {
+                throw new InvalidArgumentException(sprintf(
+                    'Role platform "%s" is incompatible with administrator platform access "%s".',
+                    $rolePlatform,
+                    $adminAccess
+                ));
             }
 
             return [

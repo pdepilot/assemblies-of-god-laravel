@@ -30,7 +30,7 @@ class AdminFactory extends Factory
             'role_id' => null,
             'is_active' => true,
             'account_status' => 'active',
-            'platform_access' => Admin::PLATFORM_BOTH,
+            'platform_access' => Admin::PLATFORM_AG,
             'force_password_change' => false,
             'locked_at' => null,
             'recovery_email' => fake()->safeEmail(),
@@ -49,11 +49,6 @@ class AdminFactory extends Factory
     public function agOnly(): static
     {
         return $this->state(fn (): array => ['platform_access' => Admin::PLATFORM_AG]);
-    }
-
-    public function sdtgOnly(): static
-    {
-        return $this->state(fn (): array => ['platform_access' => Admin::PLATFORM_SDTG]);
     }
 
     public function bothPlatforms(): static

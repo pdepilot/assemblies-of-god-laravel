@@ -34,6 +34,8 @@ final class ChurchContentWriteService
             throw new InvalidArgumentException('Unknown content section.');
         }
 
+        // Never trust client-submitted image paths/URLs — keep stored paths and replace only via upload.
+        $value = $this->preserveExistingImages($value, $this->read->getSection($sectionKey));
         $value = $this->applyUploads($value, $uploads);
         $value = $this->sanitizeSection($sectionKey, $value);
         $json = json_encode($value, JSON_UNESCAPED_UNICODE);
@@ -70,6 +72,39 @@ final class ChurchContentWriteService
         $defaults = $this->read->defaults()[$sectionKey] ?? [];
 
         return $this->saveSection($sectionKey, $defaults, $adminId);
+    }
+
+    /**
+     * @param  array<string, mixed>  $value
+     * @param  array<string, mixed>  $existing
+     * @return array<string, mixed>
+     */
+    private function preserveExistingImages(array $value, array $existing): array
+    {
+        $existingGallery = is_array($existing['gallery'] ?? null) ? $existing['gallery'] : [];
+        $requestGallery = is_array($value['gallery'] ?? null) ? $value['gallery'] : [];
+        $gallery = [];
+        for ($i = 0; $i < 3; $i++) {
+            $requestItem = is_array($requestGallery[$i] ?? null) ? $requestGallery[$i] : [];
+            $existingItem = is_array($existingGallery[$i] ?? null) ? $existingGallery[$i] : [];
+            $gallery[$i] = [
+                'image' => trim((string) ($existingItem['image'] ?? '')),
+                'alt' => trim((string) ($requestItem['alt'] ?? $existingItem['alt'] ?? '')),
+            ];
+        }
+        $value['gallery'] = $gallery;
+
+        $existingHighlight = is_array($existing['highlight'] ?? null) ? $existing['highlight'] : [];
+        $requestHighlight = is_array($value['highlight'] ?? null) ? $value['highlight'] : [];
+        $value['highlight'] = [
+            'image' => trim((string) ($existingHighlight['image'] ?? '')),
+            'image_alt' => trim((string) ($requestHighlight['image_alt'] ?? $existingHighlight['image_alt'] ?? '')),
+            'quote' => (string) ($requestHighlight['quote'] ?? $existingHighlight['quote'] ?? ''),
+            'stat_value' => (string) ($requestHighlight['stat_value'] ?? $existingHighlight['stat_value'] ?? ''),
+            'stat_label' => (string) ($requestHighlight['stat_label'] ?? $existingHighlight['stat_label'] ?? ''),
+        ];
+
+        return $value;
     }
 
     /**
@@ -172,7 +207,7 @@ final class ChurchContentWriteService
             if (! is_array($item)) {
                 continue;
             }
-            $image = trim((string) ($item['image'] ?? ''));
+            $image = $this->normalizeStoredImagePath((string) ($item['image'] ?? ''));
             if ($image === '') {
                 continue;
             }
@@ -191,12 +226,22 @@ final class ChurchContentWriteService
         $raw = is_array($raw) ? $raw : [];
 
         return [
-            'image' => trim((string) ($raw['image'] ?? '')),
+            'image' => $this->normalizeStoredImagePath((string) ($raw['image'] ?? '')),
             'image_alt' => trim((string) ($raw['image_alt'] ?? '')),
             'quote' => trim((string) ($raw['quote'] ?? '')),
             'stat_value' => trim((string) ($raw['stat_value'] ?? '')),
             'stat_label' => trim((string) ($raw['stat_label'] ?? '')),
         ];
+    }
+
+    private function normalizeStoredImagePath(string $path): string
+    {
+        $path = trim(str_replace('\\', '/', $path));
+        if ($path === '' || str_contains($path, '://') || str_starts_with($path, '//') || str_contains($path, '..')) {
+            return '';
+        }
+
+        return ltrim($path, '/');
     }
 
     /** @return list<string> */

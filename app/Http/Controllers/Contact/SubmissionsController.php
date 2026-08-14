@@ -97,6 +97,24 @@ final class SubmissionsController
         return back()->with('status', 'Reply emailed to the sender.');
     }
 
+    public function destroy(ContactSubmission $submission): RedirectResponse
+    {
+        $admin = $this->admin();
+        $this->policy->requireManageHub($admin);
+
+        try {
+            $this->write->delete((int) $submission->id);
+        } catch (InvalidArgumentException $e) {
+            return redirect()
+                ->route('contact.submissions.index')
+                ->withErrors(['status' => $e->getMessage()]);
+        }
+
+        return redirect()
+            ->route('contact.submissions.index')
+            ->with('status', 'Message deleted.');
+    }
+
     private function admin(): Admin
     {
         /** @var Admin $admin */

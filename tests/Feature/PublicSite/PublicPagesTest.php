@@ -18,12 +18,6 @@ test('public about route is registered and responds', function () {
     $response->assertSee('AG', false);
 });
 
-test('public sdgt route is registered and responds', function () {
-    $response = $this->get('/sdgt');
-
-    $response->assertOk();
-});
-
 test('asset resolver falls back to media base when local file is missing', function () {
     $resolver = app(\App\Services\PublicSite\PublicAssetResolver::class);
     $url = $resolver->url('images/definitely-missing-file-xyz.jpg');

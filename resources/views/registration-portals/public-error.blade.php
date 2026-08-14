@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title }} | {{ config('identity.public.short_name', 'AG Ikenebgu') }}</title>
+    <title>{{ $title }} | {{ config('identity.public.short_name', 'AGC Ikenegbu') }}</title>
     <link rel="stylesheet" href="{{ asset('site/css/registration-portal.css') }}">
 </head>
 <body class="rp-public">

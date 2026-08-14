@@ -15,8 +15,6 @@ final class DashboardReadService
             'visitors' => $this->count('visitors'),
             'events' => $this->countWhere('events', 'status', 'published'),
             'donations_month' => $this->donationsThisMonth(),
-            'sdtg_registrations' => $this->count('sdtg_registrations'),
-            'sdtg_speakers' => $this->count('sdtg_speakers'),
             'ss_students' => $this->count('sunday_school_students'),
             'site_sessions_today' => $this->sessionsToday(),
         ];

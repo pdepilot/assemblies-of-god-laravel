@@ -156,22 +156,6 @@ test('ai assistant page resolves active nav id', function () {
     expect($service->resolveActivePage('admin/communication-hub/ai-assistant'))->toBe('ch-ai');
 });
 
-test('sidebar sdtg gallery points to laravel', function () {
-    $nav = app(PortalNavService::class)->cmsConfig()['nav'];
-    $sdtg = collect($nav)->firstWhere('id', 'sdtg');
-    $gallery = collect($sdtg['children'] ?? [])->firstWhere('id', 'gallery');
-
-    expect($gallery)->not->toBeNull();
-    expect($gallery['href'])->toBe(route('sdtg.gallery.index'));
-    expect($gallery['href'])->not->toContain('/portal/sdtg/gallery');
-});
-
-test('gallery page resolves active nav id', function () {
-    $service = app(PortalNavService::class);
-
-    expect($service->resolveActivePage('admin/sdtg/gallery'))->toBe('gallery');
-});
-
 test('sidebar financial erp opens separate erp login launch', function () {
     $nav = app(PortalNavService::class)->cmsConfig()['nav'];
     $erp = collect($nav)->firstWhere('id', 'financial-erp');

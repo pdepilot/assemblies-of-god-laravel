@@ -126,7 +126,7 @@
                 if (success) {
                     success.hidden = false;
                     if ($('joinSuccessMsg')) {
-                        $('joinSuccessMsg').textContent = d.message || 'Welcome to the AG Ikenebgu family.';
+                        $('joinSuccessMsg').textContent = d.message || 'Welcome to the AGC Ikenegbu family.';
                     }
                     if ($('joinSuccessCode')) {
                         $('joinSuccessCode').textContent = (d.member && d.member.member_code) || '—';

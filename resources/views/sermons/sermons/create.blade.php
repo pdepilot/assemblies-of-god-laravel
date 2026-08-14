@@ -8,6 +8,10 @@
             <div><label class="block text-sm font-medium">Minister</label><input name="minister_name" value="{{ old('minister_name') }}" class="mt-1 w-full rounded border-gray-300"></div>
             <div><label class="block text-sm font-medium">Type</label><select name="sermon_type" class="mt-1 w-full rounded border-gray-300">@foreach($types as $t)<option value="{{ $t }}">{{ $t }}</option>@endforeach</select></div>
             <div><label class="block text-sm font-medium">Status</label><select name="status" class="mt-1 w-full rounded border-gray-300">@foreach($statuses as $s)<option value="{{ $s }}">{{ $s }}</option>@endforeach</select></div>
+            <div><label class="block text-sm font-medium">SEO Title</label><input name="seo_title" value="{{ old('seo_title') }}" class="mt-1 w-full rounded border-gray-300" maxlength="255"></div>
+            <div><label class="block text-sm font-medium">SEO Description</label><textarea name="seo_description" rows="2" class="mt-1 w-full rounded border-gray-300" maxlength="500">{{ old('seo_description') }}</textarea></div>
+            <div><label class="block text-sm font-medium">Tags (comma-separated)</label><input name="tags" value="{{ old('tags') }}" class="mt-1 w-full rounded border-gray-300" placeholder="faith, prayer, holy-spirit"></div>
+            <div><label class="block text-sm font-medium">YouTube URL</label><input name="youtube_url" value="{{ old('youtube_url') }}" class="mt-1 w-full rounded border-gray-300"></div>
             <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-semibold">Save Sermon</button>
         </form>
     </div></div>

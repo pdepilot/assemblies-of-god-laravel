@@ -5,10 +5,14 @@
     'use strict';
 
     function patchMedia() {
-        var base = window.CMS_MEDIA_BASE || '';
-        if (!base) return;
+        var brand = (window.CMS_CONFIG && window.CMS_CONFIG.brand) || {};
+        var src = brand.logo_video_url || '';
+        if (!src && brand.logo_video_path && window.CMS_MEDIA_BASE) {
+            src = String(window.CMS_MEDIA_BASE).replace(/\/?$/, '/') + String(brand.logo_video_path).replace(/^\//, '');
+        }
+        if (!src) return;
         document.querySelectorAll('.cms-sidebar__logo video').forEach(function (video) {
-            video.src = base.replace(/\/?$/, '/') + 'videos/3D_video.mp4';
+            video.src = src;
             video.muted = true;
             video.play().catch(function () {});
         });
@@ -61,7 +65,11 @@
                 });
             }
             if (text.indexOf('Settings') !== -1) {
-                link.href = window.CMS_SETTINGS_URL || (String(window.CMS_ADMIN_BASE || '').replace(/\/?$/, '/') + 'settings');
+                if (window.CMS_SETTINGS_URL) {
+                    link.href = window.CMS_SETTINGS_URL;
+                } else {
+                    link.remove();
+                }
             }
         });
     }

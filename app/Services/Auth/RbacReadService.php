@@ -3,12 +3,13 @@
 namespace App\Services\Auth;
 
 use App\Models\Admin;
+use App\Support\RbacPlatform;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 final class RbacReadService
 {
-    /** @var array<int, list<string>> */
+    /** @var array<string, list<string>> */
     private array $permissionCache = [];
 
     public function isSuperAdmin(Admin $admin): bool
@@ -33,13 +34,13 @@ final class RbacReadService
             && ! $this->isSuperAdmin($admin);
     }
 
-    public function can(Admin $admin, string $permission): bool
+    public function can(Admin $admin, string $permission, ?string $platform = null): bool
     {
         if ($this->isSuperAdmin($admin) || $this->hasLegacyFullAccess($admin)) {
             return true;
         }
 
-        $permissions = $this->permissionKeys($admin);
+        $permissions = $this->permissionKeys($admin, $platform);
 
         if (in_array('*', $permissions, true) || in_array($permission, $permissions, true)) {
             return true;
@@ -58,22 +59,23 @@ final class RbacReadService
     /**
      * @return list<string>
      */
-    public function permissionKeys(Admin $admin): array
+    public function permissionKeys(Admin $admin, ?string $platform = null): array
     {
-        $adminId = (int) $admin->id;
+        $platform = RbacPlatform::normalize($platform ?? RbacPlatform::current(), RbacPlatform::AG);
+        $cacheKey = (int) $admin->id.'|'.$platform;
 
-        if (isset($this->permissionCache[$adminId])) {
-            return $this->permissionCache[$adminId];
+        if (isset($this->permissionCache[$cacheKey])) {
+            return $this->permissionCache[$cacheKey];
         }
 
         $keys = [];
 
         if (Schema::hasTable('admin_role_assignments') && Schema::hasTable('role_permissions')) {
-            $keys = array_merge($keys, $this->normalizedRolePermissions($adminId));
+            $keys = array_merge($keys, $this->normalizedRolePermissions((int) $admin->id, $platform));
         }
 
         if (Schema::hasTable('admin_permissions')) {
-            $keys = array_merge($keys, $this->directAdminPermissions($adminId));
+            $keys = array_merge($keys, $this->directAdminPermissions((int) $admin->id));
         }
 
         if ($keys === [] && Schema::hasTable('admin_roles') && (int) ($admin->role_id ?? 0) > 0) {
@@ -84,9 +86,9 @@ final class RbacReadService
             $keys = ['*'];
         }
 
-        $this->permissionCache[$adminId] = array_values(array_unique($keys));
+        $this->permissionCache[$cacheKey] = array_values(array_unique($keys));
 
-        return $this->permissionCache[$adminId];
+        return $this->permissionCache[$cacheKey];
     }
 
     public function isRbacEnforcementEnabled(): bool
@@ -108,16 +110,22 @@ final class RbacReadService
         return is_array($settings) && ! empty($settings['enforcement_enabled']);
     }
 
-    private function resolvedRoleSlug(Admin $admin): string
+    private function resolvedRoleSlug(Admin $admin, ?string $platform = null): string
     {
         if (! Schema::hasTable('admin_role_assignments') || ! Schema::hasTable('roles')) {
             return (string) $admin->role;
         }
 
-        $slug = DB::table('admin_role_assignments as ara')
+        $platform = RbacPlatform::normalize($platform ?? RbacPlatform::current(), RbacPlatform::AG);
+
+        $query = DB::table('admin_role_assignments as ara')
             ->join('roles as r', 'r.id', '=', 'ara.role_id')
             ->where('ara.admin_id', $admin->id)
-            ->where('r.is_active', true)
+            ->where('r.is_active', true);
+
+        $this->applyRolePlatformFilter($query, $platform, 'r');
+
+        $slug = $query
             ->orderByRaw("CASE WHEN r.slug = 'super_admin' THEN 0 ELSE 1 END")
             ->orderBy('r.id')
             ->value('r.slug');
@@ -128,17 +136,39 @@ final class RbacReadService
     /**
      * @return list<string>
      */
-    private function normalizedRolePermissions(int $adminId): array
+    private function normalizedRolePermissions(int $adminId, string $platform): array
     {
-        return DB::table('admin_role_assignments as ara')
+        $query = DB::table('admin_role_assignments as ara')
+            ->join('roles as r', 'r.id', '=', 'ara.role_id')
             ->join('role_permissions as rp', 'rp.role_id', '=', 'ara.role_id')
             ->join('permissions as p', 'p.id', '=', 'rp.permission_id')
             ->where('ara.admin_id', $adminId)
+            ->where('r.is_active', true);
+
+        $this->applyRolePlatformFilter($query, $platform, 'r');
+
+        return $query
             ->pluck('p.permission_key')
             ->map(static fn ($key) => (string) $key)
             ->unique()
             ->values()
             ->all();
+    }
+
+    /**
+     * @param  \Illuminate\Database\Query\Builder  $query
+     */
+    private function applyRolePlatformFilter($query, string $platform, string $alias = 'r'): void
+    {
+        if (! Schema::hasColumn('roles', 'platform')) {
+            return;
+        }
+
+        $query->where(function ($inner) use ($platform, $alias): void {
+            $inner->where($alias.'.platform', RbacPlatform::BOTH)
+                ->orWhere($alias.'.platform', $platform)
+                ->orWhereNull($alias.'.platform');
+        });
     }
 
     /**

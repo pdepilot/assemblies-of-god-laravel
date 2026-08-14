@@ -28,7 +28,7 @@ final class VisitorReadService
         'Social Media',
         'Street Evangelism',
         'Website',
-        'SDTG Conference',
+        'Conference / Outreach',
         'Other',
     ];
 

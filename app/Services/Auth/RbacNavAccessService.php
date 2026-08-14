@@ -16,7 +16,6 @@ final class RbacNavAccessService
     private const DASHBOARD_TYPE_PRIORITY = [
         'super_admin',
         'church_admin',
-        'sdtg',
         'finance',
         'sunday_school',
         'youth',
@@ -45,6 +44,7 @@ final class RbacNavAccessService
             'dashboard' => 'dashboard',
             'members' => 'members',
             'ministry-settings' => 'ministry_settings',
+            'ministry-age-transfers' => 'ministry_settings',
             'children' => 'children',
             'sunday-school' => 'sunday_school',
             'teens' => 'teens',
@@ -87,19 +87,6 @@ final class RbacNavAccessService
             'ch-analytics' => 'communication_hub',
             'ch-notifications' => 'communication_hub',
             'ch-ai' => 'communication_hub',
-            'speakers' => 'sdtg',
-            'registrations' => 'sdtg',
-            'gallery' => 'sdtg',
-            'announcements' => 'sdtg',
-            'sdtg-content' => 'sdtg',
-            'sdtg-sponsors' => 'sdtg',
-            'livestream' => 'sdtg',
-            'volunteers' => 'sdtg',
-            'testimonies' => 'sdtg',
-            'prayer-requests' => 'sdtg',
-            'memory-submissions' => 'sdtg',
-            'sdtg-donations' => 'sdtg',
-            'sdtg-media-library' => 'sdtg',
             'rp-create' => 'registration_portals',
             'rp-portals' => 'registration_portals',
             'pages' => 'website_pages',
@@ -138,7 +125,6 @@ final class RbacNavAccessService
             'ushering' => 'ushers',
             'sunday_school' => 'sunday-school',
             'finance' => 'donations',
-            'sdtg' => 'speakers',
             'media' => 'media',
             'events' => 'events',
             'communications' => 'ch-dashboard',
@@ -176,7 +162,18 @@ final class RbacNavAccessService
             ->join('roles as r', 'r.id', '=', 'ara.role_id')
             ->where('ara.admin_id', $admin->id)
             ->where('r.is_active', true)
-            ->whereNotNull('r.dashboard_type')
+            ->whereNotNull('r.dashboard_type');
+
+        if (Schema::hasColumn('roles', 'platform')) {
+            $platform = \App\Support\RbacPlatform::current();
+            $types->where(function ($inner) use ($platform): void {
+                $inner->where('r.platform', \App\Support\RbacPlatform::BOTH)
+                    ->orWhere('r.platform', $platform)
+                    ->orWhereNull('r.platform');
+            });
+        }
+
+        $types = $types
             ->pluck('r.dashboard_type')
             ->map(static fn ($type) => trim((string) $type))
             ->filter()
@@ -225,8 +222,9 @@ final class RbacNavAccessService
             'members' => $this->namedRoute('members.index'),
             'visitors' => $this->namedRoute('visitors.index'),
             'ch-dashboard', 'messages' => $this->namedRoute('communication-hub.dashboard'),
-            'speakers' => $this->namedRoute('sdtg.speakers.index'),
             'children' => $this->namedRoute('ministries.module.index', ['ministryKey' => 'children']),
+            'ministry-settings' => $this->namedRoute('ministries.settings.index'),
+            'ministry-age-transfers' => $this->namedRoute('ministries.age-transfers.index'),
             'teens' => $this->namedRoute('ministries.module.index', ['ministryKey' => 'teens']),
             'youths' => $this->namedRoute('ministries.module.index', ['ministryKey' => 'youths']),
             'men' => $this->namedRoute('ministries.module.index', ['ministryKey' => 'men']),
@@ -250,13 +248,19 @@ final class RbacNavAccessService
      *   items: array<string, bool>|object
      * }
      */
-    public function getNavAccess(Admin $admin): array
+    public function getNavAccess(Admin $admin, ?string $platform = null): array
     {
+        $platform = \App\Support\RbacPlatform::normalize(
+            $platform ?? \App\Support\RbacPlatform::current(),
+            \App\Support\RbacPlatform::AG
+        );
+
         if (! $this->isEnforcementEnabled()) {
             return [
                 'rbac_enabled' => false,
                 'fail_open' => true,
                 'super_admin_bypass' => false,
+                'platform' => $platform,
                 'items' => (object) [],
             ];
         }
@@ -266,21 +270,29 @@ final class RbacNavAccessService
                 'rbac_enabled' => true,
                 'fail_open' => false,
                 'super_admin_bypass' => true,
+                'platform' => $platform,
                 'items' => (object) [],
             ];
         }
 
+        $allowedIds = $this->navIdsForPlatform($platform);
         $items = [];
         foreach ($this->navModuleMap() as $navId => $module) {
+            if ($allowedIds !== [] && ! in_array($navId, $allowedIds, true)) {
+                $items[$navId] = false;
+                continue;
+            }
             $items[$navId] = $this->canViewModule($admin, $module);
         }
 
-        $items['dashboard'] = $this->canShowNavItem($admin, 'dashboard');
+        $items['dashboard'] = in_array('dashboard', $allowedIds, true)
+            && $this->canShowNavItem($admin, 'dashboard');
 
         return [
             'rbac_enabled' => true,
             'fail_open' => false,
             'super_admin_bypass' => false,
+            'platform' => $platform,
             'items' => $items,
         ];
     }
@@ -288,9 +300,17 @@ final class RbacNavAccessService
     /**
      * @return array<string, mixed>
      */
-    public function getDashboardAccess(Admin $admin, string $homeRoute): array
-    {
-        $nav = $this->getNavAccess($admin);
+    public function getDashboardAccess(
+        Admin $admin,
+        string $homeRoute,
+        ?string $brandSubtitle = null,
+        ?string $platform = null,
+    ): array {
+        $platform = \App\Support\RbacPlatform::normalize(
+            $platform ?? \App\Support\RbacPlatform::current(),
+            \App\Support\RbacPlatform::AG
+        );
+        $nav = $this->getNavAccess($admin, $platform);
 
         return [
             'rbac_enabled' => $nav['rbac_enabled'],
@@ -303,10 +323,22 @@ final class RbacNavAccessService
             'presentation' => [
                 'title' => 'Dashboard',
                 'subtitle' => 'Live overview from Members, Visitors, and platform activity.',
-                'brand_subtitle' => 'Church Management System',
+                'brand_subtitle' => $brandSubtitle ?? 'Church Management System',
                 'home_route' => $homeRoute,
             ],
         ];
+    }
+
+    /**
+     * Nav item ids that belong to the active product shell (context-strict).
+     *
+     * @return list<string>
+     */
+    public function navIdsForPlatform(string $platform): array
+    {
+        $map = $this->navModuleMap();
+
+        return array_values(array_unique(array_merge(['dashboard'], array_keys($map))));
     }
 
     public function canShowNavItem(Admin $admin, string $navId): bool

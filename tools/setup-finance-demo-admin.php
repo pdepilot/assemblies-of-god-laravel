@@ -138,7 +138,7 @@ echo "RBAC enforcement: ".($access->isEnforcementEnabled() ? 'ON' : 'OFF')."\n";
 echo "\n=== Sidebar this user will see ===\n";
 echo implode("\n", $ids)."\n";
 echo "\n=== Module checks ===\n";
-foreach (['dashboard', 'donations', 'members', 'settings', 'communication_hub', 'sdtg'] as $module) {
+foreach (['dashboard', 'donations', 'members', 'settings', 'communication_hub'] as $module) {
     echo str_pad($module, 22).($access->canViewModule($admin, $module) ? 'ALLOW' : 'deny')."\n";
 }
 echo "\nLogin: ".url('/admin/login')."\n";
