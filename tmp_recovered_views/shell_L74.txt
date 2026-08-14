@@ -1,0 +1,1 @@
+cd C:\Laravel-Projects\assemblies-of-god-laravel; php artisan test --filter="Sermons|Sdtg|Website"

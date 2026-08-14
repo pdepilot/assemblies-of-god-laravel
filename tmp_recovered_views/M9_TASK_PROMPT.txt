@@ -1,0 +1,82 @@
+You are implementing M9 (Media, SDTG, Website) for Laravel project at C:\Laravel-Projects\assemblies-of-god-laravel following M7/M8 patterns exactly.
+
+Create ALL files below. Use separate PSR-4 class files (never multiple classes per file). Use `final` services. Policies throw AuthorizationException via require* methods.
+
+## 1. Migration: database/migrations/2026_07_20_210000_create_media_sdtg_website_tables.php
+Idempotent Schema::hasTable guards. String columns not ENUM for SQLite. No FK constraints. Include:
+
+**Sermons:** sermon_categories, sermon_series, live_streams (with broadcast columns: broadcast_type, stream_url, audio_stream_url, video_stream_url, is_active, listener_count, peak_listeners, total_listeners, peak_viewers, total_viewers; status default 'scheduled'), sermons (all main columns from legacy), sermon_media_library, broadcast_platforms
+
+**SDTG:** sdtg_registrations (full columns with event_id, volunteer fields), sdtg_speakers, sdtg_crusade_editions (with event_start_at, event_end_at, venue, is_next_crusade), sdtg_site_content, sdtg_sponsors, sdtg_announcements, sdtg_gallery_albums, sdtg_gallery_items, sdtg_media_folders, sdtg_media_assets, sdtg_testimonials, sdtg_prayer_requests, sdtg_memory_submissions, sdtg_livestream_stats
+
+**Website:** ag_site_content, ag_blog_posts, site_team_members
+
+Seed sermon_categories: Sermons, Bible Study, Special Programs. Seed one sdtg_crusade_edition for 2026.
+
+## 2. Models (app/Models/)
+Sermon.php, LiveStream.php, SermonCategory.php, SdtgSpeaker.php, AgBlogPost.php, SiteTeamMember.php - guarded=[], correct $table
+
+## 3. Policies
+SermonPolicy - VIEW: super_admin, admin, church_administrator, media_administrator; MANAGE: same minus content_editor
+SdtgPolicy - VIEW/MANAGE: super_admin, admin, church_administrator, sdtg_administrator, event_administrator
+WebsitePolicy - VIEW: super_admin, admin, church_administrator, content_editor; MANAGE: super_admin, admin, church_administrator, content_editor
+
+## 4. Services
+
+### app/Services/Sermons/
+SermonDashboardReadService - stats counts
+SermonReadService - listSermons, getSermon, listCategories, listSeries
+SermonWriteService - save, publish, archive, generate sermon_code and slug
+BroadcastReadService - listStreams, getStream
+BroadcastWriteService - save, startStream (status=live), stopStream (status=ended)
+
+### app/Services/Sdtg/
+SdtgDashboardReadService - registration/volunteer/speaker counts
+SdtgRegistrationReadService - list, get, getStats
+SdtgRegistrationWriteService - update status/notes
+SdtgVolunteerWriteService - approve, decline
+SdtgSpeakerReadService - list, get
+SdtgSpeakerWriteService - save
+SdtgAnnouncementReadService - list
+SdtgAnnouncementWriteService - save
+SdtgContentReadService - getSection, listSections
+SdtgContentWriteService - saveSection (JSON encode)
+SdtgCommunityReadService - listTestimonials, listPrayerRequests, listMemorySubmissions
+SdtgCommunityWriteService - updateTestimonialStatus, updatePrayerStatus
+
+### app/Services/Website/
+BlogReadService - listPosts, getPost, getStats, categoryLabels static
+BlogWriteService - save, setPublished
+ChurchContentReadService - getSection
+ChurchContentWriteService - saveSection
+TeamSectionReadService - listMembers
+TeamSectionWriteService - saveMember
+WebsitePagesReadService - getBootstrap, saveAgHero (JSON file at storage_path('app/website/website-pages.json'))
+WebsitePagesWriteService - saveAgHero, savePageOverride
+SeoReadService - listPages (JSON at storage_path('app/website/seo-pages-ag.json'))
+SeoWriteService - savePage
+WebsiteMediaIndexReadService - aggregate counts from sermon_media_library + sdtg_media_assets
+
+## 5. Controllers (thin, like CommunicationHub\DashboardController)
+Sermons: DashboardController, SermonsController, BroadcastsController
+Sdtg: DashboardController, RegistrationsController, SpeakersController, AnnouncementsController, ContentController, CommunityController
+Website: DashboardController, BlogController, AboutContentController, TeamController, PagesController, SeoController, MediaLibraryController
+
+## 6. Form Requests (minimal validation)
+SaveSermonRequest, SaveBroadcastRequest, SaveSdtgSpeakerRequest, SaveBlogPostRequest, SaveAgHeroRequest
+
+## 7. Views - compact blade in resources/views/sermons/, sdtg/, website/ - dashboard + index + create/edit/show for main entities. Include _nav partials per module.
+
+## 8. Routes in routes/web.php BEFORE closing auth group - add all sermon.*, sdtg.*, website.* routes
+
+## 9. tests/Feature/Sermons/SermonsTest.php - 3 tests
+## 10. tests/Feature/Sdtg/SdtgTest.php - 3 tests  
+## 11. tests/Feature/Website/WebsiteTest.php - 3 tests
+
+## 12. Update resources/views/dashboard.blade.php with links to sermons.dashboard, sdtg.dashboard, website.dashboard
+
+## 13. Update MIGRATION_PLAN.md M9 to Done
+
+After creating files, run: cd C:\Laravel-Projects\assemblies-of-god-laravel; php artisan test
+
+Fix any failures. Return summary of what was created and test count.
