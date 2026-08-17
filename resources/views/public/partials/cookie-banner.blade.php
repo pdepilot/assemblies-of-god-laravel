@@ -25,7 +25,7 @@
         <div class="ag-cookie-banner__content">
             <p class="ag-cookie-banner__eyebrow">A Warm Welcome</p>
             <h2 id="agCookieTitle" class="ag-cookie-banner__title">Your Privacy, Our Covenant</h2>
-            <p id="agCookieDesc" class="ag-cookie-banner__text">{{ config('identity.public.short_name', 'AGC Ikenegbu') }} uses cookies to remember your visit, improve our website, and serve you with grace and transparency - just as we welcome you into our church family.</p>
+            <p id="agCookieDesc" class="ag-cookie-banner__text">{{ config('identity.public.short_name', 'AGC Ikenegbu') }} uses essential cookies so the site works. With your permission we also use analytics and Google AdSense advertising cookies. Read our <a href="{{ route('public.privacy') }}">Privacy Policy</a> and <a href="{{ route('public.cookie-policy') }}">Cookie Policy</a>.</p>
             <div class="ag-cookie-banner__actions">
                 <button type="button" class="ag-cookie-banner__btn ag-cookie-banner__btn--accept" data-action="accept-all">
                     <i class="fas fa-check-circle" aria-hidden="true"></i> Accept All
@@ -83,8 +83,8 @@
             </div>
             <div class="ag-cookie-pref">
                 <div class="ag-cookie-pref__info">
-                    <h4>Personalization</h4>
-                    <p>Remembers your settings and may show relevant ads via Google AdSense.</p>
+                    <h4>Advertising</h4>
+                    <p>Google AdSense and partners may use cookies to serve ads based on visits to this site and other sites. You can opt out in Google Ads Settings. Analytics cookies never load ads by themselves.</p>
                 </div>
                 <label class="ag-cookie-toggle">
                     <input type="checkbox" data-ag-cookie-pref="personalization" id="agCookiePersonalization">

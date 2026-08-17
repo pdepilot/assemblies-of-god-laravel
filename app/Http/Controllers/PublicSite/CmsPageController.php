@@ -56,6 +56,15 @@ final class CmsPageController extends Controller
             $seo['og_image'] = (string) $page['hero_image'];
         }
 
+        $noAdsPages = [
+            'privacy',
+            'terms',
+            'cookie-policy',
+            'disclaimer',
+            'accessibility',
+            'editorial-policy',
+        ];
+
         $viewData = [
             'church' => $payload['church'],
             'page' => $page,
@@ -66,6 +75,7 @@ final class CmsPageController extends Controller
             'seo' => $seo,
             'schemaGraphs' => $this->schemaGraphsForPage($pageKey, $page, $canonical),
             'testimonySourcePage' => $pageKey,
+            'allowAds' => ! in_array($pageKey, $noAdsPages, true),
         ];
 
         if ($type === 'header') {

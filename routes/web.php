@@ -7,6 +7,8 @@ Route::get('/', [\App\Http\Controllers\PublicSite\HomeController::class, 'index'
 
 Route::get('/robots.txt', [\App\Http\Controllers\PublicSite\SeoDiscoveryController::class, 'robots'])
     ->name('public.robots');
+Route::get('/ads.txt', [\App\Http\Controllers\PublicSite\SeoDiscoveryController::class, 'adsTxt'])
+    ->name('public.ads-txt');
 Route::get('/sitemap.xml', [\App\Http\Controllers\PublicSite\SeoDiscoveryController::class, 'sitemapIndex'])
     ->name('public.sitemap.xml');
 Route::get('/sitemap-pages.xml', [\App\Http\Controllers\PublicSite\SeoDiscoveryController::class, 'sitemapPages'])

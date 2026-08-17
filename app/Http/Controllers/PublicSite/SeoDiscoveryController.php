@@ -23,9 +23,7 @@ final class SeoDiscoveryController extends Controller
 
     public function robots(): Response
     {
-        $lines = [
-            'User-agent: *',
-            'Allow: /',
+        $privateDisallows = [
             'Disallow: /admin',
             'Disallow: /admin/',
             'Disallow: /erp',
@@ -33,9 +31,45 @@ final class SeoDiscoveryController extends Controller
             'Disallow: /member-portal',
             'Disallow: /member-portal/',
             'Disallow: /api/',
-            '',
-            'Sitemap: '.url('/sitemap.xml'),
         ];
+
+        $lines = array_merge(
+            [
+                'User-agent: Mediapartners-Google',
+                'Allow: /',
+            ],
+            $privateDisallows,
+            [
+                '',
+                'User-agent: Google-Display-Ads-Bot',
+                'Allow: /',
+            ],
+            $privateDisallows,
+            [
+                '',
+                'User-agent: *',
+                'Allow: /',
+            ],
+            $privateDisallows,
+            [
+                '',
+                'Sitemap: '.url('/sitemap.xml'),
+            ],
+        );
+
+        return response(implode("\n", $lines)."\n", 200, [
+            'Content-Type' => 'text/plain; charset=UTF-8',
+        ]);
+    }
+
+    public function adsTxt(): Response
+    {
+        $client = trim((string) config('identity.public.adsense_client_id', ''));
+        $publisher = str_starts_with($client, 'ca-') ? substr($client, 3) : $client;
+        $lines = ['# Authorized Digital Sellers'];
+        if ($publisher !== '' && str_starts_with($publisher, 'pub-')) {
+            $lines[] = 'google.com, '.$publisher.', DIRECT, f08c47fec0942fa0';
+        }
 
         return response(implode("\n", $lines)."\n", 200, [
             'Content-Type' => 'text/plain; charset=UTF-8',
@@ -152,6 +186,7 @@ final class SeoDiscoveryController extends Controller
                 ])],
             ),
             'testimonySourcePage' => 'sitemap',
+            'allowAds' => false,
         ]);
     }
 

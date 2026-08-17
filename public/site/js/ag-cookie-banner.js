@@ -1,5 +1,5 @@
 /**
- * AGC Ikenegbu — Covenant Cookie Banner (index homepage)
+ * AGC Ikenegbu — Covenant Cookie Banner
  */
 (function () {
     'use strict';
@@ -117,17 +117,75 @@
         });
     }
 
-    function init() {
-        if (getStored()) return;
+    function bindModal(modal, banner) {
+        if (!modal) return;
 
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal || e.target.closest('[data-action="close-modal"]')) {
+                closeModal(modal);
+            }
+        });
+
+        modal.querySelector('[data-action="save-prefs"]')?.addEventListener('click', function () {
+            savePrefs(readModalPrefs(modal));
+            closeModal(modal);
+            if (banner) {
+                dismissBanner(banner);
+            }
+        });
+
+        modal.querySelector('[data-action="accept-all-modal"]')?.addEventListener('click', function () {
+            savePrefs({ essential: true, analytics: true, performance: true, personalization: true });
+            closeModal(modal);
+            if (banner) {
+                dismissBanner(banner);
+            }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+                closeModal(modal);
+            }
+        });
+    }
+
+    function init() {
         var breakEl = document.getElementById('agCookieBreak');
         var banner = document.getElementById('agCookieBanner');
         var modal = document.getElementById('agCookieModal');
 
-        if (!breakEl || !banner) return;
+        if (!banner && !modal) return;
+
+        bindModal(modal, banner);
+
+        document.addEventListener('click', function (e) {
+            var opener = e.target.closest('[data-action="open-cookie-prefs"]');
+            if (!opener || !modal) return;
+            e.preventDefault();
+            applyPrefsToModal(modal, getStored() || {
+                analytics: false,
+                performance: false,
+                personalization: false
+            });
+            openModal(modal);
+        });
+
+        var stored = getStored();
+        if (stored && modal) {
+            applyPrefsToModal(modal, stored);
+        }
+
+        if (stored || !banner) {
+            return;
+        }
 
         whenPageReady(function () {
-            grandEntrance(breakEl, banner);
+            if (breakEl) {
+                grandEntrance(breakEl, banner);
+            } else {
+                banner.classList.add('is-visible');
+                banner.setAttribute('aria-hidden', 'false');
+            }
         });
 
         banner.addEventListener('click', function (e) {
@@ -152,35 +210,6 @@
                 openModal(modal);
             }
         });
-
-        if (!modal) return;
-
-        modal.addEventListener('click', function (e) {
-            if (e.target === modal || e.target.closest('[data-action="close-modal"]')) {
-                closeModal(modal);
-            }
-        });
-
-        modal.querySelector('[data-action="save-prefs"]')?.addEventListener('click', function () {
-            savePrefs(readModalPrefs(modal));
-            closeModal(modal);
-            dismissBanner(banner);
-        });
-
-        modal.querySelector('[data-action="accept-all-modal"]')?.addEventListener('click', function () {
-            savePrefs({ essential: true, analytics: true, performance: true, personalization: true });
-            closeModal(modal);
-            dismissBanner(banner);
-        });
-
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' && modal.classList.contains('is-open')) {
-                closeModal(modal);
-            }
-        });
-
-        var stored = getStored();
-        if (stored) applyPrefsToModal(modal, stored);
     }
 
     if (document.readyState === 'loading') {

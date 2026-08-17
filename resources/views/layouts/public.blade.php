@@ -66,7 +66,19 @@
         $adsenseEnabled = (bool) ($publicIdentity['adsense_enabled'] ?? false)
             && $adsenseClient !== ''
             && ($allowAds ?? true)
-            && ! request()->routeIs(['public.donate', 'public.member-portal', 'public.member-portal.*']);
+            && ! request()->routeIs([
+                'public.donate',
+                'public.member-portal',
+                'public.member-portal.*',
+                'public.privacy',
+                'public.terms',
+                'public.cookie-policy',
+                'public.disclaimer',
+                'public.accessibility',
+                'public.editorial-policy',
+                'public.sitemap',
+                'public.join',
+            ]);
     @endphp
     @if ($adsenseEnabled)
         <meta name="google-adsense-account" content="{{ $adsenseClient }}" data-ag-adsense-client="{{ $adsenseClient }}">

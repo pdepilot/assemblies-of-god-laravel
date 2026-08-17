@@ -1,6 +1,6 @@
 /**
- * Load AdSense after cookie personalization consent (Accept All / Personalization).
- * Never injects on pages that omit window.AG_ADSENSE.
+ * Load AdSense only after advertising (personalization) consent.
+ * Never injects on pages that omit the AdSense meta / this script.
  */
 (function () {
     'use strict';
@@ -22,10 +22,7 @@
     }
 
     function prefsAllowAds(prefs) {
-        if (!prefs) {
-            return false;
-        }
-        return !!prefs.personalization || !!prefs.analytics;
+        return !!(prefs && prefs.personalization);
     }
 
     function readStored() {
@@ -55,6 +52,10 @@
     function maybeLoad(prefs) {
         if (prefsAllowAds(prefs)) {
             loadAdSense();
+            return;
+        }
+        if (loaded || document.querySelector('script[data-ag-adsense]')) {
+            window.location.reload();
         }
     }
 

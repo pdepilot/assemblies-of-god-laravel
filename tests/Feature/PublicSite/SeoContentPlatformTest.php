@@ -6,10 +6,21 @@ test('robots.txt disallows private areas and includes sitemap', function () {
     $response = $this->get('/robots.txt');
 
     $response->assertOk();
+    $response->assertSee('User-agent: Mediapartners-Google', false);
+    $response->assertSee('User-agent: Google-Display-Ads-Bot', false);
     $response->assertSee('Disallow: /admin', false);
     $response->assertSee('Disallow: /member-portal', false);
     $response->assertSee('Disallow: /api/', false);
     $response->assertSee('Sitemap: '.url('/sitemap.xml'), false);
+});
+
+test('ads.txt declares the google publisher account', function () {
+    config(['identity.public.adsense_client_id' => 'ca-pub-4828740366189357']);
+
+    $response = $this->get('/ads.txt');
+
+    $response->assertOk();
+    $response->assertSee('google.com, pub-4828740366189357, DIRECT, f08c47fec0942fa0', false);
 });
 
 test('sitemap index and child sitemaps respond', function () {
@@ -114,6 +125,8 @@ test('public sermon show uses seo fields and schema', function () {
 
 test('cms legal and leadership pages respond', function () {
     foreach ([
+        'public.privacy',
+        'public.terms',
         'public.cookie-policy',
         'public.statement-of-faith',
         'public.mission-vision',
@@ -125,6 +138,21 @@ test('cms legal and leadership pages respond', function () {
     ] as $route) {
         $this->get(route($route))->assertOk();
     }
+});
+
+test('privacy and cookie policy disclose google adsense cookies and opt-out', function () {
+    $privacy = $this->get(route('public.privacy'));
+    $privacy->assertOk();
+    $privacy->assertSee('Google Ads Settings', false);
+    $privacy->assertSee('www.aboutads.info', false);
+    $privacy->assertSee('policies.google.com/technologies/partner-sites', false);
+    $privacy->assertSee('not directed at children under 13', false);
+
+    $cookies = $this->get(route('public.cookie-policy'));
+    $cookies->assertOk();
+    $cookies->assertSee('Google AdSense', false);
+    $cookies->assertSee('Google Ads Settings', false);
+    $cookies->assertSee('Cookie settings', false);
 });
 
 test('newsletter subscribe stores subscriber', function () {
@@ -158,7 +186,16 @@ test('donate and member-portal responses have no ad placeholders', function () {
         'identity.public.adsense_client_id' => 'ca-pub-4828740366189357',
     ]);
 
-    foreach ([route('public.donate'), route('public.member-portal.login')] as $url) {
+    foreach ([
+        route('public.donate'),
+        route('public.member-portal.login'),
+        route('public.privacy'),
+        route('public.terms'),
+        route('public.cookie-policy'),
+        route('public.disclaimer'),
+        route('public.accessibility'),
+        route('public.sitemap'),
+    ] as $url) {
         $response = $this->get($url);
         $response->assertOk();
         $response->assertDontSee('adsbygoogle', false);

@@ -205,7 +205,18 @@ final class WebsitePagesReadService
             ? $settings['ag']['pages'][$pageKey]
             : [];
 
-        return array_replace_recursive($defaults, $stored);
+        $merged = array_replace_recursive($defaults, $stored);
+        if (trim(strip_tags((string) ($merged['body_html'] ?? ''))) === '') {
+            $fallback = $this->defaultLegalBody(
+                $pageKey,
+                (string) config('identity.public.short_name', 'AGC-Ikenegbu')
+            );
+            if ($fallback !== '') {
+                $merged['body_html'] = $fallback;
+            }
+        }
+
+        return $merged;
     }
 
     public function isEditablePage(string $pageKey): bool
@@ -294,19 +305,105 @@ final class WebsitePagesReadService
 
     private function defaultLegalBody(string $pageKey, string $shortName): string
     {
+        $name = htmlspecialchars($shortName, ENT_QUOTES, 'UTF-8');
+        $email = htmlspecialchars((string) config('identity.email.from_email', 'info@agikenebgu.org'), ENT_QUOTES, 'UTF-8');
+        $address = htmlspecialchars((string) config('identity.email.church_address', 'Ikenegbu, Owerri, Imo State, Nigeria'), ENT_QUOTES, 'UTF-8');
+
         return match ($pageKey) {
-            'cookie-policy' => '<p>'.$shortName.' uses essential cookies to keep the website working and optional cookies to improve your experience when you consent.</p><p>You can manage preferences anytime via the cookie banner on this site.</p>',
-            'statement-of-faith' => '<p>'.$shortName.' affirms the core doctrines of the Assemblies of God: the Bible as God\'s Word, salvation through Jesus Christ, the baptism in the Holy Spirit, divine healing, and the blessed hope of Christ\'s return.</p>',
+            'privacy' => $this->defaultPrivacyBody($name, $email, $address),
+            'terms' => $this->defaultTermsBody($name, $email),
+            'cookie-policy' => $this->defaultCookiePolicyBody($name),
+            'statement-of-faith' => '<p>'.$name.' affirms the core doctrines of the Assemblies of God: the Bible as God\'s Word, salvation through Jesus Christ, the baptism in the Holy Spirit, divine healing, and the blessed hope of Christ\'s return.</p>',
             'mission-vision' => '<p><strong>Mission:</strong> To proclaim the full Gospel of Jesus Christ, make disciples, and serve our community in love.</p><p><strong>Vision:</strong> A Spirit-filled church family transforming lives in Owerri and beyond.</p>',
             'editorial-policy' => '<p>Content published on this website aims to edify believers, share the Gospel accurately, and respect the dignity of every reader. We review submissions for biblical fidelity, clarity, and pastoral care before publication.</p>',
-            'accessibility' => '<p>We strive to make '.$shortName.'\'s public website usable for people of all abilities. If you encounter a barrier, please contact us so we can improve.</p>',
+            'accessibility' => '<p>We strive to make '.$name.'\'s public website usable for people of all abilities. If you encounter a barrier, please <a href="'.e(url('/contact')).'">contact us</a> so we can improve.</p>',
             'disclaimer' => '<p>Information on this website is provided for ministry and educational purposes. It is not a substitute for pastoral counsel, professional advice, or in-person fellowship.</p>',
             'faq' => '<h2>What time are Sunday services?</h2><p>Join us for Sunday worship — see our homepage or Contact page for current service times.</p><h2>How can I visit?</h2><p>Everyone is welcome. Use Plan Your Visit on the Contact page and we will gladly help you find us.</p><h2>How can I give?</h2><p>You can give securely online via our Give page, or in person during services.</p>',
-            'leadership' => '<p>Meet the pastoral and ministry leaders serving '.$shortName.'.</p>',
-            'privacy' => '',
-            'terms' => '',
+            'leadership' => '<p>Meet the pastoral and ministry leaders serving '.$name.'.</p>',
             default => '',
         };
+    }
+
+    private function defaultPrivacyBody(string $name, string $email, string $address): string
+    {
+        $contact = e(url('/contact'));
+        $cookies = e(url('/cookie-policy'));
+        $terms = e(url('/terms'));
+
+        return <<<HTML
+<p>{$name} ("we", "us") operates this church website from {$address}. This privacy policy explains what information we collect, how we use it, and the choices you have. It applies to visitors of this public website.</p>
+<h2>Who we are</h2>
+<p>We are a local Assemblies of God congregation. For privacy questions, email <a href="mailto:{$email}">{$email}</a> or use our <a href="{$contact}">contact form</a>.</p>
+<h2>Information we collect</h2>
+<p>We may collect information you choose to give us, including your name, email address, phone number, and message when you contact us, subscribe to our newsletter, submit a testimony, register for an event, join as a member, or make a donation. We also collect limited technical data such as browser type, pages visited, and approximate location derived from IP address when you use the site.</p>
+<h2>How we use information</h2>
+<p>We use this information to respond to enquiries, send requested updates, administer ministry programmes, process giving, improve the website, keep the site secure, and (only with your consent) measure traffic and show advertising. We do not sell your personal information.</p>
+<h2>Cookies and advertising</h2>
+<p>We use cookies and similar technologies as described in our <a href="{$cookies}">Cookie Policy</a>. Essential cookies are required for the site to work. Optional analytics, performance, and advertising cookies run only after you choose them in our cookie banner.</p>
+<p>Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits to this website or other websites. Google's use of advertising cookies enables it and its partners to serve ads to our users based on their visit to this site and/or other sites on the Internet.</p>
+<p>You may opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" rel="noopener noreferrer" target="_blank">Google Ads Settings</a>. You can also opt out of a third-party vendor's use of cookies for personalized advertising at <a href="https://www.aboutads.info" rel="noopener noreferrer" target="_blank">www.aboutads.info</a>.</p>
+<p>Learn how Google uses data when you use our partners' sites or apps at <a href="https://policies.google.com/technologies/partner-sites" rel="noopener noreferrer" target="_blank">How Google uses information from sites or apps that use our services</a>.</p>
+<h2>Children</h2>
+<p>This website is intended for a general audience and is not directed at children under 13. We do not knowingly collect personal information from children under 13 for advertising. If you believe a child has submitted personal information to us, please contact us and we will delete it.</p>
+<h2>Sharing</h2>
+<p>We share information with service providers who help us run the website (hosting, email delivery, payment processors, and Google for analytics or advertising when you consent). Those providers may process data on our behalf. We may also disclose information if required by law or to protect the church, our members, or the public.</p>
+<h2>Retention and security</h2>
+<p>We keep personal information only as long as needed for the purposes above, legal obligations, or legitimate ministry records, then delete or anonymise it. We use reasonable technical and organisational measures to protect information, but no website can be guaranteed completely secure.</p>
+<h2>Your choices</h2>
+<p>You can update cookie preferences at any time via Cookie settings in the website footer. You may unsubscribe from newsletters using the link in those emails or by contacting us. You may ask us to access, correct, or delete personal information we hold about you, subject to any legal or pastoral record-keeping duties.</p>
+<h2>Changes</h2>
+<p>We may update this policy from time to time. The updated version will be posted on this page. Continued use of the site after changes means you accept the revised policy. See also our <a href="{$terms}">Terms of Use</a>.</p>
+HTML;
+    }
+
+    private function defaultTermsBody(string $name, string $email): string
+    {
+        $privacy = e(url('/privacy'));
+        $contact = e(url('/contact'));
+
+        return <<<HTML
+<p>These terms govern your use of the {$name} website. By accessing the site you agree to them. If you do not agree, please do not use the site.</p>
+<h2>Ministry purpose</h2>
+<p>This website shares worship information, teaching, news, and ways to connect with our church. Content is provided for ministry and educational purposes and is not a substitute for pastoral counsel or in-person fellowship.</p>
+<h2>Acceptable use</h2>
+<p>You may browse public pages and use forms in good faith. You must not misuse the site, attempt unauthorised access, submit unlawful or harmful content, interfere with other visitors, or use automated tools to scrape or overload the site.</p>
+<h2>User submissions</h2>
+<p>If you send a testimony, prayer request, registration, or other message, you confirm that you have the right to share it and that it is truthful to the best of your knowledge. We may review, edit for length or pastoral care, decline, or remove submissions. Do not include sensitive information about other people without their permission.</p>
+<h2>Donations</h2>
+<p>Online giving is voluntary. Payment processors handle card details; we do not store full card numbers on this website. Donation receipts and records are used for stewardship and, where applicable, church accounting. Gifts are generally non-refundable except where required by law or at the church's discretion.</p>
+<h2>Advertising</h2>
+<p>Some public pages may display advertisements served by Google AdSense after you consent to advertising cookies. Ads are not an endorsement of the advertised products or services. Please do not click ads except as a genuine interest in the offer; invalid or incentivised clicks violate Google's policies and these terms.</p>
+<h2>Intellectual property</h2>
+<p>Sermons, articles, images, logos, and other site materials belong to {$name} or their respective owners. You may share links to public pages. You may not copy substantial content for commercial use without permission.</p>
+<h2>Privacy</h2>
+<p>How we handle personal information is described in our <a href="{$privacy}">Privacy Policy</a>.</p>
+<h2>Liability</h2>
+<p>The site is provided as-is. To the fullest extent permitted by law, {$name} is not liable for loss arising from your use of the site, third-party ads or links, or interruption of service.</p>
+<h2>Changes and contact</h2>
+<p>We may update these terms by posting a new version on this page. Questions: <a href="mailto:{$email}">{$email}</a> or our <a href="{$contact}">contact page</a>.</p>
+HTML;
+    }
+
+    private function defaultCookiePolicyBody(string $name): string
+    {
+        $privacy = e(url('/privacy'));
+
+        return <<<HTML
+<p>{$name} uses cookies and similar technologies so this website can function, remember your choices, and — only if you agree — measure usage and show advertising.</p>
+<h2>What cookies are</h2>
+<p>Cookies are small text files stored on your device. Some are strictly necessary. Others are optional and are set only after you accept them in our cookie banner.</p>
+<h2>Cookie categories</h2>
+<p><strong>Essential.</strong> Required for security, forms, sessions, and remembering your cookie choice. These always run.</p>
+<p><strong>Analytics.</strong> Help us understand which pages are visited so we can improve the ministry website. They do not load advertising.</p>
+<p><strong>Performance.</strong> Help pages load reliably (for example remembering preferences that improve browsing).</p>
+<p><strong>Advertising (personalization).</strong> If you allow this category, Google AdSense and its partners may set cookies (including advertising cookies such as those used by Google) to serve ads based on your prior visits to this site and other sites. Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits to your website or other websites. Google's use of advertising cookies enables it and its partners to serve ads to your users based on their visit to your sites and/or other sites on the Internet.</p>
+<h2>How to control cookies</h2>
+<p>Use Cookie settings in the website footer, or the cookie banner on your first visit, to accept all cookies, keep essential cookies only, or choose categories. You can change your mind at any time.</p>
+<p>You may opt out of personalized advertising in <a href="https://www.google.com/settings/ads" rel="noopener noreferrer" target="_blank">Google Ads Settings</a> or at <a href="https://www.aboutads.info" rel="noopener noreferrer" target="_blank">www.aboutads.info</a>. Browser controls can also block or delete cookies; blocking essential cookies may break parts of the site.</p>
+<p>Google explains how it uses data from partner sites at <a href="https://policies.google.com/technologies/partner-sites" rel="noopener noreferrer" target="_blank">policies.google.com/technologies/partner-sites</a>.</p>
+<h2>Further information</h2>
+<p>Our <a href="{$privacy}">Privacy Policy</a> describes personal information we collect through forms, donations, and the website, including that this site is not directed at children under 13.</p>
+HTML;
     }
 
     /** @param array<string, mixed> $settings @return array<string, mixed> */
