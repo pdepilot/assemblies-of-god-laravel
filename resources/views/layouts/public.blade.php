@@ -79,10 +79,16 @@
                 'public.sitemap',
                 'public.join',
             ]);
+        $gaMeasurementId = trim((string) ($publicIdentity['google_analytics_id'] ?? ''));
+        $gaEnabled = $gaMeasurementId !== '';
     @endphp
     @if ($adsenseEnabled)
         <meta name="google-adsense-account" content="{{ $adsenseClient }}" data-ag-adsense-client="{{ $adsenseClient }}">
         <script src="{{ asset('site/js/adsense.js') }}" defer></script>
+    @endif
+    @if ($gaEnabled)
+        <meta name="ag-google-analytics-id" content="{{ $gaMeasurementId }}">
+        <script src="{{ asset('site/js/ga4.js') }}" defer></script>
     @endif
     @stack('head')
 </head>

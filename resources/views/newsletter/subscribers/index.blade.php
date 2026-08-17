@@ -116,7 +116,8 @@
                                     </th>
                                 @endif
                                 <th class="px-4 py-3">Email</th>
-                                <th class="px-4 py-3">Source</th>
+                                <th class="px-4 py-3">Form source</th>
+                                <th class="px-4 py-3">Location</th>
                                 <th class="px-4 py-3">Status</th>
                                 <th class="px-4 py-3">Subscribed</th>
                                 <th class="px-4 py-3 text-right">Actions</th>
@@ -136,6 +137,16 @@
                                     <a href="{{ route('newsletter-subscribers.show', $row['id']) }}" class="text-indigo-600 hover:underline">{{ $row['email'] }}</a>
                                 </td>
                                 <td class="px-4 py-3">{{ $row['source'] ?? '—' }}</td>
+                                <td class="px-4 py-3">
+                                    @if (! empty($row['location_display']))
+                                        <div>{{ $row['location_display'] }}</div>
+                                        @if (! empty($row['location_source_label']))
+                                            <div class="text-xs text-gray-500">Source: {{ $row['location_source_label'] }}</div>
+                                        @endif
+                                    @else
+                                        —
+                                    @endif
+                                </td>
                                 <td class="px-4 py-3 capitalize">{{ $row['status'] }}</td>
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     {{ !empty($row['subscribed_at']) ? \Illuminate\Support\Carbon::parse($row['subscribed_at'])->format('d M Y H:i') : '—' }}
@@ -156,7 +167,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="{{ $canManage ? 6 : 5 }}" class="px-4 py-10 text-center text-gray-500">No subscribers match your filters.</td>
+                                <td colspan="{{ $canManage ? 7 : 6 }}" class="px-4 py-10 text-center text-gray-500">No subscribers match your filters.</td>
                             </tr>
                         @endforelse
                         </tbody>

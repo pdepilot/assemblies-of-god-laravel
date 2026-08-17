@@ -8,6 +8,10 @@ final class SubscriberReadService
 {
     public const STATUSES = ['active', 'unsubscribed'];
 
+    public function __construct(
+        private readonly NewsletterLocationService $locations,
+    ) {}
+
     /** @return array{items: list<array<string, mixed>>, total: int, page: int, pages: int} */
     public function listSubscribers(string $query = '', string $status = '', string $source = '', int $page = 1, int $perPage = 25): array
     {
@@ -32,7 +36,7 @@ final class SubscriberReadService
             ->offset($offset)
             ->limit($perPage)
             ->get()
-            ->map(fn ($row) => (array) $row)
+            ->map(fn ($row) => $this->presentSubscriber((array) $row))
             ->all();
 
         return [
@@ -48,7 +52,18 @@ final class SubscriberReadService
     {
         $row = DB::table('site_newsletter_subscribers')->where('id', $id)->first();
 
-        return $row ? (array) $row : null;
+        return $row ? $this->presentSubscriber((array) $row) : null;
+    }
+
+    /** @param  array<string, mixed>  $row @return array<string, mixed> */
+    private function presentSubscriber(array $row): array
+    {
+        $location = $this->locations->presentation($row);
+        $row['location_display'] = $location['location'];
+        $row['location_source_label'] = $location['source_label'];
+        $row['location_accuracy_label'] = $location['accuracy_label'];
+
+        return $row;
     }
 
     /** @return array<string, int> */

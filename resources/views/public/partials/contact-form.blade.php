@@ -53,7 +53,12 @@
             alertBox.classList.remove('d-none', 'alert-success', 'alert-danger');
             alertBox.classList.add(result.ok ? 'alert-success' : 'alert-danger');
             alertBox.textContent = result.data.message || (result.ok ? 'Message sent.' : 'Unable to send message.');
-            if (result.ok) form.reset();
+            if (result.ok) {
+                form.reset();
+                if (window.AG_ANALYTICS && typeof window.AG_ANALYTICS.event === 'function') {
+                    window.AG_ANALYTICS.event('contact_form_submit', { form_name: 'contact' });
+                }
+            }
         }).catch(function () {
             alertBox.classList.remove('d-none', 'alert-success');
             alertBox.classList.add('alert-danger');

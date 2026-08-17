@@ -90,6 +90,9 @@
                         <a href="{{ route('public.terms') }}">Terms</a>
                         <a href="{{ route('public.cookie-policy') }}">Cookie Policy</a>
                         <a href="{{ route('public.cookie-policy') }}" data-action="open-cookie-prefs">Cookie settings</a>
+                        <a href="{{ route('public.disclaimer') }}">Disclaimer</a>
+                        <a href="{{ route('public.about') }}">About</a>
+                        <a href="{{ route('public.contact') }}">Contact</a>
                         <a href="{{ route('public.faq') }}">FAQ</a>
                         <a href="{{ route('public.leadership') }}">Leadership</a>
                         <a href="{{ route('public.statement-of-faith') }}">Statement of Faith</a>

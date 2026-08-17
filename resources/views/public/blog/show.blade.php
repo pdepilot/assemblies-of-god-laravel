@@ -101,4 +101,15 @@
 
 @push('scripts')
 <script src="{{ asset('site/js/reading-progress.js') }}" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (window.AG_ANALYTICS && typeof window.AG_ANALYTICS.event === 'function') {
+        window.AG_ANALYTICS.event('article_view', {
+            content_type: 'blog_post',
+            item_id: @json($post['slug'] ?? ''),
+            page_title: @json($post['title'] ?? '')
+        });
+    }
+});
+</script>
 @endpush

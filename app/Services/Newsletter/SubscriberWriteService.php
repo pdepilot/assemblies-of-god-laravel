@@ -10,6 +10,7 @@ final class SubscriberWriteService
 {
     public function __construct(
         private readonly EmailCenterWriteService $emailCenter,
+        private readonly SubscriberReadService $read,
     ) {}
 
     /** @return array<string, mixed> */
@@ -38,9 +39,7 @@ final class SubscriberWriteService
             ]);
         }
 
-        $read = new SubscriberReadService;
-
-        return $read->getSubscriber($id) ?? (array) $existing;
+        return $this->read->getSubscriber($id) ?? (array) $existing;
     }
 
     /**

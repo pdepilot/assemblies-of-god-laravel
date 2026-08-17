@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Http;
 final class IpGeoLookupService
 {
     /**
-     * @return array{country: ?string, region: ?string, city: ?string, isp: ?string, label: string}
+     * @return array{country: ?string, region: ?string, city: ?string, isp: ?string, latitude: ?float, longitude: ?float, label: string}
      */
     public function lookup(string $ip): array
     {
@@ -18,6 +18,8 @@ final class IpGeoLookupService
             'region' => null,
             'city' => null,
             'isp' => null,
+            'latitude' => null,
+            'longitude' => null,
             'label' => 'Unknown location',
         ];
 
@@ -30,7 +32,7 @@ final class IpGeoLookupService
                 $response = Http::timeout(3)
                     ->acceptJson()
                     ->get('http://ip-api.com/json/'.$ip, [
-                        'fields' => 'status,country,regionName,city,isp,query',
+                        'fields' => 'status,country,regionName,city,lat,lon,isp,query',
                     ]);
 
                 if (! $response->successful()) {
@@ -46,6 +48,8 @@ final class IpGeoLookupService
                 $region = trim((string) ($data['regionName'] ?? ''));
                 $country = trim((string) ($data['country'] ?? ''));
                 $isp = trim((string) ($data['isp'] ?? ''));
+                $latitude = is_numeric($data['lat'] ?? null) ? (float) $data['lat'] : null;
+                $longitude = is_numeric($data['lon'] ?? null) ? (float) $data['lon'] : null;
                 $parts = array_values(array_filter([$city, $region, $country]));
 
                 return [
@@ -53,6 +57,8 @@ final class IpGeoLookupService
                     'region' => $region !== '' ? $region : null,
                     'city' => $city !== '' ? $city : null,
                     'isp' => $isp !== '' ? $isp : null,
+                    'latitude' => $latitude,
+                    'longitude' => $longitude,
                     'label' => $parts !== [] ? implode(', ', $parts) : 'Unknown location',
                 ];
             } catch (\Throwable) {

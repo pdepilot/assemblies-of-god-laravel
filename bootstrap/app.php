@@ -42,4 +42,29 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
+
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, Request $request) {
+            if ($request->expectsJson()) {
+                return null;
+            }
+
+            if ($request->is('admin/*', 'erp/*')) {
+                return null;
+            }
+
+            $payload = app(\App\Services\PublicSite\PublicHomepageReadService::class)->payload();
+            $seo = app(\App\Services\Website\SeoReadService::class)->forKey('home', url('/'));
+            $seo['title'] = 'Page Not Found | '.config('identity.public.short_name', 'AGC Ikenegbu');
+            $seo['meta_description'] = 'The page you requested could not be found on the church website.';
+
+            return response()->view('errors.404', [
+                'allowAds' => false,
+                'church' => $payload['church'],
+                'seo' => $seo,
+                'schemaGraphs' => [],
+                'legacy_api_base' => $payload['legacy_api_base'] ?? '',
+                'traffic_beacon_url' => $payload['traffic_beacon_url'] ?? '',
+                'testimonySourcePage' => '404',
+            ], 404);
+        });
     })->create();

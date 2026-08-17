@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'geocoding' => [
+        'enabled' => filter_var(env('GEOCODING_ENABLED', true), FILTER_VALIDATE_BOOLEAN),
+        'timeout_seconds' => (int) env('GEOCODING_TIMEOUT_SECONDS', 3),
+        'user_agent' => env('GEOCODING_USER_AGENT', 'AGC-Ikenegbu-Newsletter/1.0 (contact@agikenebgu.org)'),
+    ],
+
 ];

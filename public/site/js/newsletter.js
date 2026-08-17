@@ -31,6 +31,14 @@
             }
         }
 
+        function trackSignup(source) {
+            if (window.AG_ANALYTICS && typeof window.AG_ANALYTICS.event === 'function') {
+                window.AG_ANALYTICS.event('newsletter_signup', {
+                    signup_source: source || 'footer'
+                });
+            }
+        }
+
         form.addEventListener('submit', function (e) {
             e.preventDefault();
             var email = (emailInput && emailInput.value || '').trim();
@@ -76,6 +84,7 @@
                 })
                 .then(function (data) {
                     setStatus(data.message || 'Subscribed successfully.', 'success');
+                    trackSignup(form.getAttribute('data-source') || 'footer');
                     if (emailInput) {
                         emailInput.value = '';
                     }

@@ -64,7 +64,7 @@
             <div class="ag-cookie-pref">
                 <div class="ag-cookie-pref__info">
                     <h4>Analytics</h4>
-                    <p>Helps us understand how visitors use our ministry website.</p>
+                    <p>Google Analytics 4 helps us understand how visitors use our ministry website after you consent. It does not receive your email address from newsletter forms.</p>
                 </div>
                 <label class="ag-cookie-toggle">
                     <input type="checkbox" data-ag-cookie-pref="analytics" id="agCookieAnalytics">

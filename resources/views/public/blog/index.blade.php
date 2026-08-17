@@ -103,3 +103,18 @@
 
 @include('public.partials.footer')
 @endsection
+
+@if (trim((string) ($searchQuery ?? '')) !== '')
+    @push('scripts')
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (window.AG_ANALYTICS && typeof window.AG_ANALYTICS.event === 'function') {
+            window.AG_ANALYTICS.event('search', {
+                search_term: @json($searchQuery),
+                content_type: 'blog'
+            });
+        }
+    });
+    </script>
+    @endpush
+@endif

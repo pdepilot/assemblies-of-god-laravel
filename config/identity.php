@@ -30,6 +30,7 @@ return [
         'sdtg_site_label' => env('SDTG_PUBLIC_SITE_LABEL', 'Send Down Thy Glory'),
         'adsense_client_id' => env('ADSENSE_CLIENT_ID', ''),
         'adsense_enabled' => filter_var(env('ADSENSE_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
+        'google_analytics_id' => env('GOOGLE_ANALYTICS_ID', ''),
     ],
 
     'email' => [

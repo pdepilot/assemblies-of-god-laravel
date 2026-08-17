@@ -424,10 +424,16 @@ trait ReportPayloadBuilders
 
         return [
             'title' => 'Newsletter Subscribers — '.$range['label'],
-            'headers' => ['Email', 'Source', 'Status', 'Subscribed', 'Unsubscribed'],
+            'headers' => ['Email', 'Form source', 'Location', 'Location source', 'Status', 'Subscribed', 'Unsubscribed'],
             'rows' => array_map(static fn (array $row): array => [
                 $row['email'] ?? '',
                 $row['source'] ?? '',
+                trim(implode(', ', array_filter([
+                    $row['city'] ?? '',
+                    $row['region'] ?? '',
+                    $row['country'] ?? '',
+                ]))),
+                $row['location_source'] ?? '',
                 $row['status'] ?? '',
                 $row['subscribed_at'] ?? '',
                 $row['unsubscribed_at'] ?? '',

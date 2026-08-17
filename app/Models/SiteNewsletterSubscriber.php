@@ -13,4 +13,17 @@ class SiteNewsletterSubscriber extends Model
     public const CREATED_AT = null;
 
     protected $guarded = [];
+
+    protected function casts(): array
+    {
+        return [
+            'subscribed_at' => 'datetime',
+            'unsubscribed_at' => 'datetime',
+            'confirmed_at' => 'datetime',
+            'ack_sent_at' => 'datetime',
+            'location_updated_at' => 'datetime',
+            'latitude' => 'float',
+            'longitude' => 'float',
+        ];
+    }
 }

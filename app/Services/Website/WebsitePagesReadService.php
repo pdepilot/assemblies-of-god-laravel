@@ -349,7 +349,11 @@ final class WebsitePagesReadService
 <p>We share information with service providers who help us run the website (hosting, email delivery, payment processors, and Google for analytics or advertising when you consent). Those providers may process data on our behalf. We may also disclose information if required by law or to protect the church, our members, or the public.</p>
 <h2>Retention and security</h2>
 <p>We keep personal information only as long as needed for the purposes above, legal obligations, or legitimate ministry records, then delete or anonymise it. We use reasonable technical and organisational measures to protect information, but no website can be guaranteed completely secure.</p>
-<h2>Your choices</h2>
+<h2>Newsletter location</h2>
+<p>When you subscribe to our newsletter we automatically estimate your country, state/region, and city from your IP address. You do not need to type a location. This is an estimate based on where your internet provider registers the address, and it may not match where you physically are (for example, a subscriber in Imo State may appear as Rivers State if that is how the ISP maps the address). We label these records as IP estimates in our church admin tools.</p>
+<h2>Google Analytics</h2>
+<p>When you consent to analytics cookies, we load Google Analytics 4 (GA4) to measure page views and selected events such as newsletter sign-ups, article views, site search, and contact form submissions. We configure GA4 not to receive email addresses from our forms. You can withdraw analytics consent at any time via Cookie settings in the footer.</p>
+<h2>Your rights</h2>
 <p>You can update cookie preferences at any time via Cookie settings in the website footer. You may unsubscribe from newsletters using the link in those emails or by contacting us. You may ask us to access, correct, or delete personal information we hold about you, subject to any legal or pastoral record-keeping duties.</p>
 <h2>Changes</h2>
 <p>We may update this policy from time to time. The updated version will be posted on this page. Continued use of the site after changes means you accept the revised policy. See also our <a href="{$terms}">Terms of Use</a>.</p>
@@ -394,7 +398,7 @@ HTML;
 <p>Cookies are small text files stored on your device. Some are strictly necessary. Others are optional and are set only after you accept them in our cookie banner.</p>
 <h2>Cookie categories</h2>
 <p><strong>Essential.</strong> Required for security, forms, sessions, and remembering your cookie choice. These always run.</p>
-<p><strong>Analytics.</strong> Help us understand which pages are visited so we can improve the ministry website. They do not load advertising.</p>
+<p><strong>Analytics.</strong> Help us understand which pages are visited so we can improve the ministry website. When enabled, Google Analytics 4 (GA4) may set cookies. Analytics cookies do not load advertising and never receive your email address from our forms.</p>
 <p><strong>Performance.</strong> Help pages load reliably (for example remembering preferences that improve browsing).</p>
 <p><strong>Advertising (personalization).</strong> If you allow this category, Google AdSense and its partners may set cookies (including advertising cookies such as those used by Google) to serve ads based on your prior visits to this site and other sites. Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits to your website or other websites. Google's use of advertising cookies enables it and its partners to serve ads to your users based on their visit to your sites and/or other sites on the Internet.</p>
 <h2>How to control cookies</h2>
