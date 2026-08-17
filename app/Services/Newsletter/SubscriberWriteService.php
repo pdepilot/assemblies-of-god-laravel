@@ -42,6 +42,16 @@ final class SubscriberWriteService
         return $this->read->getSubscriber($id) ?? (array) $existing;
     }
 
+    public function delete(int $id): void
+    {
+        $existing = DB::table('site_newsletter_subscribers')->where('id', $id)->first();
+        if (! $existing) {
+            throw new InvalidArgumentException('Subscriber not found.');
+        }
+
+        DB::table('site_newsletter_subscribers')->where('id', $id)->delete();
+    }
+
     /**
      * @param  list<int|string>  $ids
      * @return array{sent: int, failed: int, scheduled: int, total: int}

@@ -333,6 +333,46 @@ test('communications officer can toggle newsletter subscriber status', function 
     ]);
 });
 
+test('communications officer can delete a newsletter subscriber', function () {
+    $admin = Admin::factory()->create(['role' => 'communications_officer']);
+
+    $subscriberId = DB::table('site_newsletter_subscribers')->insertGetId([
+        'email' => 'remove-me@example.com',
+        'source' => 'footer',
+        'status' => 'active',
+        'subscribed_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $this->actingAs($admin, 'admin')
+        ->delete(route('newsletter-subscribers.destroy', $subscriberId))
+        ->assertRedirect(route('newsletter-subscribers.index'));
+
+    $this->assertDatabaseMissing('site_newsletter_subscribers', [
+        'id' => $subscriberId,
+    ]);
+});
+
+test('ss teacher cannot delete newsletter subscribers', function () {
+    $admin = Admin::factory()->create(['role' => 'ss_teacher']);
+
+    $subscriberId = DB::table('site_newsletter_subscribers')->insertGetId([
+        'email' => 'keep-me@example.com',
+        'source' => 'footer',
+        'status' => 'active',
+        'subscribed_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $this->actingAs($admin, 'admin')
+        ->delete(route('newsletter-subscribers.destroy', $subscriberId))
+        ->assertForbidden();
+
+    $this->assertDatabaseHas('site_newsletter_subscribers', [
+        'id' => $subscriberId,
+    ]);
+});
+
 test('communications officer can email selected newsletter subscribers', function () {
     $admin = Admin::factory()->create(['role' => 'communications_officer']);
 

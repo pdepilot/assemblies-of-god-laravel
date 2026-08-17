@@ -41,10 +41,17 @@
                     </div>
                 @endif
                 @if ($canManage)
-                    <form method="POST" action="{{ route('newsletter-subscribers.toggle-status', $subscriber['id']) }}">
-                        @csrf
-                        <button class="mt-2 px-4 py-2 border rounded-md">Toggle status</button>
-                    </form>
+                    <div class="flex flex-wrap gap-2 pt-2">
+                        <form method="POST" action="{{ route('newsletter-subscribers.toggle-status', $subscriber['id']) }}">
+                            @csrf
+                            <button class="px-4 py-2 border rounded-md">Toggle status</button>
+                        </form>
+                        <form method="POST" action="{{ route('newsletter-subscribers.destroy', $subscriber['id']) }}" data-confirm="Delete this subscriber permanently? This cannot be undone." data-confirm-title="Please confirm" data-confirm-ok="Delete" data-confirm-tone="danger">
+                            @csrf
+                            @method('DELETE')
+                            <button class="px-4 py-2 border border-red-300 text-red-700 rounded-md">Delete subscriber</button>
+                        </form>
+                    </div>
                 @endif
             </div>
         </div>

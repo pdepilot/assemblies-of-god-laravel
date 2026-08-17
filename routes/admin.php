@@ -554,6 +554,8 @@ Route::prefix('admin')->group(function () {
         ->name('newsletter-subscribers.show');
     Route::post('/newsletter-subscribers/{subscriber}/toggle-status', [\App\Http\Controllers\Newsletter\SubscribersController::class, 'toggleStatus'])
         ->name('newsletter-subscribers.toggle-status');
+    Route::delete('/newsletter-subscribers/{subscriber}', [\App\Http\Controllers\Newsletter\SubscribersController::class, 'destroy'])
+        ->name('newsletter-subscribers.destroy');
 
     Route::get('/sermons', [\App\Http\Controllers\Sermons\DashboardController::class, 'index'])
         ->name('sermon.dashboard');

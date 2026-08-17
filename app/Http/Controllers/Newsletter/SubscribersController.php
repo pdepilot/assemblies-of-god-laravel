@@ -80,6 +80,22 @@ final class SubscribersController
         return back()->with('status', 'Subscriber status updated.');
     }
 
+    public function destroy(SiteNewsletterSubscriber $subscriber): RedirectResponse
+    {
+        $admin = $this->admin();
+        $this->policy->requireManageHub($admin);
+
+        try {
+            $this->write->delete((int) $subscriber->id);
+        } catch (InvalidArgumentException $e) {
+            return back()->withErrors(['status' => $e->getMessage()]);
+        }
+
+        return redirect()
+            ->route('newsletter-subscribers.index')
+            ->with('status', 'Subscriber deleted.');
+    }
+
     public function send(SendNewsletterRequest $request): RedirectResponse
     {
         $admin = $this->admin();

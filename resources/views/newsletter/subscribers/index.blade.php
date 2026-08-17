@@ -161,6 +161,11 @@
                                                     {{ ($row['status'] ?? '') === 'active' ? 'Unsubscribe' : 'Reactivate' }}
                                                 </button>
                                             </form>
+                                            <form method="POST" action="{{ route('newsletter-subscribers.destroy', $row['id']) }}" data-confirm="Delete this subscriber permanently? This cannot be undone." data-confirm-title="Please confirm" data-confirm-ok="Delete" data-confirm-tone="danger">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="px-3 py-1.5 rounded-md border border-red-300 text-red-700 text-xs">Delete</button>
+                                            </form>
                                         @endif
                                     </div>
                                 </td>
