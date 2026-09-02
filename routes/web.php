@@ -38,6 +38,9 @@ Route::get('/event', [\App\Http\Controllers\PublicSite\CmsPageController::class,
 Route::get('/events', [\App\Http\Controllers\PublicSite\CmsPageController::class, 'show'])
     ->defaults('pageKey', 'event')
     ->name('public.events');
+Route::get('/api/blog/suggest', [\App\Http\Controllers\PublicSite\BlogController::class, 'suggest'])
+    ->middleware('throttle:60,1')
+    ->name('public.blog.suggest');
 Route::get('/blog', [\App\Http\Controllers\PublicSite\BlogController::class, 'index'])
     ->name('public.blog');
 Route::get('/blog/category/{category}', [\App\Http\Controllers\PublicSite\BlogController::class, 'category'])

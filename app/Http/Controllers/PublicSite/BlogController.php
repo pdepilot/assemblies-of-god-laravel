@@ -9,6 +9,7 @@ use App\Services\Website\BlogReadService;
 use App\Services\Website\SchemaBuilder;
 use App\Services\Website\SeoReadService;
 use App\Services\Website\WebsitePagesReadService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -41,6 +42,15 @@ final class BlogController extends Controller
     public function tag(Request $request, string $tag): View
     {
         return $this->listing($request, '', $tag, 'Tag: '.$tag);
+    }
+
+    public function suggest(Request $request): JsonResponse
+    {
+        $query = trim((string) $request->query('q', ''));
+
+        return response()->json([
+            'suggestions' => $this->blog->suggest($query),
+        ]);
     }
 
     public function show(string $slug): View
@@ -124,8 +134,6 @@ final class BlogController extends Controller
             'activeTag' => $tag,
             'searchQuery' => $query,
             'popular' => array_map(fn (array $p) => $this->hydratePost($p), $this->blog->popular(5)),
-            'recent' => array_map(fn (array $p) => $this->hydratePost($p), $this->blog->recent(5)),
-            'categories' => BlogReadService::categoryLabels(),
             'legacy_api_base' => $payload['legacy_api_base'],
             'traffic_beacon_url' => $payload['traffic_beacon_url'],
             'seo' => $seo,
@@ -157,6 +165,11 @@ final class BlogController extends Controller
         $post['image_alt'] = trim((string) ($post['featured_image_alt'] ?? '')) !== ''
             ? (string) $post['featured_image_alt']
             : (string) ($post['title'] ?? 'Blog image');
+        $readingMinutes = max(1, (int) ($post['reading_time_minutes'] ?? 0));
+        $post['reading_time_display'] = $readingMinutes.' min read';
+        $author = trim((string) ($post['author'] ?? ''));
+        $post['author_display'] = $author !== '' ? $author : (string) config('identity.public.short_name', 'AGC Ikenegbu');
+        $post['view_count_display'] = max(0, (int) ($post['view_count'] ?? 0));
 
         return $post;
     }

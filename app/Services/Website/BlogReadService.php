@@ -169,6 +169,35 @@ final class BlogReadService
         return $builder->limit($limit)->get()->map(fn ($row) => $this->normalizeRow((array) $row))->all();
     }
 
+    /** @return list<array{title: string, url: string, reading_time_minutes: int}> */
+    public function suggest(string $query, int $limit = 6): array
+    {
+        $query = trim($query);
+        if (mb_strlen($query) < 2) {
+            return [];
+        }
+
+        return DB::table('ag_blog_posts')
+            ->where('is_published', true)
+            ->where(function ($builder) use ($query) {
+                $builder->where('title', 'like', '%'.$query.'%')
+                    ->orWhere('excerpt', 'like', '%'.$query.'%');
+            })
+            ->orderByDesc('published_at')
+            ->limit(max(1, min(10, $limit)))
+            ->get(['title', 'slug', 'reading_time_minutes'])
+            ->map(function ($row): array {
+                $minutes = max(1, (int) ($row->reading_time_minutes ?? 1));
+
+                return [
+                    'title' => (string) $row->title,
+                    'url' => route('public.blog.show', (string) $row->slug),
+                    'reading_time_minutes' => $minutes,
+                ];
+            })
+            ->all();
+    }
+
     /** @return list<array<string, mixed>> */
     public function recent(int $limit = 5): array
     {
