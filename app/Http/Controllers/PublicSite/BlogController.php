@@ -94,6 +94,7 @@ final class BlogController extends Controller
             'toc' => $toc,
             'related' => $related,
             'adjacent' => $adjacent,
+            'popular' => array_map(fn (array $p) => $this->hydratePost($p), $this->blog->popular(5)),
             'legacy_api_base' => $payload['legacy_api_base'],
             'traffic_beacon_url' => $payload['traffic_beacon_url'],
             'seo' => $seo,

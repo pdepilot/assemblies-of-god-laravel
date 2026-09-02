@@ -26,13 +26,21 @@ final class BlogController
         $admin = $this->admin();
         $this->policy->requireViewWebsite($admin);
 
+        $result = $this->read->listPosts(
+            (string) $request->query('q', ''),
+            (string) $request->query('category', ''),
+            (string) $request->query('status', ''),
+            max(1, (int) $request->query('page', 1)),
+            8,
+        );
+        $result['items'] = array_map(function (array $item): array {
+            $item['featured_image_url'] = $this->featuredImageUrl($item);
+
+            return $item;
+        }, $result['items']);
+
         return view('website.blog.index', [
-            'result' => $this->read->listPosts(
-                (string) $request->query('q', ''),
-                (string) $request->query('category', ''),
-                (string) $request->query('status', ''),
-                max(1, (int) $request->query('page', 1)),
-            ),
+            'result' => $result,
             'categories' => BlogReadService::categoryLabels(),
             'stats' => $this->read->getStats(),
             'canManage' => $this->policy->manageWebsite($admin),

@@ -49,20 +49,32 @@ final class BlogWriteService
             $currentImage = '';
         }
 
+        $isPublished = filter_var($data['is_published'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $wasPublished = false;
+        if ($id > 0) {
+            $wasPublished = (bool) DB::table('ag_blog_posts')->where('id', $id)->value('is_published');
+        }
+
         $payload = [
             'title' => $title,
             'excerpt' => trim((string) ($data['excerpt'] ?? '')),
             'body_html' => (string) ($data['body_html'] ?? ''),
-            'author' => trim((string) ($data['author'] ?? 'AGC Ikenegbu')),
+            'author' => trim((string) ($data['author'] ?? 'AGC Ikenegbu')) ?: 'AGC Ikenegbu',
             'category' => $category,
             'meta_description' => trim((string) ($data['meta_description'] ?? '')),
             'seo_title' => trim((string) ($data['seo_title'] ?? '')),
             'featured_image' => $currentImage,
             'featured_image_alt' => trim((string) ($data['featured_image_alt'] ?? '')),
-            'is_published' => (bool) ($data['is_published'] ?? false),
+            'is_published' => $isPublished,
             'updated_by' => $adminId > 0 ? $adminId : null,
             'updated_at' => now(),
         ];
+
+        if ($isPublished && ! $wasPublished) {
+            $payload['published_at'] = now();
+        } elseif (! $isPublished) {
+            $payload['published_at'] = null;
+        }
 
         $tags = $data['tags'] ?? [];
         if (is_string($tags)) {
@@ -82,7 +94,8 @@ final class BlogWriteService
         if ($id > 0) {
             DB::table('ag_blog_posts')->where('id', $id)->update($payload);
         } else {
-            $slug = $this->slugify((string) ($data['slug'] ?? $title));
+            $slugSource = trim((string) ($data['slug'] ?? ''));
+            $slug = $this->slugify($slugSource !== '' ? $slugSource : $title);
             DB::table('ag_blog_posts')->insert($payload + [
                 'slug' => $slug,
                 'view_count' => 0,

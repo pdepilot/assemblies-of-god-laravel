@@ -1,5 +1,5 @@
 /**
- * Blog listing UX — search suggestions (jenfrankfarms.com/blog pattern).
+ * Blog UX — search suggestions + article share (jenfrankfarms.com/blog pattern).
  */
 (function () {
     "use strict";
@@ -80,5 +80,25 @@
         });
     }
 
-    document.addEventListener("DOMContentLoaded", initSearchSuggest);
+    function initCopyLink() {
+        var btn = document.getElementById("copyArticleLink");
+        if (!btn || !navigator.clipboard) return;
+
+        btn.addEventListener("click", function () {
+            var shareUrl = btn.getAttribute("data-share-url");
+            if (!shareUrl) return;
+
+            navigator.clipboard.writeText(shareUrl).then(function () {
+                btn.classList.add("copied");
+                setTimeout(function () {
+                    btn.classList.remove("copied");
+                }, 1500);
+            }).catch(function () { /* ignore */ });
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        initSearchSuggest();
+        initCopyLink();
+    });
 })();

@@ -205,14 +205,26 @@
 @push('scripts')
 <script src="{{ asset('site/js/blog-ux.js') }}?v={{ filemtime(public_path('site/js/blog-ux.js')) }}" defer></script>
 @if (trim((string) ($searchQuery ?? '')) !== '')
+<script type="application/json" id="blogSearchAnalytics">{!! json_encode(['search_term' => (string) $searchQuery], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP) !!}</script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    if (window.AG_ANALYTICS && typeof window.AG_ANALYTICS.event === 'function') {
-        window.AG_ANALYTICS.event('search', {
-            search_term: @json($searchQuery),
-            content_type: 'blog'
-        });
+    if (!(window.AG_ANALYTICS && typeof window.AG_ANALYTICS.event === 'function')) {
+        return;
     }
+
+    var searchTerm = '';
+    var flagsEl = document.getElementById('blogSearchAnalytics');
+    if (flagsEl) {
+        try {
+            var flags = JSON.parse(flagsEl.textContent || '{}');
+            searchTerm = flags.search_term || '';
+        } catch (e) { /* ignore */ }
+    }
+
+    window.AG_ANALYTICS.event('search', {
+        search_term: searchTerm,
+        content_type: 'blog'
+    });
 });
 </script>
 @endif

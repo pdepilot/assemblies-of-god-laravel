@@ -372,6 +372,208 @@
     gap: 0.75rem;
 }
 
+/* Article reading layout — jenfrankfarms.com/blog/{slug} pattern */
+.blog-article-cover {
+    width: 100%;
+    max-height: 420px;
+    object-fit: cover;
+    display: block;
+}
+
+.blog-article-body {
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: #334155;
+}
+
+.blog-article-body > *:first-child {
+    margin-top: 0;
+}
+
+.blog-article-body p {
+    margin-bottom: 0;
+}
+
+.blog-article-body p + p {
+    margin-top: 1rem;
+}
+
+.blog-article-body h2,
+.blog-article-body h3,
+.blog-article-body h4 {
+    color: #1A2B5C;
+    scroll-margin-top: 5.5rem;
+    margin-top: 1.75rem;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+}
+
+.blog-article-body ul,
+.blog-article-body ol {
+    margin: 1rem 0 1.25rem;
+    padding-left: 1.35rem;
+}
+
+.blog-article-body li {
+    margin-bottom: 0.4rem;
+}
+
+.blog-article-body a {
+    color: #1A2B5C;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.blog-article-body blockquote {
+    margin: 1.5rem 0;
+    padding: 1rem 1.25rem;
+    border-left: 4px solid var(--bs-primary, #fbfe06);
+    background: rgba(26, 43, 92, 0.04);
+    font-style: italic;
+    color: #1A2B5C;
+}
+
+.blog-article-body img {
+    max-width: 100%;
+    height: auto;
+    margin: 1.25rem 0;
+}
+
+.blog-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.blog-tags a {
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid rgba(26, 43, 92, 0.25);
+    color: #1A2B5C;
+    padding: 0.2rem 0.45rem;
+    text-decoration: none;
+    background: rgba(26, 43, 92, 0.04);
+}
+
+.blog-tags a:hover {
+    background: rgba(26, 43, 92, 0.1);
+    color: #1A2B5C;
+}
+
+.blog-toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.45rem;
+}
+
+.blog-toc a {
+    color: #1A2B5C;
+    text-decoration: none;
+    font-size: 0.92rem;
+    line-height: 1.35;
+}
+
+.blog-toc a:hover {
+    color: var(--ag-navy-light, #2A4078);
+}
+
+.blog-toc .toc-level-3 {
+    padding-left: 0.85rem;
+}
+
+.blog-share {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.55rem;
+}
+
+.sticky-share {
+    position: sticky;
+    top: 6.5rem;
+}
+
+.share-btn {
+    width: 2.4rem;
+    height: 2.4rem;
+    display: inline-grid;
+    place-items: center;
+    border: 1px solid rgba(26, 43, 92, 0.15);
+    background: #fff;
+    color: #1A2B5C;
+    text-decoration: none;
+    transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+    cursor: pointer;
+    padding: 0;
+    font: inherit;
+}
+
+.share-btn:hover,
+.share-btn.copied {
+    background: #1A2B5C;
+    border-color: #1A2B5C;
+    color: #fff;
+}
+
+.blog-pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    border-top: 1px solid rgba(26, 43, 92, 0.1);
+    padding-top: 1.25rem;
+}
+
+.blog-pager a {
+    display: grid;
+    gap: 0.25rem;
+    text-decoration: none;
+    color: inherit;
+    padding: 0.75rem;
+    border: 1px solid rgba(26, 43, 92, 0.1);
+    background: #fff;
+    transition: border-color 0.25s ease, transform 0.25s ease;
+}
+
+.blog-pager a:hover {
+    border-color: rgba(26, 43, 92, 0.45);
+    transform: translateY(-2px);
+    color: inherit;
+}
+
+.blog-pager span {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.blog-pager strong {
+    font-size: 0.95rem;
+    line-height: 1.35;
+    color: #0f172a;
+}
+
+@media (max-width: 991.98px) {
+    .blog-share {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-top: 0.5rem;
+    }
+
+    .sticky-share,
+    .sticky-panel {
+        position: static;
+    }
+
+    .blog-pager {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (max-width: 575.98px) {
     .blog-search-form {
         grid-template-columns: 1fr;
@@ -390,11 +592,5 @@
 
     .ag-blog-article__foot .ms-2 {
         margin-left: 0 !important;
-    }
-}
-
-@media (max-width: 991.98px) {
-    .sticky-panel {
-        position: static;
     }
 }
