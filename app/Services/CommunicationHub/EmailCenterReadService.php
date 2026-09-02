@@ -12,16 +12,16 @@ final class EmailCenterReadService
     ) {}
 
     /**
-     * @return array{items: list<array<string, mixed>>, total: int, page: int, pages: int, per_page: int}
+     * @return array{items: list<array<string, mixed>>, total: int, page: int, pages: int, per_page: int, from: int, to: int}
      */
-    public function listHistory(string $folder = '', int $page = 1, int $perPage = 20): array
+    public function listHistory(string $folder = '', int $page = 1, int $perPage = 15): array
     {
         $page = max(1, $page);
         $perPage = max(1, min(50, $perPage));
         $offset = ($page - 1) * $perPage;
 
         if (! Schema::hasTable('email_history')) {
-            return ['items' => [], 'total' => 0, 'page' => 1, 'pages' => 1, 'per_page' => $perPage];
+            return ['items' => [], 'total' => 0, 'page' => 1, 'pages' => 1, 'per_page' => $perPage, 'from' => 0, 'to' => 0];
         }
 
         $query = DB::table('email_history');
@@ -45,7 +45,13 @@ final class EmailCenterReadService
             $query->where('status', $folder);
         }
 
-        $total = (clone $query)->count();
+        $total = (int) (clone $query)->count();
+        $pages = (int) max(1, (int) ceil($total / $perPage));
+        if ($page > $pages) {
+            $page = $pages;
+            $offset = ($page - 1) * $perPage;
+        }
+
         $items = $query->orderByDesc('id')
             ->offset($offset)
             ->limit($perPage)
@@ -63,12 +69,17 @@ final class EmailCenterReadService
             ])
             ->all();
 
+        $from = $total === 0 ? 0 : $offset + 1;
+        $to = $total === 0 ? 0 : min($offset + count($items), $total);
+
         return [
             'items' => $items,
             'total' => $total,
             'page' => $page,
-            'pages' => (int) max(1, ceil($total / $perPage)),
+            'pages' => $pages,
             'per_page' => $perPage,
+            'from' => $from,
+            'to' => $to,
         ];
     }
 

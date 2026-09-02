@@ -151,9 +151,8 @@
                           :value="old('date_of_death', $m?->date_of_death?->format('Y-m-d') ?? '')" />
         </div>
         <div>
-            <x-input-label for="death_notes" value="Death notes" />
-            <x-text-input id="death_notes" name="death_notes" type="text" class="block mt-1 w-full"
-                          :value="old('death_notes', $m?->death_notes ?? '')" />
+            <x-input-label for="death_notes" value="Memorial notes" />
+            <textarea id="death_notes" name="death_notes" rows="3" class="block mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" placeholder="Service details, burial place, family notes…">{{ old('death_notes', $m?->death_notes ?? '') }}</textarea>
         </div>
     </div>
 

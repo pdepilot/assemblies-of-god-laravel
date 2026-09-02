@@ -160,7 +160,52 @@ final class MemberWriteService
         return $this->read->getMember($id) ?? $member->fresh()->toArray();
     }
 
-  /**
+    /**
+     * Mark an existing living member as deceased (no new registration).
+     *
+     * @return array<string, mixed>
+     */
+    public function markAsDeceased(int $memberId, string $dateOfDeath, ?string $deathNotes, int $adminId): array
+    {
+        $member = Member::query()->findOrFail($memberId);
+        $previousStatus = (string) $member->status;
+
+        if ($previousStatus === 'deceased') {
+            throw new InvalidArgumentException('This member is already marked as deceased.');
+        }
+
+        $joinedDate = $member->joined_date?->format('Y-m-d');
+        $death = $this->validateDeathFields($dateOfDeath, $deathNotes, $joinedDate);
+
+        $member->update([
+            'status' => 'deceased',
+            'date_of_death' => $death['date_of_death'],
+            'death_notes' => $death['death_notes'],
+        ]);
+
+        $this->logStatusChange(
+            $memberId,
+            $previousStatus,
+            'deceased',
+            'Death recorded from deceased dashboard',
+            'manual',
+            $adminId,
+        );
+
+        $this->audit->log(
+            'member_death_recorded',
+            'Death recorded for member '.$member->full_name.'.',
+            $adminId,
+            'warning',
+            ['member_id' => $memberId],
+        );
+
+        $this->ageTransfers->syncMember($memberId, 'on_save', $adminId);
+
+        return $this->read->getMember($memberId) ?? $member->fresh()->toArray();
+    }
+
+    /**
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */

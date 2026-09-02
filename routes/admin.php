@@ -213,6 +213,14 @@ Route::prefix('admin')->group(function () {
 
     Route::get('/members', [\App\Http\Controllers\Members\MembersController::class, 'index'])
         ->name('members.index');
+    Route::get('/members/deceased', [\App\Http\Controllers\Members\DeceasedMembersController::class, 'index'])
+        ->name('members.deceased');
+    Route::get('/members/deceased/record', [\App\Http\Controllers\Members\DeceasedMembersController::class, 'create'])
+        ->name('members.deceased.record');
+    Route::post('/members/deceased/record', [\App\Http\Controllers\Members\DeceasedMembersController::class, 'store'])
+        ->name('members.deceased.store');
+    Route::get('/members/{member}/death-certificate', [\App\Http\Controllers\Members\DeceasedMembersController::class, 'certificate'])
+        ->name('members.death-certificate');
     Route::get('/members/create', [\App\Http\Controllers\Members\MembersController::class, 'create'])
         ->name('members.create');
     Route::post('/members', [\App\Http\Controllers\Members\MembersController::class, 'store'])
@@ -370,6 +378,12 @@ Route::prefix('admin')->group(function () {
 
     Route::get('/financial-erp/income', [\App\Http\Controllers\FinancialErp\IncomeController::class, 'index'])
         ->name('financial-erp.income.index');
+    Route::get('/financial-erp/income/categories', [\App\Http\Controllers\FinancialErp\IncomeCategoriesController::class, 'index'])
+        ->name('financial-erp.income.categories.index');
+    Route::get('/financial-erp/income/categories/create', [\App\Http\Controllers\FinancialErp\IncomeCategoriesController::class, 'create'])
+        ->name('financial-erp.income.categories.create');
+    Route::post('/financial-erp/income/categories', [\App\Http\Controllers\FinancialErp\IncomeCategoriesController::class, 'store'])
+        ->name('financial-erp.income.categories.store');
     Route::get('/financial-erp/income/create', [\App\Http\Controllers\FinancialErp\IncomeController::class, 'create'])
         ->name('financial-erp.income.create');
     Route::post('/financial-erp/income', [\App\Http\Controllers\FinancialErp\IncomeController::class, 'store'])
@@ -422,6 +436,11 @@ Route::prefix('admin')->group(function () {
         ->name('communication-hub.email-center.index');
     Route::post('/communication-hub/email-center', [\App\Http\Controllers\CommunicationHub\EmailCenterController::class, 'compose'])
         ->name('communication-hub.email-center.compose');
+    Route::delete('/communication-hub/email-center/bulk', [\App\Http\Controllers\CommunicationHub\EmailCenterController::class, 'destroyMany'])
+        ->name('communication-hub.email-center.destroy-many');
+    Route::delete('/communication-hub/email-center/{history}', [\App\Http\Controllers\CommunicationHub\EmailCenterController::class, 'destroy'])
+        ->whereNumber('history')
+        ->name('communication-hub.email-center.destroy');
     Route::get('/communication-hub/sms-center', [\App\Http\Controllers\CommunicationHub\SmsCenterController::class, 'index'])
         ->name('communication-hub.sms-center.index');
     Route::post('/communication-hub/sms-center', [\App\Http\Controllers\CommunicationHub\SmsCenterController::class, 'compose'])

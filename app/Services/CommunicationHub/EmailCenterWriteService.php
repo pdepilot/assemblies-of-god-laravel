@@ -259,6 +259,35 @@ final class EmailCenterWriteService
         return null;
     }
 
+    public function deleteHistory(int $id): void
+    {
+        if (! Schema::hasTable('email_history')) {
+            throw new InvalidArgumentException('Email history is not available.');
+        }
+
+        $deleted = DB::table('email_history')->where('id', $id)->delete();
+        if ($deleted === 0) {
+            throw new InvalidArgumentException('Email record not found.');
+        }
+    }
+
+    /**
+     * @param  list<int>  $ids
+     */
+    public function deleteHistoryMany(array $ids): int
+    {
+        if (! Schema::hasTable('email_history')) {
+            throw new InvalidArgumentException('Email history is not available.');
+        }
+
+        $ids = array_values(array_unique(array_filter(array_map('intval', $ids), static fn (int $id): bool => $id > 0)));
+        if ($ids === []) {
+            throw new InvalidArgumentException('Select at least one email to delete.');
+        }
+
+        return (int) DB::table('email_history')->whereIn('id', $ids)->delete();
+    }
+
     /**
      * @param  array{email: string, name: string}  $recipient
      */

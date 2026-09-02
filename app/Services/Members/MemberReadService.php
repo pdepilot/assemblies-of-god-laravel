@@ -87,7 +87,6 @@ final class MemberReadService
      */
     public function getStats(): array
     {
-        $today = now()->toDateString();
         $monthStart = now()->startOfMonth()->toDateString();
 
         return [
@@ -118,6 +117,149 @@ final class MemberReadService
                         });
                 })->count(),
         ];
+    }
+
+    /**
+     * @return array{items: list<array<string, mixed>>, total: int, page: int, per_page: int, pages: int}
+     */
+    public function listDeceased(string $query = '', int $page = 1, int $perPage = 20): array
+    {
+        $page = max(1, $page);
+        $perPage = max(1, min(50, $perPage));
+        $offset = ($page - 1) * $perPage;
+
+        $base = DB::table('members')->where('status', 'deceased');
+
+        if ($query !== '') {
+            $like = '%'.$query.'%';
+            $base->where(function ($q) use ($like): void {
+                $q->where('full_name', 'like', $like)
+                    ->orWhere('email', 'like', $like)
+                    ->orWhere('member_code', 'like', $like)
+                    ->orWhere('phone', 'like', $like)
+                    ->orWhere('department', 'like', $like)
+                    ->orWhere('death_notes', 'like', $like);
+            });
+        }
+
+        $total = (int) (clone $base)->count();
+
+        $items = (clone $base)
+            ->orderByRaw('CASE WHEN date_of_death IS NULL THEN 1 ELSE 0 END')
+            ->orderByDesc('date_of_death')
+            ->orderBy('full_name')
+            ->offset($offset)
+            ->limit($perPage)
+            ->get()
+            ->map(fn ($row) => $this->formatDeceasedMember((array) $row))
+            ->all();
+
+        return [
+            'items' => $items,
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $perPage,
+            'pages' => max(1, (int) ceil($total / max(1, $perPage))),
+        ];
+    }
+
+    /**
+     * Living (non-deceased) members for the "record deceased" picker.
+     *
+     * @return list<array{id: int, member_code: string, full_name: string, department: string, phone: string, status: string}>
+     */
+    public function listSelectableLivingMembers(?string $query = null): array
+    {
+        $base = DB::table('members')
+            ->where('status', '<>', 'deceased')
+            ->orderBy('full_name');
+
+        $query = trim((string) $query);
+        if ($query !== '') {
+            $like = '%'.$query.'%';
+            $base->where(function ($q) use ($like): void {
+                $q->where('full_name', 'like', $like)
+                    ->orWhere('member_code', 'like', $like)
+                    ->orWhere('phone', 'like', $like)
+                    ->orWhere('department', 'like', $like);
+            });
+        }
+
+        return $base
+            ->limit(500)
+            ->get(['id', 'member_code', 'full_name', 'department', 'phone', 'status'])
+            ->map(static fn ($row): array => [
+                'id' => (int) $row->id,
+                'member_code' => (string) $row->member_code,
+                'full_name' => (string) $row->full_name,
+                'department' => (string) ($row->department ?? ''),
+                'phone' => (string) ($row->phone ?? ''),
+                'status' => (string) $row->status,
+            ])
+            ->all();
+    }
+
+    /**
+     * @return array{
+     *   total: int,
+     *   this_year: int,
+     *   this_month: int,
+     *   with_memorial_notes: int,
+     *   missing_date_of_death: int
+     * }
+     */
+    public function getDeceasedStats(): array
+    {
+        $yearStart = now()->startOfYear()->toDateString();
+        $monthStart = now()->startOfMonth()->toDateString();
+
+        return [
+            'total' => (int) DB::table('members')->where('status', 'deceased')->count(),
+            'this_year' => (int) DB::table('members')
+                ->where('status', 'deceased')
+                ->whereNotNull('date_of_death')
+                ->where('date_of_death', '>=', $yearStart)
+                ->count(),
+            'this_month' => (int) DB::table('members')
+                ->where('status', 'deceased')
+                ->whereNotNull('date_of_death')
+                ->where('date_of_death', '>=', $monthStart)
+                ->count(),
+            'with_memorial_notes' => (int) DB::table('members')
+                ->where('status', 'deceased')
+                ->whereNotNull('death_notes')
+                ->where('death_notes', '<>', '')
+                ->count(),
+            'missing_date_of_death' => (int) DB::table('members')
+                ->where('status', 'deceased')
+                ->where(function ($q): void {
+                    $q->whereNull('date_of_death')->orWhere('date_of_death', '');
+                })
+                ->count(),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     * @return array<string, mixed>
+     */
+    private function formatDeceasedMember(array $row): array
+    {
+        $member = $this->formatMember($row);
+        $deathDate = $row['date_of_death'] ?? null;
+        $displayDeath = '—';
+        if ($deathDate) {
+            try {
+                $displayDeath = Carbon::parse((string) $deathDate)->format('d M Y');
+            } catch (\Throwable) {
+                $displayDeath = (string) $deathDate;
+            }
+        }
+
+        $member['date_of_death_display'] = $displayDeath;
+        $member['memorial_notes'] = trim((string) ($row['death_notes'] ?? '')) ?: null;
+
+        return $member;
     }
 
     /** @return list<string> */

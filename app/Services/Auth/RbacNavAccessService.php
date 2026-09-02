@@ -43,6 +43,7 @@ final class RbacNavAccessService
         return [
             'dashboard' => 'dashboard',
             'members' => 'members',
+            'deceased' => 'members',
             'ministry-settings' => 'ministry_settings',
             'ministry-age-transfers' => 'ministry_settings',
             'children' => 'children',
@@ -220,6 +221,7 @@ final class RbacNavAccessService
             'attendance' => $this->namedRoute('ss.attendance.index'),
             'events' => $this->namedRoute('events.index'),
             'members' => $this->namedRoute('members.index'),
+            'deceased' => $this->namedRoute('members.deceased'),
             'visitors' => $this->namedRoute('visitors.index'),
             'ch-dashboard', 'messages' => $this->namedRoute('communication-hub.dashboard'),
             'children' => $this->namedRoute('ministries.module.index', ['ministryKey' => 'children']),

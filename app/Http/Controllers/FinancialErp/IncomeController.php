@@ -55,7 +55,7 @@ final class IncomeController
         try {
             $income = $this->write->save($request->validated(), (int) $admin->id, (string) $admin->role);
         } catch (InvalidArgumentException $e) {
-            return back()->withInput()->withErrors(['amount' => $e->getMessage()]);
+            return back()->withInput()->withErrors(['category_id' => $e->getMessage()]);
         }
 
         return redirect()->route('financial-erp.income.show', $income['id'])->with('status', 'Income recorded.');

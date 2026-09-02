@@ -11,6 +11,80 @@ final class IncomeWriteService
         private readonly IncomeReadService $read,
     ) {}
 
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    public function createCategory(array $data, int $adminId, ?string $role = null): array
+    {
+        $name = trim((string) ($data['name'] ?? ''));
+        if ($name === '' || mb_strlen($name) > 120) {
+            throw new InvalidArgumentException('Category name is required (max 120 characters).');
+        }
+
+        $code = strtoupper(trim((string) ($data['code'] ?? '')));
+        $code = preg_replace('/[^A-Z0-9_-]/', '', $code) ?? '';
+        if ($code === '') {
+            $code = $this->generateCategoryCode($name);
+        }
+        if (strlen($code) > 32) {
+            throw new InvalidArgumentException('Category code must be 32 characters or fewer.');
+        }
+        if (DB::table('erp_income_categories')->where('code', $code)->exists()) {
+            throw new InvalidArgumentException('A category with this code already exists.');
+        }
+
+        $accountId = ! empty($data['account_id']) ? (int) $data['account_id'] : null;
+        if ($accountId === null) {
+            $accountId = DB::table('erp_accounts')
+                ->where('code', '4010')
+                ->whereNull('deleted_at')
+                ->value('id');
+            $accountId = $accountId ? (int) $accountId : null;
+        } elseif (! DB::table('erp_accounts')->where('id', $accountId)->whereNull('deleted_at')->exists()) {
+            throw new InvalidArgumentException('Selected income account was not found.');
+        }
+
+        $id = (int) DB::table('erp_income_categories')->insertGetId([
+            'code' => $code,
+            'name' => $name,
+            'account_id' => $accountId,
+            'is_active' => true,
+            'created_at' => now(),
+        ]);
+
+        ErpSupport::logAudit('income_category', $id, 'create', null, [
+            'code' => $code,
+            'name' => $name,
+            'account_id' => $accountId,
+        ], $adminId, $role);
+
+        $category = $this->read->getCategory($id);
+        if ($category === null) {
+            throw new InvalidArgumentException('Category was created but could not be loaded.');
+        }
+
+        return $category;
+    }
+
+    private function generateCategoryCode(string $name): string
+    {
+        $base = strtoupper(preg_replace('/[^A-Za-z0-9]+/', '', $name) ?? '');
+        $base = substr($base !== '' ? $base : 'CAT', 0, 6);
+        $code = $base;
+        $n = 1;
+        while (DB::table('erp_income_categories')->where('code', $code)->exists()) {
+            $suffix = (string) $n;
+            $code = substr($base, 0, max(1, 8 - strlen($suffix))).$suffix;
+            $n++;
+            if ($n > 999) {
+                throw new InvalidArgumentException('Unable to allocate a unique category code.');
+            }
+        }
+
+        return $code;
+    }
+
     /** @param array<string, mixed> $data @return array<string, mixed> */
     public function save(array $data, int $adminId, ?string $role = null): array
     {
@@ -18,9 +92,19 @@ final class IncomeWriteService
         $isNew = $id <= 0;
         $amount = round((float) ($data['amount'] ?? 0), 2);
         $categoryId = (int) ($data['category_id'] ?? 0);
+        $newCategoryName = trim((string) ($data['new_category_name'] ?? ''));
 
-        if ($amount <= 0 || $categoryId <= 0) {
-            throw new InvalidArgumentException('Valid amount and category are required.');
+        if ($amount <= 0) {
+            throw new InvalidArgumentException('Valid amount is required.');
+        }
+
+        if ($categoryId <= 0 && $newCategoryName !== '') {
+            $category = $this->findOrCreateCategoryByName($newCategoryName, $adminId, $role);
+            $categoryId = (int) $category['id'];
+        }
+
+        if ($categoryId <= 0) {
+            throw new InvalidArgumentException('Select a category from the list, or enter a new category name.');
         }
 
         $fields = [
@@ -56,6 +140,27 @@ final class IncomeWriteService
         $this->syncToReceipt($income, $adminId, $role);
 
         return $income;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function findOrCreateCategoryByName(string $name, int $adminId, ?string $role): array
+    {
+        $name = trim($name);
+        $existing = DB::table('erp_income_categories')
+            ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+            ->first();
+
+        if ($existing) {
+            if (! (bool) $existing->is_active) {
+                DB::table('erp_income_categories')->where('id', $existing->id)->update(['is_active' => true]);
+            }
+
+            return (array) $existing + ['id' => (int) $existing->id, 'is_active' => true];
+        }
+
+        return $this->createCategory(['name' => $name], $adminId, $role);
     }
 
     /** @param array<string, mixed> $income */

@@ -83,7 +83,9 @@ test('communications officer can compose email from email center', function () {
         'subject' => 'Welcome to church',
         'body_html' => 'Hello and welcome',
         'priority' => 'normal',
-    ])->assertRedirect(route('communication-hub.email-center.index'));
+    ])->assertRedirect(route('communication-hub.email-center.index', ['folder' => 'sent']))
+        ->assertSessionHas('compose_sent', true)
+        ->assertSessionHas('status', 'Sent.');
 
     $this->assertDatabaseHas('email_history', [
         'subject' => 'Welcome to church',
@@ -92,6 +94,105 @@ test('communications officer can compose email from email center', function () {
         'provider' => 'smtp',
     ]);
 });
+
+test('email center paginates sent emails', function () {
+    $admin = Admin::factory()->create(['role' => 'communications_officer']);
+
+    for ($i = 1; $i <= 16; $i++) {
+        DB::table('email_history')->insert([
+            'tracking_token' => Str::random(64),
+            'subject' => sprintf('Sent batch item %02d', $i),
+            'recipient' => "member{$i}@example.com",
+            'recipient_name' => "Member {$i}",
+            'status' => 'sent',
+            'created_at' => now()->subMinutes($i),
+            'sent_at' => now()->subMinutes($i),
+        ]);
+    }
+
+    $page1 = $this->actingAs($admin, 'admin')->get(route('communication-hub.email-center.index', [
+        'folder' => 'sent',
+    ]));
+    $page1->assertOk();
+    $page1->assertSee('Showing 1–15 of 16');
+    $page1->assertSee('Sent batch item 16');
+    $page1->assertDontSee('Sent batch item 01');
+    $page1->assertSee('Next');
+
+    $page2 = $this->actingAs($admin, 'admin')->get(route('communication-hub.email-center.index', [
+        'folder' => 'sent',
+        'page' => 2,
+    ]));
+    $page2->assertOk();
+    $page2->assertSee('Showing 16–16 of 16');
+    $page2->assertSee('Sent batch item 01');
+    $page2->assertSee('Previous');
+});
+
+test('communications officer can delete a sent email from email center', function () {
+    $admin = Admin::factory()->create(['role' => 'communications_officer']);
+
+    $id = DB::table('email_history')->insertGetId([
+        'tracking_token' => Str::random(64),
+        'subject' => 'Delete me',
+        'recipient' => 'gone@example.com',
+        'recipient_name' => 'Gone',
+        'status' => 'sent',
+        'created_at' => now(),
+        'sent_at' => now(),
+    ]);
+
+    $this->actingAs($admin, 'admin')
+        ->delete(route('communication-hub.email-center.destroy', $id).'?folder=sent')
+        ->assertRedirect(route('communication-hub.email-center.index', ['folder' => 'sent']));
+
+    $this->assertDatabaseMissing('email_history', ['id' => $id]);
+});
+
+test('communications officer can bulk delete sent emails', function () {
+    $admin = Admin::factory()->create(['role' => 'communications_officer']);
+
+    $ids = [];
+    foreach (['One', 'Two', 'Keep'] as $label) {
+        $ids[] = DB::table('email_history')->insertGetId([
+            'tracking_token' => Str::random(64),
+            'subject' => "Bulk {$label}",
+            'recipient' => strtolower($label).'@example.com',
+            'status' => 'sent',
+            'created_at' => now(),
+            'sent_at' => now(),
+        ]);
+    }
+
+    $this->actingAs($admin, 'admin')
+        ->delete(route('communication-hub.email-center.destroy-many'), [
+            'ids' => [$ids[0], $ids[1]],
+            'folder' => 'sent',
+        ])
+        ->assertRedirect(route('communication-hub.email-center.index', ['folder' => 'sent']));
+
+    $this->assertDatabaseMissing('email_history', ['id' => $ids[0]]);
+    $this->assertDatabaseMissing('email_history', ['id' => $ids[1]]);
+    $this->assertDatabaseHas('email_history', ['id' => $ids[2], 'subject' => 'Bulk Keep']);
+});
+
+test('ss teacher cannot delete email history', function () {
+    $admin = Admin::factory()->create(['role' => 'ss_teacher']);
+    $id = DB::table('email_history')->insertGetId([
+        'tracking_token' => Str::random(64),
+        'subject' => 'Protected',
+        'recipient' => 'a@example.com',
+        'status' => 'sent',
+        'created_at' => now(),
+    ]);
+
+    $this->actingAs($admin, 'admin')
+        ->delete(route('communication-hub.email-center.destroy', $id))
+        ->assertForbidden();
+
+    $this->assertDatabaseHas('email_history', ['id' => $id]);
+});
+
 
 test('compose email fails clearly when smtp is not configured', function () {
     $admin = Admin::factory()->create(['role' => 'communications_officer']);
@@ -115,7 +216,7 @@ test('compose email fails clearly when smtp is not configured', function () {
         'subject' => 'Welcome to church',
         'body_html' => 'Hello and welcome',
         'priority' => 'normal',
-    ])->assertRedirect(route('communication-hub.email-center.index'));
+    ])->assertRedirect(route('communication-hub.email-center.index', ['folder' => 'sent']));
 
     $this->assertDatabaseHas('email_history', [
         'recipient' => 'guest@example.com',

@@ -3,6 +3,11 @@
         <div class="flex flex-wrap items-center justify-between gap-3">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">{{ $member['full_name'] }}</h2>
             <div class="flex gap-3 text-sm">
+                @if (($member['status'] ?? '') === 'deceased')
+                    <a href="{{ route('members.death-certificate', $member['id']) }}" target="_blank" rel="noopener" class="text-indigo-600 hover:underline">Death certificate</a>
+                    <a href="{{ route('members.death-certificate', [$member['id'], 'download' => 1]) }}" class="text-indigo-600 hover:underline">Download PDF</a>
+                    <a href="{{ route('members.deceased') }}" class="text-indigo-600 hover:underline">Deceased list</a>
+                @endif
                 @if ($canManage)
                     <a href="{{ route('members.edit', $member['id']) }}" class="text-indigo-600 hover:underline">Edit</a>
                 @endif
@@ -54,6 +59,22 @@
                     <div><dt class="text-sm text-gray-500">Email</dt><dd>{{ $member['email'] ?? '—' }}</dd></div>
                     <div><dt class="text-sm text-gray-500">Department</dt><dd>{{ $member['department'] }}</dd></div>
                     <div><dt class="text-sm text-gray-500">Joined</dt><dd>{{ $member['joined_date'] }}</dd></div>
+                    @if (($member['status'] ?? '') === 'deceased')
+                        <div>
+                            <dt class="text-sm text-gray-500">Date of death</dt>
+                            <dd>
+                                @if (! empty($member['date_of_death']))
+                                    {{ \Illuminate\Support\Carbon::parse($member['date_of_death'])->format('d M Y') }}
+                                @else
+                                    —
+                                @endif
+                            </dd>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <dt class="text-sm text-gray-500">Memorial notes</dt>
+                            <dd>{{ ! empty($member['death_notes']) ? $member['death_notes'] : 'No memorial notes recorded.' }}</dd>
+                        </div>
+                    @endif
                     <div class="sm:col-span-2"><dt class="text-sm text-gray-500">Address</dt><dd>{{ $member['address'] }}</dd></div>
                     @if (! empty($member['notes']))
                         <div class="sm:col-span-2"><dt class="text-sm text-gray-500">Notes</dt><dd>{{ $member['notes'] }}</dd></div>

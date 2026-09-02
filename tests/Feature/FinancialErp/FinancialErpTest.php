@@ -54,6 +54,51 @@ test('finance admin can record erp income with receipt sync', function () {
     $this->assertDatabaseHas('erp_receipts', ['payer_name' => 'Brother John', 'amount' => 25000]);
 });
 
+test('erp income includes dedicated offering categories', function () {
+    $admin = Admin::factory()->create(['role' => 'finance']);
+
+    $expected = [
+        'Covenant Offering',
+        'Special Offering',
+        'Cross Over Support',
+        'Faith Clinic',
+        'Cross Over Seed',
+        'AG Care',
+        'General Council Support',
+        'District Support Offering',
+        'First Fruit',
+        'Harvest Proceed',
+        'Welfare Offering',
+        'Altar Seed',
+        'Thanksgiving Offering',
+        'Testimony Offering',
+    ];
+
+    foreach ($expected as $name) {
+        expect(DB::table('erp_income_categories')->where('name', $name)->where('is_active', true)->exists())->toBeTrue();
+    }
+
+    $response = $this->actingAs($admin, 'admin')->get(route('financial-erp.income.create'));
+    $response->assertOk();
+    foreach ($expected as $name) {
+        $response->assertSee($name);
+    }
+
+    $categoryId = DB::table('erp_income_categories')->where('code', 'THGV')->value('id');
+    $this->actingAs($admin, 'admin')->post(route('financial-erp.income.store'), [
+        'income_date' => '2026-09-02',
+        'category_id' => $categoryId,
+        'amount' => 10000,
+        'member_name' => 'Sister Grace',
+    ])->assertRedirect();
+
+    $this->assertDatabaseHas('erp_income', [
+        'category_id' => $categoryId,
+        'member_name' => 'Sister Grace',
+        'amount' => 10000,
+    ]);
+});
+
 test('finance admin can record expense with approval queue', function () {
     $admin = Admin::factory()->create(['role' => 'finance']);
     $categoryId = DB::table('erp_expense_categories')->where('code', 'UTL')->value('id');
@@ -73,10 +118,85 @@ test('finance admin can record expense with approval queue', function () {
     ]);
 });
 
-test('ss teacher cannot access financial erp', function () {
+test('finance admin can manually add an income category', function () {
+    $admin = Admin::factory()->create(['role' => 'finance']);
+
+    $create = $this->actingAs($admin, 'admin')->get(route('financial-erp.income.categories.create'));
+    $create->assertOk();
+    $create->assertSee('Add Income Category');
+
+    $response = $this->actingAs($admin, 'admin')->post(route('financial-erp.income.categories.store'), [
+        'name' => 'Youth Rally Offering',
+        'code' => 'YRAL',
+    ]);
+
+    $response->assertRedirect(route('financial-erp.income.categories.index'));
+    $this->assertDatabaseHas('erp_income_categories', [
+        'name' => 'Youth Rally Offering',
+        'code' => 'YRAL',
+        'is_active' => 1,
+    ]);
+
+    $this->actingAs($admin, 'admin')
+        ->get(route('financial-erp.income.create'))
+        ->assertOk()
+        ->assertSee('Youth Rally Offering');
+});
+
+test('finance admin can record income with a new category not in the dropdown', function () {
+    $admin = Admin::factory()->create(['role' => 'finance']);
+
+    $response = $this->actingAs($admin, 'admin')->post(route('financial-erp.income.store'), [
+        'income_date' => '2026-09-02',
+        'new_category_name' => 'Midweek Miracle Offering',
+        'amount' => 7500,
+        'member_name' => 'Brother Paul',
+    ]);
+
+    $response->assertRedirect();
+    $this->assertDatabaseHas('erp_income_categories', [
+        'name' => 'Midweek Miracle Offering',
+        'is_active' => 1,
+    ]);
+    $categoryId = DB::table('erp_income_categories')->where('name', 'Midweek Miracle Offering')->value('id');
+    $this->assertDatabaseHas('erp_income', [
+        'category_id' => $categoryId,
+        'member_name' => 'Brother Paul',
+        'amount' => 7500,
+    ]);
+
+    $this->actingAs($admin, 'admin')
+        ->get(route('financial-erp.income.create'))
+        ->assertOk()
+        ->assertSee('Midweek Miracle Offering')
+        ->assertSee('Not in list — create new category');
+});
+
+test('income category code is auto generated when omitted', function () {
+    $admin = Admin::factory()->create(['role' => 'finance']);
+
+    $this->actingAs($admin, 'admin')->post(route('financial-erp.income.categories.store'), [
+        'name' => 'Pastor Appreciation',
+    ])->assertRedirect(route('financial-erp.income.categories.index'));
+
+    $row = DB::table('erp_income_categories')->where('name', 'Pastor Appreciation')->first();
+    expect($row)->not->toBeNull()
+        ->and((string) $row->code)->not->toBe('')
+        ->and((bool) $row->is_active)->toBeTrue();
+});
+
+test('ss teacher cannot add income categories', function () {
     $admin = Admin::factory()->create(['role' => 'ss_teacher']);
 
-    $this->actingAs($admin, 'admin')->get(route('financial-erp.dashboard'))->assertForbidden();
+    $this->actingAs($admin, 'admin')
+        ->get(route('financial-erp.income.categories.create'))
+        ->assertForbidden();
+
+    $this->actingAs($admin, 'admin')
+        ->post(route('financial-erp.income.categories.store'), [
+            'name' => 'Blocked Category',
+        ])
+        ->assertForbidden();
 });
 
 test('finance admin launch opens laravel erp login', function () {

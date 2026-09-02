@@ -7,9 +7,35 @@ use Illuminate\Support\Facades\DB;
 final class IncomeReadService
 {
     /** @return list<array<string, mixed>> */
-    public function listCategories(): array
+    public function listCategories(bool $activeOnly = true): array
     {
-        return DB::table('erp_income_categories')->where('is_active', true)->orderBy('name')->get()->map(fn ($r) => (array) $r)->all();
+        $query = DB::table('erp_income_categories')->orderBy('name');
+        if ($activeOnly) {
+            $query->where('is_active', true);
+        }
+
+        return $query->get()->map(fn ($r) => (array) $r)->all();
+    }
+
+    /** @return array<string, mixed>|null */
+    public function getCategory(int $id): ?array
+    {
+        $row = DB::table('erp_income_categories')->where('id', $id)->first();
+
+        return $row ? (array) $row : null;
+    }
+
+    /** @return list<array<string, mixed>> */
+    public function listIncomeAccounts(): array
+    {
+        return DB::table('erp_accounts')
+            ->whereNull('deleted_at')
+            ->where('is_active', true)
+            ->where('account_type', 'income')
+            ->orderBy('code')
+            ->get(['id', 'code', 'name'])
+            ->map(fn ($r) => (array) $r)
+            ->all();
     }
 
     /** @return array{items: list<array<string, mixed>>, total: int, page: int, pages: int, total_amount: float} */

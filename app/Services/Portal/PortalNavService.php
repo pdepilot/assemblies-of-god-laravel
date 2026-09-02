@@ -191,6 +191,8 @@ final class PortalNavService
             'admin/sunday-school/attendance' => 'attendance',
             'admin/sunday-school' => 'sunday-school',
             'sunday-school' => 'sunday-school',
+            'members/deceased' => 'deceased',
+            'admin/members/deceased' => 'deceased',
             'members' => 'members',
             'visitors' => 'visitors',
             'events' => 'events',
@@ -293,6 +295,7 @@ final class PortalNavService
                 'platform' => RbacPlatform::AG,
                 'children' => [
                     $this->item('members', 'Members', 'fa-users', 'members.index'),
+                    $this->item('deceased', 'Deceased', 'fa-cross', 'members.deceased'),
                     $this->item('ministry-settings', 'Ministry Settings', 'fa-sliders', 'ministries.settings.index'),
                     $this->item('ministry-age-transfers', 'Age Transfers', 'fa-people-arrows', 'ministries.age-transfers.index'),
                     $this->ministry('children', 'Children Ministry', 'fa-child', 'children'),
