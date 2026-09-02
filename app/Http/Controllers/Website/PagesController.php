@@ -122,6 +122,7 @@ final class PagesController
                 $request->safe()->except(['background_image', 'remove_background_image']),
                 $request->file('background_image'),
                 $request->boolean('remove_background_image'),
+                (int) $this->admin()->id,
             );
         } catch (InvalidArgumentException $e) {
             return back()->withInput()->withErrors(['background_image' => $e->getMessage()]);

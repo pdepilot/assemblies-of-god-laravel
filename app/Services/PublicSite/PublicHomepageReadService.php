@@ -2,6 +2,7 @@
 
 namespace App\Services\PublicSite;
 
+use App\Services\Website\WebsitePagesReadService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
@@ -107,7 +108,10 @@ final class PublicHomepageReadService
      */
     private function applySimpleHeroOverlay(array $slides, array $settings): array
     {
-        $hero = is_array($settings['ag']['hero'] ?? null) ? $settings['ag']['hero'] : [];
+        $hero = app(WebsitePagesReadService::class)->readHeroFromDatabase();
+        if ($hero === null) {
+            $hero = is_array($settings['ag']['hero'] ?? null) ? $settings['ag']['hero'] : [];
+        }
         if ($hero === [] || $slides === []) {
             return $slides;
         }

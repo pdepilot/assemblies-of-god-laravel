@@ -2,7 +2,9 @@
 
 namespace App\Services\Website;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 
 final class WebsitePagesReadService
 {
@@ -413,6 +415,11 @@ HTML;
     /** @param array<string, mixed> $settings @return array<string, mixed> */
     private function resolveAgHero(array $settings): array
     {
+        $fromDb = $this->readHeroFromDatabase();
+        if ($fromDb !== null) {
+            return $fromDb;
+        }
+
         $hero = is_array($settings['ag']['hero'] ?? null) ? $settings['ag']['hero'] : [];
         $slide = $settings['ag']['homepage_content']['hero']['slides'][0] ?? null;
         if (is_array($slide)) {
@@ -433,7 +440,72 @@ HTML;
             }
         }
 
-        return $hero !== [] ? $hero : $this->defaultAgHero();
+        if ($hero !== []) {
+            $this->migrateHeroToDatabase($hero);
+
+            return $hero;
+        }
+
+        return $this->defaultAgHero();
+    }
+
+    /** @return array<string, mixed>|null */
+    public function readHeroFromDatabase(): ?array
+    {
+        if (! Schema::hasTable('ag_site_content')) {
+            return null;
+        }
+
+        $row = DB::table('ag_site_content')
+            ->where('section_key', WebsitePagesWriteService::HERO_SECTION_KEY)
+            ->first();
+        if ($row === null) {
+            return null;
+        }
+
+        $decoded = json_decode((string) ($row->content_json ?? ''), true);
+        if (! is_array($decoded)) {
+            return null;
+        }
+
+        return [
+            'headline' => trim((string) ($decoded['headline'] ?? '')),
+            'subheadline' => trim((string) ($decoded['subheadline'] ?? '')),
+            'cta_label' => trim((string) ($decoded['cta_label'] ?? '')),
+            'cta_url' => trim((string) ($decoded['cta_url'] ?? '')),
+            'background_image' => trim((string) ($decoded['background_image'] ?? '')),
+        ];
+    }
+
+    /** @param array<string, mixed> $hero */
+    private function migrateHeroToDatabase(array $hero): void
+    {
+        if (! Schema::hasTable('ag_site_content')) {
+            return;
+        }
+
+        if (DB::table('ag_site_content')->where('section_key', WebsitePagesWriteService::HERO_SECTION_KEY)->exists()) {
+            return;
+        }
+
+        $json = json_encode([
+            'headline' => trim((string) ($hero['headline'] ?? '')),
+            'subheadline' => trim((string) ($hero['subheadline'] ?? '')),
+            'cta_label' => trim((string) ($hero['cta_label'] ?? '')),
+            'cta_url' => trim((string) ($hero['cta_url'] ?? '')),
+            'background_image' => trim((string) ($hero['background_image'] ?? '')),
+        ], JSON_UNESCAPED_UNICODE);
+
+        if ($json === false) {
+            return;
+        }
+
+        DB::table('ag_site_content')->insert([
+            'section_key' => WebsitePagesWriteService::HERO_SECTION_KEY,
+            'content_json' => $json,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     /** @return array<string, mixed> */

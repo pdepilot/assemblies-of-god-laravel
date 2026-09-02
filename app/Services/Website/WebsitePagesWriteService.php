@@ -3,13 +3,17 @@
 namespace App\Services\Website;
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use RuntimeException;
 
 final class WebsitePagesWriteService
 {
+    public const HERO_SECTION_KEY = 'homepage_hero';
+
     private const MAX_IMAGE_BYTES = 5242880;
 
     private const ALLOWED_IMAGE_TYPES = [
@@ -22,10 +26,14 @@ final class WebsitePagesWriteService
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
-    public function saveAgHero(array $payload, ?UploadedFile $backgroundImage = null, bool $removeBackground = false): array
+    public function saveAgHero(array $payload, ?UploadedFile $backgroundImage = null, bool $removeBackground = false, int $adminId = 0): array
     {
         $settings = $this->readSettings();
         $current = is_array($settings['ag']['hero'] ?? null) ? $settings['ag']['hero'] : [];
+        $fromDb = $this->readHeroFromDatabase();
+        if ($fromDb !== null) {
+            $current = $fromDb;
+        }
         $backgroundPath = trim((string) ($current['background_image'] ?? ''));
 
         if ($backgroundImage !== null) {
@@ -80,6 +88,7 @@ final class WebsitePagesWriteService
             $settings['ag']['homepage_content']['hero']['interval_ms'] = 7000;
         }
 
+        $this->persistHeroToDatabase($settings['ag']['hero'], $adminId);
         $this->writeSettings($settings);
 
         return $settings['ag']['hero'];
@@ -213,6 +222,58 @@ final class WebsitePagesWriteService
             $dir.'/website-pages.json',
             json_encode($settings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
         );
+    }
+
+    /** @return array<string, mixed>|null */
+    private function readHeroFromDatabase(): ?array
+    {
+        if (! Schema::hasTable('ag_site_content')) {
+            return null;
+        }
+
+        $row = DB::table('ag_site_content')
+            ->where('section_key', self::HERO_SECTION_KEY)
+            ->first();
+        if ($row === null) {
+            return null;
+        }
+
+        $decoded = json_decode((string) ($row->content_json ?? ''), true);
+
+        return is_array($decoded) ? $decoded : null;
+    }
+
+    /** @param array<string, mixed> $hero */
+    private function persistHeroToDatabase(array $hero, int $adminId): void
+    {
+        if (! Schema::hasTable('ag_site_content')) {
+            return;
+        }
+
+        $json = json_encode($hero, JSON_UNESCAPED_UNICODE);
+        if ($json === false) {
+            throw new RuntimeException('Unable to encode homepage hero.');
+        }
+
+        $existing = DB::table('ag_site_content')
+            ->where('section_key', self::HERO_SECTION_KEY)
+            ->first();
+        $payload = [
+            'content_json' => $json,
+            'updated_by' => $adminId > 0 ? $adminId : null,
+            'updated_at' => now(),
+        ];
+
+        if ($existing) {
+            DB::table('ag_site_content')
+                ->where('section_key', self::HERO_SECTION_KEY)
+                ->update($payload);
+        } else {
+            DB::table('ag_site_content')->insert($payload + [
+                'section_key' => self::HERO_SECTION_KEY,
+                'created_at' => now(),
+            ]);
+        }
     }
 
     private function storeImage(UploadedFile $image, string $directory): string

@@ -140,6 +140,16 @@ test('website hero save updates public homepage first slide', function () {
     $home->assertOk();
     $home->assertSee('Public Hero Headline From CMS');
     $home->assertSee('Public tagline from CMS');
+
+    $this->assertDatabaseHas('ag_site_content', [
+        'section_key' => 'homepage_hero',
+    ]);
+
+    $row = \Illuminate\Support\Facades\DB::table('ag_site_content')
+        ->where('section_key', 'homepage_hero')
+        ->value('content_json');
+    expect((string) $row)->toContain('Public Hero Headline From CMS');
+    expect((string) $row)->toContain('Public tagline from CMS');
 });
 
 test('content editor can edit and save a website page override', function () {
