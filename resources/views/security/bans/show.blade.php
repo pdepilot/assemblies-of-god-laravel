@@ -8,7 +8,7 @@
             <div class="flex gap-2">
                 <a href="{{ route('security.bans.index') }}" class="px-4 py-2 text-sm rounded-md border">Back</a>
                 @if ($canManage && $ban['is_active'])
-                    <form method="POST" action="{{ route('security.bans.destroy', $ban['id']) }}" data-confirm="Unban this IP / device?" data-confirm-title="Please confirm" data-confirm-ok="Confirm" data-confirm-tone="danger">
+                    <form method="POST" action="{{ route('security.bans.destroy', $ban['id']) }}" data-confirm="Unban this member or admin so they can sign in again?" data-confirm-title="Lift ban" data-confirm-ok="Unban" data-confirm-tone="danger">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="px-4 py-2 text-sm rounded-md bg-red-600 text-white font-semibold">Unban</button>
@@ -29,6 +29,23 @@
                     <div>
                         <dt class="text-gray-500">IP address</dt>
                         <dd class="font-mono font-medium">{{ $ban['ip_address'] }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-500">Account</dt>
+                        <dd class="font-medium">
+                            @if (! empty($ban['account_name']))
+                                {{ $ban['account_name'] }}
+                                <div class="text-xs text-gray-500 font-normal">{{ $ban['account_kind'] === 'admin' ? 'Admin' : 'Member' }} · {{ $ban['account_contact'] }}</div>
+                            @elseif (! empty($ban['identifier_tried']))
+                                {{ $ban['identifier_tried'] }}
+                            @else
+                                —
+                            @endif
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-500">Login used</dt>
+                        <dd class="font-medium">{{ $ban['identifier_tried'] ?: '—' }}</dd>
                     </div>
                     <div>
                         <dt class="text-gray-500">Status</dt>

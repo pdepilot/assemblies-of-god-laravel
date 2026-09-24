@@ -11,6 +11,7 @@ final class MinistrySettingsReadService
     public function all(): array
     {
         return DB::table('ministry_settings')
+            ->where('ministry_key', '<>', 'widowers')
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get()
@@ -30,6 +31,10 @@ final class MinistrySettingsReadService
     /** @return array<string, mixed>|null */
     public function getByKey(string $key): ?array
     {
+        if ($key === 'widowers') {
+            return null;
+        }
+
         $row = DB::table('ministry_settings')->where('ministry_key', $key)->first();
 
         return $row ? $this->formatSetting((array) $row) : null;
@@ -61,7 +66,7 @@ final class MinistrySettingsReadService
         }
 
         if ($marital === 'widower' || ($marital === 'widowed' && $gender === 'male')) {
-            return $this->pickAutoKey('widowers');
+            return $this->pickAutoKey('men');
         }
 
         if ($marital === 'widowed') {

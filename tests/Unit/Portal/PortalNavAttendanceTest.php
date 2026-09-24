@@ -2,6 +2,16 @@
 
 use App\Services\Portal\PortalNavService;
 
+test('sidebar does not include widowers ministry', function () {
+    $nav = app(PortalNavService::class)->cmsConfig()['nav'];
+    $ag = collect($nav)->firstWhere('id', 'ag');
+    $ids = collect($ag['children'] ?? [])->pluck('id');
+    $labels = collect($ag['children'] ?? [])->pluck('label');
+
+    expect($ids)->not->toContain('widowers');
+    expect($labels->implode(' '))->not->toContain('Widowers');
+});
+
 test('sidebar attendance points to laravel sunday school attendance', function () {
     $nav = app(PortalNavService::class)->cmsConfig()['nav'];
     $ag = collect($nav)->firstWhere('id', 'ag');
@@ -165,4 +175,35 @@ test('sidebar financial erp opens separate erp login launch', function () {
     expect($children->firstWhere('id', 'erp-launch')['href'])->toBe(route('financial-erp.launch'));
     expect($children->firstWhere('id', 'erp-launch')['label'])->toBe('Open Financial ERP');
     expect($children->pluck('href')->implode(' '))->not->toContain('/erp/sso');
+});
+
+test('sidebar website includes our worship programme editor', function () {
+    $nav = app(PortalNavService::class)->cmsConfig()['nav'];
+    $website = collect($nav)->firstWhere('id', 'website');
+    $worship = collect($website['children'] ?? [])->firstWhere('id', 'worship-schedule');
+    $activities = collect($website['children'] ?? [])->firstWhere('id', 'homepage-activities');
+
+    expect($worship)->not->toBeNull();
+    expect($worship['href'])->toBe(route('website.worship.edit'));
+    expect($worship['label'])->toBe('Our Worship');
+    expect($activities)->not->toBeNull();
+    expect($activities['href'])->toBe(route('website.activities.edit'));
+    expect($activities['label'])->toBe('Homepage Activities');
+});
+
+test('admin sidebar does not include sdtg management', function () {
+    $nav = app(PortalNavService::class)->cmsConfig()['nav'];
+    $blob = json_encode($nav);
+    $hrefs = collect($nav)->flatMap(function ($item) {
+        return collect([$item['href'] ?? ''])
+            ->concat(collect($item['children'] ?? [])->pluck('href'))
+            ->map(fn ($href) => strtolower((string) $href));
+    });
+    $agIds = collect(collect($nav)->firstWhere('id', 'ag')['children'] ?? [])->pluck('id');
+
+    expect($blob)->not->toMatch('/(^|[^a-z])sdtg([^a-z]|$)/i');
+    expect(strtolower((string) $blob))->not->toContain('send down thy glory');
+    expect(collect($nav)->pluck('id'))->not->toContain('sdtg');
+    expect($hrefs->implode(' '))->not->toContain('sdtg/');
+    expect($agIds)->not->toContain('departments');
 });

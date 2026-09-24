@@ -78,7 +78,7 @@ final class DashboardNotificationService
         }
 
         // Full list refreshes also surface Communication Hub items in the same bell.
-        if ($sinceId === null && Schema::hasTable('notification_center')) {
+        if ($sinceId === null && Schema::hasTable('notification_center') && Schema::hasColumn('notification_center', 'is_archived')) {
             $hubItems = $this->hubNotifications($adminId, max(1, min(20, $limit)));
             $notifications = $this->mergeByTime($notifications, $hubItems, $limit);
         }
@@ -88,9 +88,12 @@ final class DashboardNotificationService
             ->whereIn('event_type', self::NOTIFICATION_EVENTS)
             ->count();
 
-        if ($sinceId === null && Schema::hasTable('notification_center')) {
+        if ($sinceId === null && Schema::hasTable('notification_center') && Schema::hasColumn('notification_center', 'is_archived')) {
             $unreadCount += $this->hubUnreadCount($adminId);
         }
+
+        $tableMax = (int) (DB::table('security_logs')->max('id') ?: 0);
+        $latestId = max($latestId, $tableMax, $lastReadId);
 
         return [
             'notifications' => $notifications,
@@ -147,11 +150,13 @@ final class DashboardNotificationService
         $formatted = [
             'id' => (int) $row['id'],
             'title' => $this->notificationTitle($row),
-            'text' => (string) ($row['message'] ?? ''),
+            'text' => $this->safeText((string) ($row['message'] ?? '')),
             'time' => $this->relativeTime((string) ($row['created_at'] ?? '')),
             'time_iso' => (string) ($row['created_at'] ?? ''),
             'icon' => $this->eventIcon((string) ($row['event_type'] ?? ''), (string) ($row['severity'] ?? 'info')),
             'event_type' => (string) ($row['event_type'] ?? ''),
+            'severity' => (string) ($row['severity'] ?? 'info'),
+            'play_alert' => $this->shouldPlayAlert((string) ($row['event_type'] ?? ''), (string) ($row['severity'] ?? 'info')),
         ];
 
         return $formatted;
@@ -197,6 +202,25 @@ final class DashboardNotificationService
         };
     }
 
+    private function shouldPlayAlert(string $eventType, string $severity): bool
+    {
+        if (in_array($severity, ['critical', 'warning'], true)) {
+            return true;
+        }
+
+        return in_array($eventType, [
+            'contact_submission',
+            'site_testimony_submitted',
+            'newsletter_subscriber',
+            'visitor_created',
+            'visitor_return_visit',
+            'donation_recorded',
+            'login_failed',
+            'device_banned',
+            'erp_alert',
+        ], true);
+    }
+
     private function eventIcon(string $eventType, string $severity): string
     {
         if (in_array($severity, ['critical', 'warning'], true)) {
@@ -231,11 +255,13 @@ final class DashboardNotificationService
                 return [
                     'id' => 'hub-'.(int) $row->id,
                     'title' => (string) ($row->title ?? 'Communication Hub'),
-                    'text' => (string) ($row->body ?? $row->message ?? ''),
+                    'text' => $this->safeText((string) ($row->body ?? $row->message ?? '')),
                     'time' => $this->relativeTime($created),
                     'time_iso' => $created,
                     'icon' => ((string) ($row->priority ?? '')) === 'high' ? 'gold' : 'blue',
                     'event_type' => 'hub_notification',
+                    'severity' => ((string) ($row->priority ?? '')) === 'high' ? 'warning' : 'info',
+                    'play_alert' => true,
                     'is_unread' => ! (bool) ($row->is_read ?? false),
                 ];
             })
@@ -296,5 +322,12 @@ final class DashboardNotificationService
         }
 
         return date('j M Y, g:i A', $time);
+    }
+
+    private function safeText(string $value): string
+    {
+        $clean = @mb_convert_encoding($value, 'UTF-8', 'UTF-8');
+
+        return is_string($clean) ? $clean : '';
     }
 }

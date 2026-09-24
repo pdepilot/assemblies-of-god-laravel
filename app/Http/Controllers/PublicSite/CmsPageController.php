@@ -5,6 +5,8 @@ namespace App\Http\Controllers\PublicSite;
 use App\Http\Controllers\Controller;
 use App\Services\PublicSite\PublicAssetResolver;
 use App\Services\PublicSite\PublicHomepageReadService;
+use App\Services\Sermons\PublicSermonHydrator;
+use App\Services\Sermons\SermonReadService;
 use App\Services\Website\SchemaBuilder;
 use App\Services\Website\SeoReadService;
 use App\Services\Website\WebsitePagesReadService;
@@ -77,6 +79,29 @@ final class CmsPageController extends Controller
             'testimonySourcePage' => $pageKey,
             'allowAds' => ! in_array($pageKey, $noAdsPages, true),
         ];
+
+        if ($pageKey === 'contact') {
+            $viewData['worshipLocation'] = app(\App\Services\Website\WorshipReadService::class)->location();
+
+            return view('public.contact', $viewData);
+        }
+
+        if ($pageKey === 'sermons') {
+            $request = request();
+            $library = app(SermonReadService::class)->listPublishedForPublic(
+                (string) $request->query('q', ''),
+                (string) $request->query('type', ''),
+                (int) $request->query('page', 1),
+                9,
+            );
+            $hydrator = app(PublicSermonHydrator::class);
+            $library['items'] = $hydrator->presentMany($library['items']);
+            $viewData['library'] = $library;
+            $viewData['searchQuery'] = trim((string) $request->query('q', ''));
+            $viewData['activeType'] = strtolower(trim((string) $request->query('type', '')));
+
+            return view('public.sermons.index', $viewData);
+        }
 
         if ($type === 'header') {
             $viewData['activities'] = $pageKey === 'activity' ? $payload['activities'] : [];

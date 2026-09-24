@@ -1,4 +1,4 @@
-/* CMS Core Interactions */
+/* Core Interactions */
 (function () {
     'use strict';
 

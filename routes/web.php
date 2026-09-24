@@ -103,7 +103,7 @@ Route::get('/sermons', [\App\Http\Controllers\PublicSite\CmsPageController::clas
     ->defaults('pageKey', 'sermons')
     ->name('public.sermons');
 Route::get('/sermons/{slug}', [\App\Http\Controllers\PublicSite\PublicSermonController::class, 'show'])
-    ->where('slug', '[A-Za-z0-9\-]+')
+    ->where('slug', '[A-Za-z0-9\-_]+')
     ->name('public.sermons.show');
 Route::get('/sermon', fn () => redirect()->route('public.sermons'));
 Route::get('/sermon-library/{any?}', fn () => redirect()->route('public.sermons'))
@@ -133,7 +133,9 @@ Route::get('/api/portal-qr.php', \App\Http\Controllers\RegistrationPortals\Porta
     ->middleware('throttle:60,1')
     ->name('public.registration-portal.qr');
 
-Route::permanentRedirect('/login', '/admin/login');
+Route::permanentRedirect('/login', '/portal/login');
+Route::permanentRedirect('/admin/login', '/portal/login');
+Route::permanentRedirect('/portal/login.php', '/portal/login');
 Route::permanentRedirect('/dashboard', '/admin/dashboard');
 Route::permanentRedirect('/logout', '/admin/logout');
 

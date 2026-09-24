@@ -7,10 +7,14 @@ use App\Http\Requests\Website\SaveWebsitePageRequest;
 use App\Models\Admin;
 use App\Policies\WebsitePolicy;
 use App\Services\PublicSite\PublicAssetResolver;
+use App\Services\Website\ActivityReadService;
+use App\Services\Website\ActivityWriteService;
 use App\Services\Website\SeoReadService;
 use App\Services\Website\SeoWriteService;
 use App\Services\Website\WebsitePagesReadService;
 use App\Services\Website\WebsitePagesWriteService;
+use App\Services\Website\WorshipReadService;
+use App\Services\Website\WorshipWriteService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use InvalidArgumentException;
@@ -20,6 +24,10 @@ final class PagesController
     public function __construct(
         private readonly WebsitePagesReadService $read,
         private readonly WebsitePagesWriteService $write,
+        private readonly WorshipReadService $worshipRead,
+        private readonly WorshipWriteService $worshipWrite,
+        private readonly ActivityReadService $activityRead,
+        private readonly ActivityWriteService $activityWrite,
         private readonly SeoReadService $seoRead,
         private readonly SeoWriteService $seoWrite,
         private readonly WebsitePolicy $policy,
@@ -34,13 +42,24 @@ final class PagesController
         return view('website.pages.index', [
             'bootstrap' => $this->read->getBootstrap(),
             'canManage' => $this->policy->manageWebsite($admin),
+            'worshipPrograms' => $this->worshipRead->editorSlots(),
+            'worshipLocation' => $this->worshipRead->location(),
+            'homepageActivities' => $this->activityRead->editorSlots(),
         ]);
     }
 
-    public function edit(string $pageKey): View
+    public function edit(string $pageKey): View|RedirectResponse
     {
         $this->policy->requireManageWebsite($this->admin());
         abort_unless($this->read->isEditablePage($pageKey), 404);
+
+        if ($pageKey === 'worship') {
+            return redirect()->route('website.worship.edit');
+        }
+
+        if ($pageKey === 'activities') {
+            return redirect()->route('website.activities.edit');
+        }
 
         $page = $this->read->getPage($pageKey);
         $catalog = $this->read->pageCatalog()[$pageKey];
@@ -56,6 +75,9 @@ final class PagesController
             'seo' => $seo,
             'seoOgImageUrl' => $seoOg !== '' ? $this->assets->url($seoOg) : null,
             'related' => $catalog['related'] ?? [],
+            'worshipPrograms' => $pageKey === 'home' ? $this->worshipRead->editorSlots() : [],
+            'worshipLocation' => $pageKey === 'home' ? $this->worshipRead->location() : [],
+            'homepageActivities' => $pageKey === 'home' ? $this->activityRead->editorSlots() : [],
         ]);
     }
 
@@ -63,6 +85,14 @@ final class PagesController
     {
         $this->policy->requireManageWebsite($this->admin());
         abort_unless($this->read->isEditablePage($pageKey), 404);
+
+        if ($pageKey === 'worship') {
+            return redirect()->route('website.worship.edit');
+        }
+
+        if ($pageKey === 'activities') {
+            return redirect()->route('website.activities.edit');
+        }
 
         try {
             $this->write->savePageOverride(
@@ -74,6 +104,9 @@ final class PagesController
                     'seo_meta_description',
                     'seo_og_image',
                     'remove_seo_og_image',
+                    'activities',
+                    'programs',
+                    'worship_map_query',
                 ]),
                 $request->file('hero_image'),
                 $request->boolean('remove_hero_image'),
@@ -89,6 +122,21 @@ final class PagesController
                 $request->file('seo_og_image'),
                 $request->boolean('remove_seo_og_image'),
             );
+
+            if ($pageKey === 'home' && $request->exists('activities')) {
+                $this->activityWrite->save(
+                    $request->input('activities', []),
+                    (int) $this->admin()->id,
+                );
+            }
+
+            if ($pageKey === 'home' && $request->exists('programs')) {
+                $this->worshipWrite->save(
+                    $request->input('programs', []),
+                    (int) $this->admin()->id,
+                    ['map_query' => (string) $request->input('worship_map_query', '')],
+                );
+            }
         } catch (InvalidArgumentException $e) {
             return back()->withInput()->withErrors(['page' => $e->getMessage()]);
         }

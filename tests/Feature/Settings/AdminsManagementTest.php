@@ -18,6 +18,7 @@ function seedAssignableRole(string $slug = 'church_editor', string $name = 'Chur
 }
 
 test('super admin can open administrators settings tab', function () {
+    /** @var \Tests\TestCase $this */
     $super = Admin::factory()->create(['role' => 'super_admin']);
 
     $this->actingAs($super, 'admin')
@@ -28,6 +29,7 @@ test('super admin can open administrators settings tab', function () {
 });
 
 test('non super admin cannot manage administrators', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin', 'role_id' => 1]);
 
     $this->actingAs($admin, 'admin')
@@ -36,6 +38,7 @@ test('non super admin cannot manage administrators', function () {
 });
 
 test('add admin form lists all project roles', function () {
+    /** @var \Tests\TestCase $this */
     $super = Admin::factory()->create(['role' => 'super_admin']);
     $roleName = 'Finance Steward '.uniqid();
     seedAssignableRole('finance_steward', $roleName);
@@ -48,6 +51,7 @@ test('add admin form lists all project roles', function () {
 });
 
 test('super admin can create edit and delete an administrator', function () {
+    /** @var \Tests\TestCase $this */
     $super = Admin::factory()->create(['role' => 'super_admin']);
     $roleId = seedAssignableRole();
 
@@ -93,6 +97,7 @@ test('super admin can create edit and delete an administrator', function () {
 });
 
 test('super admin cannot delete own account or another super admin', function () {
+    /** @var \Tests\TestCase $this */
     $super = Admin::factory()->create(['role' => 'super_admin', 'email' => 'super1@example.com']);
     $otherSuper = Admin::factory()->create(['role' => 'super_admin', 'email' => 'super2@example.com']);
 
@@ -110,6 +115,7 @@ test('super admin cannot delete own account or another super admin', function ()
 });
 
 test('updated admin password can authenticate', function () {
+    /** @var \Tests\TestCase $this */
     $super = Admin::factory()->create(['role' => 'super_admin']);
     $roleId = seedAssignableRole('password_reset_role', 'Password Reset Role');
     $target = Admin::factory()->create([
@@ -131,9 +137,9 @@ test('updated admin password can authenticate', function () {
         ])
         ->assertRedirect();
 
-    auth('admin')->logout();
+    $this->post('/admin/logout');
 
-    $this->post('/admin/login', [
+    $this->post('/portal/login', [
         'email' => 'reset.me@example.com',
         'password' => 'NewPassword9!',
     ])->assertRedirect();
@@ -142,6 +148,7 @@ test('updated admin password can authenticate', function () {
 });
 
 test('super admin can view permissions assigned to an admin', function () {
+    /** @var \Tests\TestCase $this */
     $super = Admin::factory()->create(['role' => 'super_admin']);
     $target = Admin::factory()->create([
         'role' => 'admin',
@@ -192,6 +199,7 @@ test('super admin can view permissions assigned to an admin', function () {
 });
 
 test('super admin can suspend an administrator and block login', function () {
+    /** @var \Tests\TestCase $this */
     $super = Admin::factory()->create(['role' => 'super_admin']);
     $target = Admin::factory()->create([
         'role' => 'admin',
@@ -212,9 +220,9 @@ test('super admin can suspend an administrator and block login', function () {
     expect($target->account_status)->toBe('suspended');
     expect((bool) $target->is_active)->toBeFalse();
 
-    auth('admin')->logout();
+    $this->post('/admin/logout');
 
-    $this->post('/admin/login', [
+    $this->post('/portal/login', [
         'email' => 'to.suspend@example.com',
         'password' => 'Password123!',
     ])->assertSessionHasErrors('email');

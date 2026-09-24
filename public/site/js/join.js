@@ -33,8 +33,8 @@
         if (age < 13) return 'Children Ministry';
         if (age <= 19) return 'Teen Ministry';
         if (marital === 'single') return 'Youth Ministry';
-        if (marital === 'widow' || (marital === 'widowed' && gender === 'female')) return 'Widows Ministry';
-        if (marital === 'widower' || (marital === 'widowed' && gender === 'male')) return 'Widowers Ministry';
+        if (marital === 'widow' || (marital === 'widowed' && gender === 'female')) return 'Widows';
+        if (marital === 'widower' || (marital === 'widowed' && gender === 'male')) return "Men's Ministry";
         if (marital === 'married' || marital === 'divorced' || marital === 'separated') {
             if (gender === 'male') return "Men's Ministry";
             if (gender === 'female') return "Women's Ministry";

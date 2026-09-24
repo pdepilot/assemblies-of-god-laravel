@@ -1,4 +1,4 @@
-/* CMS Shell - Sidebar, Topbar, Layout Injection */
+/* Shell - Sidebar, Topbar, Layout Injection */
 (function () {
     'use strict';
 
@@ -30,6 +30,28 @@
             }
         } catch (e) { /* fail-open */ }
         return true;
+    }
+
+    function isSdtgNavItem(item) {
+        var hay = [item && item.id, item && item.label, item && item.href].join(' ').toLowerCase();
+        if (!hay.trim()) return false;
+        if (hay.indexOf('send down thy glory') !== -1 || hay.indexOf('/sdtg') !== -1) return true;
+        return /(^|[^a-z])sdtg([^a-z]|$)/.test(hay);
+    }
+
+    function navWithoutSdtg(nav) {
+        return (nav || []).reduce(function (out, item) {
+            if (isSdtgNavItem(item)) return out;
+            if (item && item.type === 'group') {
+                var children = (item.children || []).filter(function (child) {
+                    return !isSdtgNavItem(child);
+                });
+                if (!children.length) return out;
+                item = Object.assign({}, item, { children: children });
+            }
+            out.push(item);
+            return out;
+        }, []);
     }
 
     function getDashboardHref(base) {
@@ -110,6 +132,9 @@
         var activePage = document.body.getAttribute('data-page') || 'dashboard';
         var content = document.getElementById('cmsPageContent');
         if (!content) return;
+        if (window.CMS_CONFIG) {
+            CMS_CONFIG.nav = navWithoutSdtg(CMS_CONFIG.nav);
+        }
 
         var brand = CMS_CONFIG.brand || {};
         var brandSubtitle = brand.subtitle || '';

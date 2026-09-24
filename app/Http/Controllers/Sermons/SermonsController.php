@@ -55,7 +55,14 @@ final class SermonsController
         $this->policy->requireManageSermons($admin);
 
         try {
-            $this->write->save($request->validated(), (int) $admin->id);
+            $this->write->save(
+                $request->validated(),
+                (int) $admin->id,
+                $request->file('featured_image'),
+                $request->file('video_file'),
+                $request->boolean('remove_featured_image'),
+                $request->boolean('remove_video'),
+            );
         } catch (InvalidArgumentException $e) {
             return back()->withInput()->withErrors(['title' => $e->getMessage()]);
         }
@@ -100,7 +107,14 @@ final class SermonsController
         $data['id'] = (int) $sermon->id;
 
         try {
-            $this->write->save($data, (int) $admin->id);
+            $this->write->save(
+                $data,
+                (int) $admin->id,
+                $request->file('featured_image'),
+                $request->file('video_file'),
+                $request->boolean('remove_featured_image'),
+                $request->boolean('remove_video'),
+            );
         } catch (InvalidArgumentException $e) {
             return back()->withInput()->withErrors(['title' => $e->getMessage()]);
         }

@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Auth\AdminUserProvider;
+use App\Services\Website\PromotionReadService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,6 +25,10 @@ class AppServiceProvider extends ServiceProvider
     {
         Auth::provider('legacy-admin', function ($app, array $config) {
             return new AdminUserProvider($app['hash'], $config['model']);
+        });
+
+        View::composer('public.home', function ($view) {
+            $view->with('promotionBanner', app(PromotionReadService::class)->activeBanner());
         });
     }
 }

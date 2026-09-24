@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Central writer for security_logs entries that power the CMS notification bell.
+ * Central writer for security_logs entries that power the notification bell.
  */
 final class SecurityAuditService
 {

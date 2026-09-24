@@ -151,6 +151,7 @@ final class WebsitePagesWriteService
                 'cta_url' => trim((string) ($payload['cta_url'] ?? '')),
             ],
             'donate' => $this->donatePayload($payload, $defaults),
+            'worship' => [],
             default => [
                 'heading' => trim((string) ($payload['heading'] ?? $defaults['heading'])),
                 'eyebrow' => trim((string) ($payload['eyebrow'] ?? '')),

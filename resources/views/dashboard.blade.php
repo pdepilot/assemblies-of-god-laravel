@@ -74,4 +74,7 @@
             </div>
         </article>
     </div>
+    @push('scripts')
+        <script src="{{ asset('portal/js/dashboard.js') }}?v={{ is_file(public_path('portal/js/dashboard.js')) ? filemtime(public_path('portal/js/dashboard.js')) : 1 }}"></script>
+    @endpush
 </x-app-layout>

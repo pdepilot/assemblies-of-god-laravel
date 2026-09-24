@@ -70,7 +70,7 @@
         if (age <= 19) return 'teens';
         if (marital === 'single') return 'youths';
         if (marital === 'widow' || (marital === 'widowed' && gender === 'female')) return 'widows';
-        if (marital === 'widower' || (marital === 'widowed' && gender === 'male')) return 'widowers';
+        if (marital === 'widower' || (marital === 'widowed' && gender === 'male')) return 'men';
         if (marital === 'married' || marital === 'divorced' || marital === 'separated') {
             if (gender === 'male') return 'men';
             if (gender === 'female') return 'women';
@@ -86,8 +86,7 @@
             youths: 'Youth Ministry',
             men: "Men's Ministry",
             women: "Women's Ministry",
-            widows: 'Widows Ministry',
-            widowers: 'Widowers Ministry'
+            widows: 'Widows'
         };
         if (!key) {
             if (age === null) return '—';
@@ -104,16 +103,21 @@
             youths: ['Youth Ministry', 'Youth'],
             men: ["Men's Ministry"],
             women: ["Women's Ministry"],
-            widows: ['Widows Ministry'],
-            widowers: ['Widowers Ministry']
+            widows: ['Widows']
         };
         return map[key] || [];
     }
 
     var AUTO_MINISTRY_DEPARTMENTS = [
         'Children', 'Children Ministry', 'Teen Ministry', 'Youth', 'Youth Ministry',
-        "Men's Ministry", "Women's Ministry", 'Widows Ministry', 'Widowers Ministry', 'Member'
+        "Men's Ministry", "Women's Ministry", 'Widows', 'Member'
     ];
+
+    function syncParentGuardianSection(age) {
+        var section = $('parentGuardianFields');
+        if (!section) return;
+        section.hidden = !(age !== null && age <= 19);
+    }
 
     function syncJoinAgeFields() {
         var dob = $('memberDob') ? $('memberDob').value : '';
@@ -122,6 +126,7 @@
         var marital = $('memberMaritalStatus') ? $('memberMaritalStatus').value : 'unspecified';
         if ($('memberAgeDisplay')) $('memberAgeDisplay').value = age !== null ? String(age) + ' years' : '';
         if ($('memberMinistry')) $('memberMinistry').value = ministryLabel(age, gender, marital);
+        syncParentGuardianSection(age);
 
         var key = ministryKeyFromProfile(age, gender, marital);
         var deptSelect = $('memberDepartment');
@@ -165,9 +170,42 @@
         syncJoinAgeFields();
     }
 
+    function uniqueDepartmentSelect(sel) {
+        if (!sel) return;
+        var seen = {};
+        var keep = [];
+        Array.prototype.forEach.call(sel.options, function (opt) {
+            var value = String(opt.value || '').trim();
+            var label = String(opt.text || '').trim();
+            var key = (value || label).toLowerCase()
+                .replace(/['’`]/g, '')
+                .replace(/-/g, ' ')
+                .replace(/\s+/g, ' ')
+                .replace(/\s+(ministry|department|team|chain|group|unit)$/i, '')
+                .trim();
+            if (!value) {
+                keep.push({ value: value, text: label });
+                return;
+            }
+            if (seen[key]) return;
+            seen[key] = true;
+            keep.push({ value: value, text: label });
+        });
+        var current = sel.value;
+        sel.innerHTML = '';
+        keep.forEach(function (item) {
+            var option = document.createElement('option');
+            option.value = item.value;
+            option.textContent = item.text;
+            sel.appendChild(option);
+        });
+        if (current) sel.value = current;
+    }
+
     function initJoinForm() {
         var form = $('memberForm');
         if (!form || !$('mpAuthJoinPanel')) return;
+        uniqueDepartmentSelect($('memberDepartment'));
 
         if ($('memberDob')) $('memberDob').addEventListener('change', syncJoinAgeFields);
         if ($('memberGender')) $('memberGender').addEventListener('change', syncJoinAgeFields);
@@ -489,7 +527,6 @@
         summary = summary || {};
         if ($('mpStatLifetime')) $('mpStatLifetime').textContent = money(summary.lifetime_total);
         if ($('mpStatTithes')) $('mpStatTithes').textContent = money(summary.tithes);
-        if ($('mpStatOfferings')) $('mpStatOfferings').textContent = money(summary.offerings);
         if ($('mpStatProjects')) $('mpStatProjects').textContent = money(summary.projects);
     }
 
@@ -501,6 +538,11 @@
             container.innerHTML = '<p class="member-portal-muted">No records in this view yet.</p>';
             return;
         }
+        var showGiver = options.showGiver;
+        if (showGiver == null) {
+            var kids = (dashboardData && dashboardData.children) || [];
+            showGiver = kids.length > 0 || records.some(function (r) { return !!r.is_child; });
+        }
         var rows = records.map(function (r) {
             var dl = '';
             if (options.receipts && r.receipt_download) {
@@ -510,9 +552,31 @@
             } else {
                 dl = r.receipt_number ? esc(r.receipt_number) : '—';
             }
-            return '<tr><td>' + esc(String(r.date || '').slice(0, 10)) + '</td><td>' + esc(r.category_name) + '</td><td>' + money(r.amount) + '</td><td>' + esc(r.payment_method) + '</td><td>' + dl + '</td></tr>';
+            var giver = '';
+            if (showGiver) {
+                var label = r.giver_name || '';
+                if (r.is_child && label) {
+                    label += ' (child)';
+                }
+                giver = '<td>' + esc(label || '—') + '</td>';
+            }
+            return '<tr><td>' + esc(String(r.date || '').slice(0, 10)) + '</td>' + giver + '<td>' + esc(r.category_name) + '</td><td>' + money(r.amount) + '</td><td>' + esc(r.payment_method) + '</td><td>' + dl + '</td></tr>';
         }).join('');
-        container.innerHTML = '<table class="member-portal-table"><thead><tr><th>Date</th><th>Category</th><th>Amount</th><th>Method</th><th>' + (options.receipts ? 'Receipt' : 'Ref') + '</th></tr></thead><tbody>' + rows + '</tbody></table>';
+        var giverHead = showGiver ? '<th>Giver</th>' : '';
+        container.innerHTML = '<table class="member-portal-table"><thead><tr><th>Date</th>' + giverHead + '<th>Category</th><th>Amount</th><th>Method</th><th>' + (options.receipts ? 'Receipt' : 'Ref') + '</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    }
+
+    function renderChildrenNote(children) {
+        var stats = $('mpStats');
+        var existing = $('mpChildrenNote');
+        if (existing) existing.remove();
+        if (!stats || !children || !children.length) return;
+        var names = children.map(function (c) { return c.full_name; }).filter(Boolean).join(', ');
+        var p = document.createElement('p');
+        p.id = 'mpChildrenNote';
+        p.className = 'member-portal-muted';
+        p.textContent = 'Also showing tithes and project gifts for your children: ' + names + '.';
+        stats.insertAdjacentElement('afterend', p);
     }
 
     function renderCharts(chartsData) {
@@ -581,7 +645,7 @@
         var receipts = $('mpPanelReceipts');
         var tax = $('mpPanelTax');
         if (overview) overview.hidden = tab !== 'overview';
-        if (filtered) filtered.hidden = !['tithes', 'offerings', 'projects'].includes(tab);
+        if (filtered) filtered.hidden = !['tithes', 'projects'].includes(tab);
         if (receipts) receipts.hidden = tab !== 'receipts';
         if (tax) tax.hidden = tab !== 'tax';
 
@@ -589,7 +653,7 @@
 
         if (tab === 'overview') {
             renderTable((dashboardData.records || []).slice(0, 15), $('mpRecentTable'));
-        } else if (['tithes', 'offerings', 'projects'].includes(tab)) {
+        } else if (['tithes', 'projects'].includes(tab)) {
             var title = tab.charAt(0).toUpperCase() + tab.slice(1);
             if ($('mpFilteredTitle')) $('mpFilteredTitle').textContent = title;
             var bucket = (dashboardData.by_type && dashboardData.by_type[tab]) || [];
@@ -655,6 +719,7 @@
         fetchDashboard().then(function (data) {
             dashboardData = data;
             renderStats(data.summary);
+            renderChildrenNote(data.children);
             renderCharts(data.charts);
             renderTable((data.records || []).slice(0, 15), $('mpRecentTable'));
             renderAnnualSummary(data.annual);

@@ -1,5 +1,5 @@
 /**
- * Soft-theme Laravel Blade utilities inside the CMS shell.
+ * Soft-theme Laravel Blade utilities inside the admin shell.
  * Tailwind is NOT loaded — these rules prevent unstyled white/gray Breeze markup.
  */
 .portal-module-content {
@@ -93,7 +93,7 @@
     text-decoration: none !important;
 }
 
-/* Page headers sit outside .portal-module-content — theme them for CMS dark shell */
+/* Page headers sit outside .portal-module-content — theme them for the admin dark shell */
 .cms-page__header .font-semibold,
 .cms-page__header .text-xl,
 .cms-page__header .text-gray-800,
@@ -138,7 +138,7 @@
     color: #fff !important;
 }
 
-/* Plain action buttons used across SDTG forms/tables */
+/* Plain action buttons used across portal forms/tables */
 .portal-module-content button.px-4,
 .portal-module-content button.px-3,
 .portal-module-content a.px-4.py-2,
@@ -494,6 +494,217 @@ body.cms-modal-open {
     display: block;
 }
 
+.member-profile-thumb--lg {
+    width: 56px;
+    height: 56px;
+}
+
+.member-portal-flag {
+    display: inline-block;
+    margin-left: 0.4rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #132038;
+    background: rgba(251, 254, 6, 0.85);
+    border-radius: 999px;
+    padding: 0.12rem 0.45rem;
+    vertical-align: middle;
+}
+
+.member-children {
+    margin-top: 0.45rem;
+}
+
+.member-children__label {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--cms-text-muted, #9aa4bf);
+    margin-bottom: 0.3rem;
+}
+
+.member-children__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+}
+
+.member-children__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+.member-children__item:hover .member-children__name {
+    text-decoration: underline;
+}
+
+.member-children__name {
+    font-size: 0.82rem;
+}
+
+.member-children--profile {
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.member-photo-capture__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-top: 0.35rem;
+}
+
+.member-photo-capture__preview {
+    width: 96px;
+    height: 96px;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--cms-navy-light, #132038);
+    border: 1px solid rgba(251, 254, 6, 0.22);
+    flex-shrink: 0;
+}
+
+.member-photo-capture__preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.member-photo-capture__placeholder {
+    font-size: 0.72rem;
+    color: var(--cms-text-muted, #9aa4bf);
+    text-align: center;
+    padding: 0.4rem;
+}
+
+.member-photo-capture__controls {
+    min-width: 0;
+    flex: 1;
+}
+
+.member-photo-capture__actions {
+    margin-top: 0.6rem;
+}
+
+.member-photo-capture__camera-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(251, 254, 6, 0.35);
+    background: rgba(251, 254, 6, 0.14);
+    color: #fbfe06;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.45rem 0.8rem;
+}
+
+.member-photo-capture__camera-btn:hover {
+    background: rgba(251, 254, 6, 0.24);
+}
+
+.member-photo-capture__camera-btn--ghost {
+    background: transparent;
+    color: #e8edf8;
+    border-color: rgba(255, 255, 255, 0.16);
+}
+
+.member-photo-capture__status.is-error {
+    color: #fca5a5;
+}
+
+.member-camera-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 12000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.member-camera-modal.is-open {
+    display: flex;
+}
+
+.member-camera-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(4, 8, 20, 0.82);
+}
+
+.member-camera-modal__dialog {
+    position: relative;
+    width: min(520px, 100%);
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(251, 254, 6, 0.2);
+    background: linear-gradient(160deg, rgba(15, 23, 42, 0.98), rgba(8, 12, 28, 0.99));
+}
+
+.member-camera-modal__head,
+.member-camera-modal__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 14px 16px;
+}
+
+.member-camera-modal__head {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.member-camera-modal__head h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: #fff;
+}
+
+.member-camera-modal__close {
+    background: transparent;
+    border: 0;
+    color: #fff;
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.member-camera-modal__body {
+    padding: 16px;
+}
+
+.member-camera-modal__body video {
+    display: block;
+    width: 100%;
+    max-height: 360px;
+    border-radius: 14px;
+    background: #000;
+    object-fit: cover;
+}
+
+.member-camera-modal__hint {
+    margin: 10px 0 0;
+    font-size: 0.82rem;
+    color: rgba(226, 232, 240, 0.65);
+    text-align: center;
+}
+
+.member-camera-modal__foot {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    justify-content: flex-end;
+}
+
 @media (max-width: 640px) {
     .member-profile {
         grid-template-columns: 1fr;
@@ -505,4 +716,64 @@ body.cms-modal-open {
 
 
 .cms-btn--danger { background: rgba(239,68,68,0.18) !important; border-color: rgba(239,68,68,0.4) !important; color: #fca5a5 !important; }
+
+.sermon-studio__media {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    margin-bottom: 0.25rem;
+}
+
+.sermon-media-card {
+    border: 1px solid rgba(19, 32, 56, 0.12);
+    border-radius: 12px;
+    padding: 1rem 1.1rem 1.15rem;
+    background: linear-gradient(180deg, rgba(251, 254, 6, 0.08), transparent 42%);
+}
+
+.sermon-media-card__icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #132038;
+    color: #fbfe06;
+    margin-bottom: 0.55rem;
+}
+
+.sermon-media-card__title {
+    font-size: 0.95rem;
+    font-weight: 650;
+    margin: 0 0 0.25rem;
+}
+
+.sermon-media-card__hint {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin: 0 0 0.75rem;
+}
+
+.sermon-media-card__preview {
+    min-height: 140px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #132038;
+    color: #9aa4bf;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+}
+
+.sermon-media-card__preview img,
+.sermon-media-card__preview video {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+    background: #0b1220;
+}
+
 

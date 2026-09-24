@@ -106,6 +106,7 @@ test('scoped admin only sees allowed sidebar modules when enforcement is on', fu
 });
 
 test('scoped admin is redirected away from denied pages when enforcement is on', function () {
+    /** @var \Tests\TestCase $this */
     enableRbacEnforcement();
     $admin = assignScopedDonationsAdmin();
 
@@ -119,6 +120,7 @@ test('scoped admin is redirected away from denied pages when enforcement is on',
 });
 
 test('legacy admin still sees full nav when enforcement is on', function () {
+    /** @var \Tests\TestCase $this */
     enableRbacEnforcement();
     $admin = Admin::factory()->create([
         'role' => 'admin',
@@ -134,6 +136,7 @@ test('legacy admin still sees full nav when enforcement is on', function () {
 });
 
 test('scoped finance role lands on donations home not admin dashboard', function () {
+    /** @var \Tests\TestCase $this */
     enableRbacEnforcement();
     $admin = assignScopedDonationsAdmin();
 
@@ -147,7 +150,7 @@ test('scoped finance role lands on donations home not admin dashboard', function
 
     $this->post('/admin/logout');
 
-    $this->post('/admin/login', [
+    $this->post('/portal/login', [
         'email' => $admin->email,
         'password' => 'password',
     ])->assertRedirect(route('donations.index'));

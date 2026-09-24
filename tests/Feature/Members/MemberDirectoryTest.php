@@ -5,6 +5,7 @@ use App\Models\Member;
 use Illuminate\Support\Facades\DB;
 
 test('admin can view members directory', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
     Member::factory()->create(['full_name' => 'Directory Member']);
 
@@ -18,7 +19,75 @@ test('admin can view members directory', function () {
     $response->assertSee('Grand total');
 });
 
+test('members department dropdown does not list duplicate ministry labels', function () {
+    /** @var \Tests\TestCase $this */
+    $admin = Admin::factory()->create(['role' => 'admin']);
+    Member::factory()->create(['department' => 'Children']);
+    Member::factory()->create(['department' => 'Children Ministry']);
+    Member::factory()->create(['department' => 'Widows Ministry']);
+    Member::factory()->create(['department' => 'Widowers Ministry']);
+    Member::factory()->create(['department' => 'Prayer']);
+    Member::factory()->create(['department' => 'Prayer Chain']);
+    Member::factory()->create(['department' => 'Youth']);
+
+    $departments = app(\App\Services\Members\MemberReadService::class)->listDepartmentOptions();
+    $labels = array_map(static fn ($dept) => mb_strtolower((string) $dept), $departments);
+
+    expect($labels)->toHaveCount(count(array_unique($labels)));
+    expect($departments)->toContain('Children Ministry');
+    expect($departments)->toContain('Widows');
+    expect($departments)->toContain('Youth Ministry');
+    expect($departments)->not->toContain('Children');
+    expect($departments)->not->toContain('Youth');
+    expect($departments)->not->toContain('Widows Ministry');
+    expect($departments)->not->toContain('Widowers Ministry');
+    expect($departments)->not->toContain('Prayer Chain');
+
+    $html = $this->actingAs($admin, 'admin')->get(route('members.create'))->assertOk()->getContent();
+    expect(substr_count($html, '>Children Ministry<'))->toBe(1);
+    expect(substr_count($html, '>Children<'))->toBe(0);
+});
+
+test('join form membership statuses match living add-member options', function () {
+    /** @var \Tests\TestCase $this */
+    expect(\App\Services\Members\MemberReadService::PUBLIC_JOIN_STATUSES)->toBe([
+        'full_member',
+        'baptized',
+        'visitor',
+        'unbaptized',
+        'active',
+        'worker',
+        'inactive',
+    ]);
+
+    $admin = Admin::factory()->create(['role' => 'admin']);
+    $create = $this->actingAs($admin, 'admin')->get(route('members.create'));
+    $create->assertOk();
+    $create->assertSee('Status');
+    $create->assertSee('Full Member');
+    $create->assertSee('Baptized');
+    $create->assertSee('Unbaptized');
+});
+
+test('parent guardian fields stay hidden on add member until the member is a child or teen', function () {
+    /** @var \Tests\TestCase $this */
+    $admin = Admin::factory()->create(['role' => 'admin']);
+
+    $create = $this->actingAs($admin, 'admin')->get(route('members.create'));
+    $create->assertOk();
+    $create->assertSee('children and teens only');
+    expect($create->getContent())->toMatch('/id="parentGuardianFields"[^>]*\bhidden\b/');
+
+    $child = Member::factory()->create([
+        'date_of_birth' => now()->subYears(8)->toDateString(),
+    ]);
+    $editChild = $this->actingAs($admin, 'admin')->get(route('members.edit', $child));
+    $editChild->assertOk();
+    expect($editChild->getContent())->not->toMatch('/id="parentGuardianFields"[^>]*\bhidden\b/');
+});
+
 test('members directory shows ministry totals from member departments', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
 
     Member::factory()->create([
@@ -60,6 +129,7 @@ test('members directory shows ministry totals from member departments', function
 });
 
 test('members directory falls back to roster totals when department counts are empty', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
 
     DB::table('ministry_roster_people')->insert([
@@ -97,19 +167,21 @@ test('members directory falls back to roster totals when department counts are e
 
 
 test('admin can register a member with status history', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'super_admin']);
 
-    $response = $this->actingAs($admin, 'admin')->post(route('members.store'), [
-        'first_name' => 'Jane',
-        'last_name' => 'Doe',
-        'phone' => '08012345678',
-        'address_line1' => '12 Church Road',
-        'city' => 'Owerri',
-        'state' => 'Imo',
-        'department' => 'Member',
-        'status' => 'active',
-        'joined_date' => '2026-07-20',
-    ]);
+    $this->actingAs($admin, 'admin')
+        ->get(route('members.create'))
+        ->assertOk()
+        ->assertSee('Occupation')
+        ->assertSee('Take Photo')
+        ->assertSee('name="photo"', false)
+        ->assertSee('First name', false)
+        ->assertSee('Notes')
+        ->assertSee('Grant access to the member portal')
+        ->assertSee('name="portal_enabled"', false);
+
+    $response = $this->actingAs($admin, 'admin')->post(route('members.store'), memberAdminFormPayload());
 
     $response->assertRedirect(route('members.index'));
     $this->assertDatabaseHas('members', [
@@ -117,6 +189,8 @@ test('admin can register a member with status history', function () {
         'member_code' => 'AGCI-00001',
         'phone' => '08012345678',
         'department' => 'Member',
+        'occupation' => 'Teacher',
+        'portal_enabled' => 0,
     ]);
     $this->assertDatabaseHas('member_status_history', [
         'new_status' => 'active',
@@ -127,6 +201,7 @@ test('admin can register a member with status history', function () {
 });
 
 test('admin can update member and log status change', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
     $member = Member::factory()->create([
         'member_code' => 'AGCI-00010',
@@ -138,16 +213,17 @@ test('admin can update member and log status change', function () {
         'department' => 'Member',
     ]);
 
-    $response = $this->actingAs($admin, 'admin')->put(route('members.update', $member), [
+    $response = $this->actingAs($admin, 'admin')->put(route('members.update', $member), memberAdminFormPayload([
+        'first_name' => 'Updated',
+        'last_name' => 'Name',
         'full_name' => 'Updated Name',
         'phone' => '08099998888',
-        'address_line1' => '1 Old Street',
-        'city' => 'Owerri',
-        'state' => 'Imo',
+        'email' => 'updated.name@example.com',
         'department' => 'Youth Ministry',
         'status' => 'full_member',
         'joined_date' => $member->joined_date->format('Y-m-d'),
-    ]);
+        'occupation' => 'Trader',
+    ]));
 
     $response->assertRedirect(route('members.show', $member));
     $this->assertDatabaseHas('members', [
@@ -165,12 +241,14 @@ test('admin can update member and log status change', function () {
 });
 
 test('ss teacher cannot access members module', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'ss_teacher']);
 
     $this->actingAs($admin, 'admin')->get(route('members.index'))->assertForbidden();
 });
 
 test('admin can view deceased dashboard with memorial details', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
 
     Member::factory()->create([
@@ -210,6 +288,7 @@ test('admin can view deceased dashboard with memorial details', function () {
 });
 
 test('deceased dashboard search finds memorial notes', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'church_administrator']);
 
     Member::factory()->create([
@@ -237,12 +316,14 @@ test('deceased dashboard search finds memorial notes', function () {
 });
 
 test('ss teacher cannot access deceased dashboard', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'ss_teacher']);
 
     $this->actingAs($admin, 'admin')->get(route('members.deceased'))->assertForbidden();
 });
 
 test('admin can record an existing member as deceased from the directory', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
     $member = Member::factory()->create([
         'full_name' => 'Living Elder',
@@ -280,6 +361,7 @@ test('admin can record an existing member as deceased from the directory', funct
 });
 
 test('cannot record an already deceased member again', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
     $member = Member::factory()->create([
         'full_name' => 'Already Gone',
@@ -301,6 +383,7 @@ test('cannot record an already deceased member again', function () {
 });
 
 test('ss teacher cannot record deceased members', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'ss_teacher']);
     $member = Member::factory()->create(['status' => 'active']);
 
@@ -312,6 +395,7 @@ test('ss teacher cannot record deceased members', function () {
 });
 
 test('admin can generate a death certificate pdf for a deceased member', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
     $member = Member::factory()->create([
         'full_name' => 'Certificate Elder',
@@ -332,6 +416,7 @@ test('admin can generate a death certificate pdf for a deceased member', functio
 });
 
 test('admin can download a death certificate pdf', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
     $member = Member::factory()->create([
         'full_name' => 'Download Elder',
@@ -350,6 +435,7 @@ test('admin can download a death certificate pdf', function () {
 });
 
 test('death certificate is not available for living members', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
     $member = Member::factory()->create([
         'full_name' => 'Still Living',
@@ -365,6 +451,7 @@ test('death certificate is not available for living members', function () {
 });
 
 test('ss teacher cannot generate death certificates', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'ss_teacher']);
     $member = Member::factory()->create([
         'status' => 'deceased',
@@ -378,6 +465,7 @@ test('ss teacher cannot generate death certificates', function () {
 });
 
 test('member profile shows death details and certificate links when deceased', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
     $member = Member::factory()->create([
         'full_name' => 'Profile Deceased',
@@ -395,4 +483,107 @@ test('member profile shows death details and certificate links when deceased', f
     $response->assertSee('Memorial notes');
     $response->assertSee('Laid to rest beside the church garden.');
     $response->assertSee('Death certificate');
+});
+
+test('member profile shows occupation or a placeholder when it is empty', function () {
+    /** @var \Tests\TestCase $this */
+    $admin = Admin::factory()->create(['role' => 'admin']);
+    $member = Member::factory()->create([
+        'full_name' => 'Clifford Profile',
+        'status' => 'full_member',
+    ]);
+
+    $this->actingAs($admin, 'admin')
+        ->get(route('members.show', $member))
+        ->assertOk()
+        ->assertSee('Occupation');
+});
+
+test('searching a parent member shows the names and photos of their children', function () {
+    /** @var \Tests\TestCase $this */
+    $admin = Admin::factory()->create(['role' => 'admin']);
+    $parent = Member::factory()->create([
+        'first_name' => 'Ada',
+        'last_name' => 'Okafor',
+        'full_name' => 'Ada Okafor',
+        'phone' => '08034095171',
+        'email' => 'ada.okafor@example.com',
+        'date_of_birth' => now()->subYears(38)->toDateString(),
+        'department' => 'Women\'s Ministry',
+    ]);
+    Member::factory()->create([
+        'first_name' => 'Chidi',
+        'last_name' => 'Okafor',
+        'full_name' => 'Chidi Okafor',
+        'parent_name' => 'Ada Okafor',
+        'parent_phone' => '08034095171',
+        'parent_email' => 'ada.okafor@example.com',
+        'date_of_birth' => now()->subYears(9)->toDateString(),
+        'photo_path' => 'uploads/members/chidi.jpg',
+        'department' => 'Children Ministry',
+    ]);
+    Member::factory()->create([
+        'first_name' => 'Amaka',
+        'last_name' => 'Okafor',
+        'full_name' => 'Amaka Okafor',
+        'parent_name' => 'Ada Okafor',
+        'parent_phone' => '08034095171',
+        'date_of_birth' => now()->subYears(6)->toDateString(),
+        'department' => 'Children Ministry',
+    ]);
+
+    $search = $this->actingAs($admin, 'admin')->get(route('members.index', ['q' => 'Ada Okafor']));
+    $search->assertOk();
+    $search->assertSee('Ada Okafor');
+    $search->assertSee('Children');
+    $search->assertSee('Chidi Okafor');
+    $search->assertSee('Amaka Okafor');
+    $search->assertSee('uploads/members/chidi.jpg', false);
+
+    $profile = $this->actingAs($admin, 'admin')->get(route('members.show', $parent));
+    $profile->assertOk();
+    $profile->assertSee('Children');
+    $profile->assertSee('Chidi Okafor');
+    $profile->assertSee('Amaka Okafor');
+});
+
+test('admin can grant and revoke member portal login access', function () {
+    /** @var \Tests\TestCase $this */
+    $admin = Admin::factory()->create(['role' => 'admin']);
+
+    $this->actingAs($admin, 'admin')->post(route('members.store'), memberAdminFormPayload([
+        'email' => 'portal.member@example.com',
+        'portal_enabled' => '1',
+        'portal_password' => 'secret12',
+    ]))->assertRedirect(route('members.index'));
+
+    $member = Member::query()->where('email', 'portal.member@example.com')->first();
+    expect($member)->not->toBeNull();
+    expect((int) $member->portal_enabled)->toBe(1);
+    expect(\Illuminate\Support\Facades\Hash::check('secret12', (string) $member->portal_password_hash))->toBeTrue();
+
+    $this->actingAs($admin, 'admin')
+        ->get(route('members.index', ['q' => 'Jane Doe']))
+        ->assertOk()
+        ->assertSee('Portal access');
+
+    $this->actingAs($admin, 'admin')
+        ->get(route('members.show', $member))
+        ->assertOk()
+        ->assertSee('Access granted');
+
+    $this->actingAs($admin, 'admin')->put(route('members.update', $member), memberAdminFormPayload([
+        'email' => 'portal.member@example.com',
+        'joined_date' => $member->joined_date->format('Y-m-d'),
+    ]))->assertRedirect(route('members.show', $member));
+
+    $this->assertDatabaseHas('members', [
+        'id' => $member->id,
+        'portal_enabled' => 0,
+    ]);
+
+    $this->actingAs($admin, 'admin')
+        ->get(route('members.show', $member))
+        ->assertOk()
+        ->assertSee('No access');
 });

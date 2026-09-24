@@ -21,8 +21,7 @@ final class RbacWriteService
             ['value' => 'children', 'label' => 'Children Ministry Dashboard'],
             ['value' => 'men', 'label' => "Men's Ministry Dashboard"],
             ['value' => 'women', 'label' => "Women's Ministry Dashboard"],
-            ['value' => 'widowers', 'label' => 'Widowers Ministry Dashboard'],
-            ['value' => 'widows', 'label' => 'Widows Ministry Dashboard'],
+            ['value' => 'widows', 'label' => 'Widows Dashboard'],
             ['value' => 'music', 'label' => 'Music Ministry Dashboard'],
             ['value' => 'choir', 'label' => 'Choir Dashboard'],
             ['value' => 'ushering', 'label' => 'Ushering Dashboard'],
@@ -53,6 +52,17 @@ final class RbacWriteService
         $query = DB::table('roles as r')
             ->leftJoin('admin_role_assignments as ara', 'ara.role_id', '=', 'r.id')
             ->leftJoin('role_permissions as rp', 'rp.role_id', '=', 'r.id');
+
+        if (Schema::hasColumn('roles', 'platform')) {
+            $query->where(function ($inner): void {
+                $inner->whereNull('r.platform')
+                    ->orWhere('r.platform', '!=', 'sdtg');
+            });
+        }
+        $query->where(function ($inner): void {
+            $inner->whereNull('r.dashboard_type')
+                ->orWhere('r.dashboard_type', '!=', 'sdtg');
+        });
 
         if ($platform !== null && Schema::hasColumn('roles', 'platform')) {
             $query->where(function ($inner) use ($platform): void {
@@ -251,7 +261,7 @@ final class RbacWriteService
         }
 
         if ($slug === 'super_admin') {
-            $platform = RbacPlatform::BOTH;
+            $platform = RbacPlatform::AG;
         }
 
         if ($id > 0) {

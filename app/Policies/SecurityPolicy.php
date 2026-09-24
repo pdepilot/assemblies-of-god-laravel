@@ -18,7 +18,8 @@ final class SecurityPolicy
 
     public function manageBans(Admin $admin): bool
     {
-        return in_array((string) $admin->role, self::MANAGE_ROLES, true);
+        return $admin->isSuperAdmin()
+            || in_array((string) $admin->role, self::MANAGE_ROLES, true);
     }
 
     public function requireViewSecurity(Admin $admin): void

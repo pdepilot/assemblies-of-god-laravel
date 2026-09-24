@@ -3,6 +3,7 @@
 use App\Models\Admin;
 
 test('content editor can view and save about content editor', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'content_editor']);
 
     $this->actingAs($admin, 'admin')
@@ -54,23 +55,28 @@ test('content editor can view and save about content editor', function () {
 });
 
 test('content editor can view website dashboard', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'content_editor']);
 
     $response = $this->actingAs($admin, 'admin')->get(route('website.dashboard'));
 
     $response->assertOk();
-    $response->assertSee('Website CMS');
+    $response->assertSee('Website');
     $response->assertSee('Blog');
 });
 
 test('content editor can view website pages and edit hero', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'content_editor']);
 
     $this->actingAs($admin, 'admin')
         ->get(route('website.pages.index'))
         ->assertOk()
         ->assertSee('Frontend Page Manager')
-        ->assertSee('Homepage hero');
+        ->assertSee('Homepage hero')
+        ->assertSee('Our Worship')
+        ->assertSee('Homepage Activities')
+        ->assertSee('Sunday Worship Services');
 
     $this->actingAs($admin, 'admin')
         ->put(route('website.pages.hero.update'), [
@@ -94,6 +100,7 @@ test('content editor can view website pages and edit hero', function () {
 });
 
 test('content editor can view seo team and media pages', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'content_editor']);
 
     $this->actingAs($admin, 'admin')->get(route('website.seo.index'))->assertOk()->assertSee('SEO Settings');
@@ -102,6 +109,7 @@ test('content editor can view seo team and media pages', function () {
 });
 
 test('content editor can create blog post', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'content_editor']);
 
     $this->actingAs($admin, 'admin')->post(route('website.blog.store'), [
@@ -119,18 +127,20 @@ test('content editor can create blog post', function () {
 });
 
 test('ss teacher cannot access website cms', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'ss_teacher']);
 
     $this->actingAs($admin, 'admin')->get(route('website.dashboard'))->assertForbidden();
 });
 
 test('website hero save updates public homepage first slide', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'content_editor']);
 
     $this->actingAs($admin, 'admin')
         ->put(route('website.pages.hero.update'), [
-            'headline' => 'Public Hero Headline From CMS',
-            'subheadline' => 'Public tagline from CMS',
+            'headline' => 'Public Hero Headline From Editor',
+            'subheadline' => 'Public tagline from editor',
             'cta_label' => 'Visit Us',
             'cta_url' => '/contact',
         ])
@@ -138,8 +148,8 @@ test('website hero save updates public homepage first slide', function () {
 
     $home = $this->get(route('public.home'));
     $home->assertOk();
-    $home->assertSee('Public Hero Headline From CMS');
-    $home->assertSee('Public tagline from CMS');
+    $home->assertSee('Public Hero Headline From Editor');
+    $home->assertSee('Public tagline from editor');
 
     $this->assertDatabaseHas('ag_site_content', [
         'section_key' => 'homepage_hero',
@@ -148,11 +158,12 @@ test('website hero save updates public homepage first slide', function () {
     $row = \Illuminate\Support\Facades\DB::table('ag_site_content')
         ->where('section_key', 'homepage_hero')
         ->value('content_json');
-    expect((string) $row)->toContain('Public Hero Headline From CMS');
-    expect((string) $row)->toContain('Public tagline from CMS');
+    expect((string) $row)->toContain('Public Hero Headline From Editor');
+    expect((string) $row)->toContain('Public tagline from editor');
 });
 
 test('content editor can edit and save a website page override', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'content_editor']);
 
     $this->actingAs($admin, 'admin')
@@ -163,7 +174,7 @@ test('content editor can edit and save a website page override', function () {
 
     $this->actingAs($admin, 'admin')
         ->put(route('website.pages.update', 'contact'), [
-            'heading' => 'Get In Touch CMS',
+            'heading' => 'Get In Touch Now',
             'eyebrow' => 'We Are Here',
             'intro' => 'Reach the church office anytime.',
             'body_html' => '<p>Office hours and prayer line details.</p>',
@@ -174,36 +185,46 @@ test('content editor can edit and save a website page override', function () {
 
     $public = $this->get(route('public.contact'));
     $public->assertOk();
-    $public->assertSee('Get In Touch CMS');
+    $public->assertSee('Get In Touch Now');
     $public->assertSee('We Are Here');
     $public->assertSee('Reach the church office anytime.');
     $public->assertSee('Office hours and prayer line details.', false);
 });
 
 test('homepage section titles come from pages home override', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'content_editor']);
 
     $this->actingAs($admin, 'admin')
         ->put(route('website.pages.update', 'home'), [
-            'ministries_eyebrow' => 'CMS Ministries',
-            'ministries_title' => 'CMS Ministries Title',
-            'events_eyebrow' => 'CMS Gather',
-            'events_title' => 'CMS Events Title',
-            'events_intro' => 'CMS events intro copy.',
-            'worship_eyebrow' => 'CMS Visit',
-            'worship_title' => 'CMS Worship Title',
-            'worship_intro' => 'CMS worship intro copy.',
+            'ministries_eyebrow' => 'Edited Ministries Label',
+            'ministries_title' => 'Edited Ministries Title',
+            'events_eyebrow' => 'Edited Gather',
+            'events_title' => 'Edited Events Title',
+            'events_intro' => 'Edited events intro copy.',
+            'worship_eyebrow' => 'Edited Visit',
+            'worship_title' => 'Edited Worship Title',
+            'worship_intro' => 'Edited worship intro copy.',
         ])
         ->assertRedirect(route('website.pages.edit', 'home'));
 
     $home = $this->get(route('public.home'));
     $home->assertOk();
-    $home->assertSee('CMS Ministries Title');
-    $home->assertSee('CMS Events Title');
-    $home->assertSee('CMS Worship Title');
+    $home->assertDontSee('Edited Ministries Label');
+    $home->assertDontSee('Edited Ministries Title');
+    $home->assertSee('Activities');
+    $home->assertDontSee('Edited Gather');
+    $home->assertDontSee('Edited Events Title');
+    $home->assertDontSee('Edited events intro copy.');
+    $home->assertSee('Upcoming Events');
+    $home->assertDontSee('Edited Visit');
+    $home->assertDontSee('Edited Worship Title');
+    $home->assertDontSee('Edited worship intro copy.');
+    $home->assertSee('Our Worship');
 });
 
 test('content editor can edit donate page copy from page manager', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'content_editor']);
 
     $this->actingAs($admin, 'admin')
@@ -214,44 +235,46 @@ test('content editor can edit donate page copy from page manager', function () {
 
     $this->actingAs($admin, 'admin')
         ->put(route('website.pages.update', 'donate'), [
-            'hero_badge' => 'CMS Give Badge',
+            'hero_badge' => 'Edited Give Badge',
             'hero_title' => "Give Freely.\nLove Deeply.",
-            'hero_scripture' => 'CMS scripture line',
-            'hero_ref' => '— CMS 1:1',
-            'hero_cta_label' => 'CMS Give Now',
-            'categories_title' => 'CMS Categories Title',
-            'final_cta_title' => 'CMS Final CTA',
+            'hero_scripture' => 'Edited scripture line',
+            'hero_ref' => '— Psalm 1:1',
+            'hero_cta_label' => 'Edited Give Now',
+            'categories_title' => 'Edited Categories Title',
+            'final_cta_title' => 'Edited Final CTA',
         ])
         ->assertRedirect(route('website.pages.edit', 'donate'));
 
     $donate = $this->get(route('public.donate'));
     $donate->assertOk();
-    $donate->assertSee('CMS Give Badge');
+    $donate->assertSee('Edited Give Badge');
     $donate->assertSee('Give Freely.');
     $donate->assertSee('Love Deeply.');
-    $donate->assertSee('CMS Categories Title');
-    $donate->assertSee('CMS Final CTA');
+    $donate->assertSee('Edited Categories Title');
+    $donate->assertSee('Edited Final CTA');
 });
 
 test('seo settings appear on public homepage meta tags', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'content_editor']);
 
     $this->actingAs($admin, 'admin')
         ->put(route('website.seo.update', 'home'), [
-            'title' => 'CMS SEO Home Title',
-            'meta_description' => 'CMS SEO home description for AGC Ikenegbu.',
+            'title' => 'Edited SEO Home Title',
+            'meta_description' => 'Edited SEO home description for AGC Ikenegbu.',
             'include_in_sitemap' => '1',
         ])
         ->assertRedirect(route('website.seo.edit', 'home'));
 
     $home = $this->get(route('public.home'));
     $home->assertOk();
-    $home->assertSee('CMS SEO Home Title', false);
-    $home->assertSee('CMS SEO home description for AGC Ikenegbu.', false);
+    $home->assertSee('Edited SEO Home Title', false);
+    $home->assertSee('Edited SEO home description for AGC Ikenegbu.', false);
     $home->assertSee('og:title', false);
 });
 
 test('contact seo edit saves end-to-end on public contact page', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'content_editor']);
 
     $this->actingAs($admin, 'admin')
@@ -281,6 +304,7 @@ test('contact seo edit saves end-to-end on public contact page', function () {
     $public->assertSee('Custom contact meta for end-to-end SEO editing.', false);
 });
 test('about content ignores client-submitted image urls and paths', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'content_editor']);
 
     $this->actingAs($admin, 'admin')
@@ -316,6 +340,7 @@ test('about content ignores client-submitted image urls and paths', function () 
 });
 
 test('page manager chrome and seo image fields are upload-only', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'content_editor']);
 
     $this->actingAs($admin, 'admin')
@@ -330,6 +355,7 @@ test('page manager chrome and seo image fields are upload-only', function () {
 });
 
 test('seo edit form is upload-only for open graph image', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'content_editor']);
 
     $this->actingAs($admin, 'admin')
@@ -343,6 +369,7 @@ test('seo edit form is upload-only for open graph image', function () {
 });
 
 test('about page inherits homepage_about body when about_page is not saved', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'content_editor']);
 
     $this->actingAs($admin, 'admin')
@@ -372,6 +399,7 @@ test('about page inherits homepage_about body when about_page is not saved', fun
 });
 
 test('about page renders cms about_page content', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'content_editor']);
 
     $this->actingAs($admin, 'admin')
@@ -379,13 +407,13 @@ test('about page renders cms about_page content', function () {
             'section' => 'about_page',
             'content' => [
                 'hero' => [
-                    'title' => 'About CMS Title',
+                    'title' => 'About Page Title',
                     'breadcrumb_home_label' => 'Home',
                     'breadcrumb_current' => 'About',
                 ],
-                'eyebrow' => 'About CMS',
-                'title' => 'About Page Body Title From CMS',
-                'intro' => 'About page intro from CMS editor.',
+                'eyebrow' => 'About Church',
+                'title' => 'About Page Body Title From Editor',
+                'intro' => 'About page intro from the editor.',
                 'vision_title' => 'Our Vision',
                 'vision_text' => 'Vision text',
                 'mission_title' => 'Our Mission',
@@ -397,16 +425,17 @@ test('about page renders cms about_page content', function () {
 
     $about = $this->get(route('public.about'));
     $about->assertOk();
-    $about->assertSee('About CMS Title');
-    $about->assertSee('About Page Body Title From CMS');
-    $about->assertSee('About page intro from CMS editor.');
+    $about->assertSee('About Page Title');
+    $about->assertSee('About Page Body Title From Editor');
+    $about->assertSee('About page intro from the editor.');
 });
 
 test('published blog posts appear on public blog routes', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'content_editor']);
 
     $this->actingAs($admin, 'admin')->post(route('website.blog.store'), [
-        'title' => 'Public Blog CMS Post',
+        'title' => 'Public Blog Featured Post',
         'category' => 'devotionals',
         'excerpt' => 'A public excerpt.',
         'body_html' => '<p>Public body content.</p>',
@@ -414,7 +443,7 @@ test('published blog posts appear on public blog routes', function () {
     ])->assertRedirect();
 
     \Illuminate\Support\Facades\DB::table('ag_blog_posts')
-        ->where('slug', 'public-blog-cms-post')
+        ->where('slug', 'public-blog-featured-post')
         ->update([
             'is_published' => 1,
             'published_at' => now(),
@@ -422,10 +451,10 @@ test('published blog posts appear on public blog routes', function () {
 
     $index = $this->get(route('public.blog'));
     $index->assertOk();
-    $index->assertSee('Public Blog CMS Post');
+    $index->assertSee('Public Blog Featured Post');
 
-    $show = $this->get(route('public.blog.show', 'public-blog-cms-post'));
+    $show = $this->get(route('public.blog.show', 'public-blog-featured-post'));
     $show->assertOk();
-    $show->assertSee('Public Blog CMS Post');
+    $show->assertSee('Public Blog Featured Post');
     $show->assertSee('Public body content.', false);
 });

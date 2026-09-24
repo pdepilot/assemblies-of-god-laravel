@@ -93,7 +93,7 @@ final class PortalNavService
     public function navForAdmin(?Admin $admin, ?string $platform = null): array
     {
         $platform = RbacPlatform::normalize($platform ?? RbacPlatform::current(), RbacPlatform::AG);
-        $nav = $this->filterNavByPlatform($this->fullNav($platform), $platform);
+        $nav = $this->stripSdtgNav($this->filterNavByPlatform($this->fullNav($platform), $platform));
 
         if ($admin === null
             || ! $this->navAccess->isEnforcementEnabled()
@@ -138,7 +138,7 @@ final class PortalNavService
         $bestId = null;
         $bestLength = -1;
 
-        foreach ($this->filterNavByPlatform($this->fullNav($platform), $platform) as $item) {
+        foreach ($this->stripSdtgNav($this->filterNavByPlatform($this->fullNav($platform), $platform)) as $item) {
             if (($item['type'] ?? null) === 'group') {
                 foreach ($item['children'] ?? [] as $child) {
                     $length = $this->hrefMatchLength($child['href'] ?? '', $path);
@@ -205,6 +205,8 @@ final class PortalNavService
             'sermons' => 'sermons',
             'financial-erp' => 'erp-launch',
             'registration-portals' => 'rp-portals',
+            'admin/website/worship' => 'worship-schedule',
+            'admin/website/activities' => 'homepage-activities',
             'website' => 'pages',
             'communication-hub/email-center' => 'ch-email',
             'communication-hub/automation' => 'ch-automation',
@@ -231,7 +233,6 @@ final class PortalNavService
             'ministries/youths' => 'youths',
             'ministries/men' => 'men',
             'ministries/women' => 'women',
-            'ministries/widowers' => 'widowers',
             'ministries/widows' => 'widows',
             'ministries/music' => 'music',
             'ministries/choir' => 'choir',
@@ -273,6 +274,53 @@ final class PortalNavService
         return $out;
     }
 
+    /**
+     * @param  list<array<string, mixed>>  $nav
+     * @return list<array<string, mixed>>
+     */
+    private function stripSdtgNav(array $nav): array
+    {
+        $out = [];
+        foreach ($nav as $item) {
+            if ($this->isSdtgNavItem($item)) {
+                continue;
+            }
+            if (($item['type'] ?? null) === 'group') {
+                $children = [];
+                foreach ($item['children'] ?? [] as $child) {
+                    if (! $this->isSdtgNavItem(is_array($child) ? $child : [])) {
+                        $children[] = $child;
+                    }
+                }
+                if ($children === []) {
+                    continue;
+                }
+                $item['children'] = $children;
+            }
+            $out[] = $item;
+        }
+
+        return $out;
+    }
+
+    /** @param array<string, mixed> $item */
+    private function isSdtgNavItem(array $item): bool
+    {
+        $haystack = strtolower(trim(
+            (string) ($item['id'] ?? '').' '.(string) ($item['label'] ?? '').' '.(string) ($item['href'] ?? '')
+        ));
+
+        if ($haystack === '') {
+            return false;
+        }
+
+        if (str_contains($haystack, 'send down thy glory') || str_contains($haystack, '/sdtg')) {
+            return true;
+        }
+
+        return (bool) preg_match('/(^|[^a-z])sdtg([^a-z]|$)/', $haystack);
+    }
+
     /** @return list<array<string, mixed>> */
     private function fullNav(string $platform): array
     {
@@ -304,15 +352,13 @@ final class PortalNavService
                     $this->ministry('youths', 'Youth Ministry', 'fa-people-group', 'youths'),
                     $this->ministry('men', "Men's Ministry", 'fa-person', 'men'),
                     $this->ministry('women', "Women's Ministry", 'fa-person-dress', 'women'),
-                    $this->ministry('widowers', 'Widowers Ministry', 'fa-person', 'widowers'),
-                    $this->ministry('widows', 'Widows Ministry', 'fa-person-dress', 'widows'),
+                    $this->ministry('widows', 'Widows', 'fa-person-dress', 'widows'),
                     $this->ministry('music', 'Music', 'fa-music', 'music'),
                     $this->ministry('choir', 'Choir', 'fa-users-line', 'choir'),
                     $this->ministry('ushers', 'Ushering', 'fa-door-open', 'ushers'),
                     $this->ministry('media', 'Media Team', 'fa-video', 'media'),
                     $this->item('visitors', 'Visitors', 'fa-handshake', 'visitors.index'),
                     $this->item('attendance', 'Attendance', 'fa-clipboard-check', 'ss.attendance.index'),
-                    $this->legacy('departments', 'Departments', 'fa-sitemap', 'departments'),
                     $this->item('events', 'Events', 'fa-calendar-days', 'events.index'),
                     $this->item('sermons', 'Sermons & Live', 'fa-book-bible', 'sermon.dashboard'),
                     $this->item('donations', 'Donations', 'fa-hand-holding-heart', 'donations.index'),
@@ -375,8 +421,11 @@ final class PortalNavService
                 'platform' => RbacPlatform::AG,
                 'children' => [
                     $this->item('pages', 'Page Manager', 'fa-file-lines', 'website.pages.index'),
+                    $this->item('promotions', 'Promotion Banner', 'fa-bullhorn', 'website.promotions.index'),
                     $this->item('blog', 'Blog', 'fa-newspaper', 'website.blog.index'),
                     $this->item('about-content', 'About Content', 'fa-church', 'website.about.edit'),
+                    $this->item('worship-schedule', 'Our Worship', 'fa-calendar-days', 'website.worship.edit'),
+                    $this->item('homepage-activities', 'Homepage Activities', 'fa-hands', 'website.activities.edit'),
                     $this->item('team-section', 'Team Sections', 'fa-people-group', 'website.team.index'),
                     $this->item('media-library', 'Media Library', 'fa-folder-open', 'website.media.index'),
                     $this->item('seo', 'SEO Manager', 'fa-magnifying-glass-chart', 'website.seo.index'),

@@ -53,6 +53,34 @@ expect()->extend('toBeOne', function () {
 |
 */
 
+use Illuminate\Http\UploadedFile;
+
+function memberAdminFormPayload(array $overrides = []): array
+{
+    return array_merge([
+        'first_name' => 'Jane',
+        'last_name' => 'Doe',
+        'full_name' => 'Jane Doe',
+        'phone' => '08012345678',
+        'phone_alt' => '08012345679',
+        'email' => 'jane.doe@example.com',
+        'gender' => 'female',
+        'date_of_birth' => '1990-01-15',
+        'marital_status' => 'single',
+        'address_line1' => '12 Church Road',
+        'address_line2' => 'Off Wetheral Road',
+        'city' => 'Owerri',
+        'state' => 'Imo',
+        'postal_code' => '460001',
+        'country' => 'Nigeria',
+        'occupation' => 'Teacher',
+        'department' => 'Member',
+        'status' => 'active',
+        'joined_date' => '2026-07-20',
+        'photo' => UploadedFile::fake()->image('member.jpg', 200, 200),
+    ], $overrides);
+}
+
 function something()
 {
     // ..

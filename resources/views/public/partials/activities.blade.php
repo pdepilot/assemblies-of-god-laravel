@@ -15,6 +15,9 @@
                 <i class="fa {{ $icon }} fa-4x text-dark"></i>
                 <div class="ms-4">
                     <h4>{{ $activity['title'] ?? '' }}</h4>
+                    @if (! empty($activity['meeting_schedule']))
+                        <p class="mb-2 text-muted small">{{ $activity['meeting_schedule'] }}</p>
+                    @endif
                     <p class="mb-4">{{ $activity['description'] ?? '' }}</p>
                     @if ($url !== '')
                         <a href="{{ $url }}" class="btn btn-primary px-3">Read More</a>

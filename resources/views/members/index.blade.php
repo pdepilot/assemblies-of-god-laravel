@@ -110,6 +110,28 @@
                                             @endif
                                         </span>
                                         {{ $item['full_name'] }}
+                                        @if (! empty($item['portal_enabled']))
+                                            <span class="member-portal-flag">Portal access</span>
+                                        @endif
+                                        @if (! empty($item['children']))
+                                            <div class="member-children" aria-label="Children of {{ $item['full_name'] }}">
+                                                <span class="member-children__label">Children</span>
+                                                <div class="member-children__list">
+                                                    @foreach ($item['children'] as $child)
+                                                        <a href="{{ route('members.show', $child['id']) }}" class="member-children__item" title="{{ $child['full_name'] }}">
+                                                            <span class="member-profile-thumb" aria-hidden="true">
+                                                                @if (! empty($child['photo_url']))
+                                                                    <img src="{{ $child['photo_url'] }}" alt="">
+                                                                @else
+                                                                    {{ strtoupper(\Illuminate\Support\Str::substr($child['full_name'] ?? 'C', 0, 1)) }}
+                                                                @endif
+                                                            </span>
+                                                            <span class="member-children__name">{{ $child['full_name'] }}</span>
+                                                        </a>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @endif
                                     </td>
                                     <td class="px-3 py-2 text-sm">{{ $item['phone'] }}</td>
                                     <td class="px-3 py-2 text-sm">{{ $item['department'] }}</td>

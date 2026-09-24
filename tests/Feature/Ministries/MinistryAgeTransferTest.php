@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
 test('child age 13 moves from children to teens across stores', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
     $dob = now()->subYears(13)->subDay()->toDateString();
 
@@ -68,6 +69,7 @@ test('child age 13 moves from children to teens across stores', function () {
 });
 
 test('teen age 20 moves to youths', function () {
+    /** @var \Tests\TestCase $this */
     $dob = now()->subYears(20)->subDay()->toDateString();
 
     $member = Member::factory()->create([
@@ -106,6 +108,7 @@ test('teen age 20 moves to youths', function () {
 });
 
 test('age 12 stays children and age 19 stays teens', function () {
+    /** @var \Tests\TestCase $this */
     $child = Member::factory()->create([
         'full_name' => 'Still Child',
         'date_of_birth' => now()->subYears(12)->toDateString(),
@@ -149,6 +152,7 @@ test('age 12 stays children and age 19 stays teens', function () {
 });
 
 test('missing date of birth is skipped', function () {
+    /** @var \Tests\TestCase $this */
     $member = Member::factory()->create([
         'full_name' => 'No Birthday',
         'date_of_birth' => null,
@@ -166,6 +170,7 @@ test('missing date of birth is skipped', function () {
 });
 
 test('dry-run command does not write transfers', function () {
+    /** @var \Tests\TestCase $this */
     $member = Member::factory()->create([
         'full_name' => 'Dry Run Child',
         'date_of_birth' => now()->subYears(14)->toDateString(),
@@ -180,6 +185,7 @@ test('dry-run command does not write transfers', function () {
 });
 
 test('admin can open age transfers page and generate eligibility report', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
 
     $this->actingAs($admin, 'admin')
@@ -200,6 +206,7 @@ test('admin can open age transfers page and generate eligibility report', functi
 });
 
 test('member save triggers age transfer when due', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
 
     $member = Member::factory()->create([
@@ -222,18 +229,22 @@ test('member save triggers age transfer when due', function () {
         'updated_at' => now(),
     ]);
 
-    $this->actingAs($admin, 'admin')->put(route('members.update', $member), [
+    $this->actingAs($admin, 'admin')->put(route('members.update', $member), memberAdminFormPayload([
+        'first_name' => 'Save',
+        'last_name' => 'Sync Child',
         'full_name' => 'Save Sync Child',
         'phone' => '08012345678',
         'address_line1' => '1 Family Lane',
-        'city' => 'Owerri',
-        'state' => 'Imo',
         'date_of_birth' => now()->subYears(13)->subMonth()->toDateString(),
         'marital_status' => 'single',
         'department' => 'Children Ministry',
         'status' => 'full_member',
         'joined_date' => now()->toDateString(),
-    ])->assertRedirect(route('members.show', $member));
+        'parent_name' => 'Parent Guardian',
+        'parent_phone' => '08011112222',
+        'parent_email' => 'parent@example.com',
+        'occupation' => 'Student',
+    ]))->assertRedirect(route('members.show', $member));
 
     $this->assertDatabaseHas('members', [
         'id' => $member->id,

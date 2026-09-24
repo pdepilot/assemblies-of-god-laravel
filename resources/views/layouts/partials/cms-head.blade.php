@@ -8,7 +8,7 @@
     $isCmsNativeShell = $isCmsNativeShell ?? false;
     $portalCss = asset('portal/css');
     $identity = $cmsBootData['identity'] ?? [];
-    $pageTitleSuffix = $identity['page_title_suffix'] ?? 'CMS';
+    $pageTitleSuffix = $identity['page_title_suffix'] ?? 'AGC IKENEGBU';
     $faviconUrl = $cmsBootData['favicon_url'] ?? '';
     $bodyPlatformClass = ' cms-app--ag';
 @endphp

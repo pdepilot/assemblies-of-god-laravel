@@ -58,6 +58,8 @@
                     <div><dt class="text-sm text-gray-500">Phone</dt><dd>{{ $member['phone'] }}</dd></div>
                     <div><dt class="text-sm text-gray-500">Email</dt><dd>{{ $member['email'] ?? '—' }}</dd></div>
                     <div><dt class="text-sm text-gray-500">Department</dt><dd>{{ $member['department'] }}</dd></div>
+                    <div><dt class="text-sm text-gray-500">Occupation</dt><dd>{{ filled($member['occupation'] ?? null) ? $member['occupation'] : '—' }}</dd></div>
+                    <div><dt class="text-sm text-gray-500">Member portal</dt><dd>{{ ! empty($member['portal_enabled']) ? 'Access granted' : 'No access' }}</dd></div>
                     <div><dt class="text-sm text-gray-500">Joined</dt><dd>{{ $member['joined_date'] }}</dd></div>
                     @if (($member['status'] ?? '') === 'deceased')
                         <div>
@@ -80,6 +82,26 @@
                         <div class="sm:col-span-2"><dt class="text-sm text-gray-500">Notes</dt><dd>{{ $member['notes'] }}</dd></div>
                     @endif
                 </dl>
+
+                @if (! empty($member['children']))
+                    <div class="member-children member-children--profile">
+                        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Children</h3>
+                        <div class="member-children__list">
+                            @foreach ($member['children'] as $child)
+                                <a href="{{ route('members.show', $child['id']) }}" class="member-children__item" title="{{ $child['full_name'] }}">
+                                    <span class="member-profile-thumb member-profile-thumb--lg" aria-hidden="true">
+                                        @if (! empty($child['photo_url']))
+                                            <img src="{{ $child['photo_url'] }}" alt="{{ $child['full_name'] }}">
+                                        @else
+                                            {{ strtoupper(\Illuminate\Support\Str::substr($child['full_name'] ?? 'C', 0, 1)) }}
+                                        @endif
+                                    </span>
+                                    <span class="member-children__name">{{ $child['full_name'] }}</span>
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     </div>

@@ -1,18 +1,21 @@
 ﻿<x-app-layout>
-    <x-slot name="header"><h2 class="font-semibold text-xl">New Sermon</h2></x-slot>
-    <div class="py-10"><div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-        <form method="POST" action="{{ route('sermon.sermons.store') }}" class="bg-white shadow-sm sm:rounded-lg p-6 space-y-4">
-            @csrf
-            <div><label class="block text-sm font-medium">Title</label><input name="title" value="{{ old('title') }}" class="mt-1 w-full rounded border-gray-300" required></div>
-            <div><label class="block text-sm font-medium">Sermon Date</label><input type="date" name="sermon_date" value="{{ old('sermon_date', date('Y-m-d')) }}" class="mt-1 w-full rounded border-gray-300" required></div>
-            <div><label class="block text-sm font-medium">Minister</label><input name="minister_name" value="{{ old('minister_name') }}" class="mt-1 w-full rounded border-gray-300"></div>
-            <div><label class="block text-sm font-medium">Type</label><select name="sermon_type" class="mt-1 w-full rounded border-gray-300">@foreach($types as $t)<option value="{{ $t }}">{{ $t }}</option>@endforeach</select></div>
-            <div><label class="block text-sm font-medium">Status</label><select name="status" class="mt-1 w-full rounded border-gray-300">@foreach($statuses as $s)<option value="{{ $s }}">{{ $s }}</option>@endforeach</select></div>
-            <div><label class="block text-sm font-medium">SEO Title</label><input name="seo_title" value="{{ old('seo_title') }}" class="mt-1 w-full rounded border-gray-300" maxlength="255"></div>
-            <div><label class="block text-sm font-medium">SEO Description</label><textarea name="seo_description" rows="2" class="mt-1 w-full rounded border-gray-300" maxlength="500">{{ old('seo_description') }}</textarea></div>
-            <div><label class="block text-sm font-medium">Tags (comma-separated)</label><input name="tags" value="{{ old('tags') }}" class="mt-1 w-full rounded border-gray-300" placeholder="faith, prayer, holy-spirit"></div>
-            <div><label class="block text-sm font-medium">YouTube URL</label><input name="youtube_url" value="{{ old('youtube_url') }}" class="mt-1 w-full rounded border-gray-300"></div>
-            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-semibold">Save Sermon</button>
-        </form>
-    </div></div>
+    <x-slot name="header">
+        <div>
+            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">New sermon</h2>
+            <p class="text-sm text-gray-500 mt-1">Add a cover image and optionally upload a video up to 15 MB.</p>
+        </div>
+    </x-slot>
+    <div class="py-10">
+        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            @include('sermons._nav', ['canManage' => true])
+            <form method="POST" action="{{ route('sermon.sermons.store') }}" enctype="multipart/form-data" class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6 space-y-6">
+                @csrf
+                @include('sermons.sermons._form')
+                <div class="flex items-center gap-3 pt-2">
+                    <x-primary-button>Save sermon</x-primary-button>
+                    <a href="{{ route('sermon.sermons.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:underline">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
 </x-app-layout>

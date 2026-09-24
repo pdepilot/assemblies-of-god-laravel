@@ -9,6 +9,8 @@
     var skipBtn = document.getElementById("agPreloaderSkip");
 
     if (!preloader || !video) {
+        window.AG_PRELOADER_DONE = true;
+        document.dispatchEvent(new CustomEvent("ag:preloader:done"));
         return;
     }
 
@@ -37,6 +39,8 @@
         setTimeout(function () {
             preloader.remove();
             document.body.classList.remove("preloader-active");
+            window.AG_PRELOADER_DONE = true;
+            document.dispatchEvent(new CustomEvent("ag:preloader:done"));
             if (typeof window.agUpdateSiteHeaderHeight === "function") {
                 window.agUpdateSiteHeaderHeight();
             }
@@ -44,7 +48,7 @@
     }
 
     function startPlayback() {
-        video.muted = false;
+        video.muted = true;
         var playPromise = video.play();
         if (!playPromise || !playPromise.catch) {
             return;

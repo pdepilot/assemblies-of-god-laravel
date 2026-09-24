@@ -1,71 +1,64 @@
-<form id="cmsContactForm" class="mt-4" novalidate data-submit-url="{{ route('public.contact.submit') }}">
+<form
+    id="cmsContactForm"
+    class="contact-form"
+    novalidate
+    data-api="{{ route('public.contact.submit') }}"
+    data-submit-url="{{ route('public.contact.submit') }}"
+>
+    @csrf
     <input type="hidden" name="action" value="submit">
-    <input type="hidden" name="inquiry_type" value="general">
-    <input type="text" name="ag_hp_trap" value="" tabindex="-1" autocomplete="off" aria-hidden="true" class="visually-hidden" style="position:absolute;left:-9999px;height:0;width:0;opacity:0">
-    <div id="cmsContactAlert" class="alert d-none" role="alert"></div>
-    <div class="row g-3">
+    <input type="hidden" name="inquiry_type" id="contactInquiryType" value="general">
+    <input type="text" name="ag_hp_trap" value="" tabindex="-1" autocomplete="off" aria-hidden="true" class="ag-hp-trap">
+
+    <div class="contact-type-tabs" role="tablist" aria-label="Message type">
+        <button type="button" class="contact-type-tab active" data-type="general" role="tab" aria-selected="true">General</button>
+        <button type="button" class="contact-type-tab" data-type="prayer" role="tab" aria-selected="false">Prayer request</button>
+        <button type="button" class="contact-type-tab" data-type="visit" role="tab" aria-selected="false">Plan a visit</button>
+    </div>
+
+    <div id="contactFormAlert" class="contact-form-alert is-hidden" role="alert"></div>
+    <div id="cmsContactAlert" class="contact-form-alert is-hidden" role="alert"></div>
+
+    <div class="row g-0">
         <div class="col-md-6">
-            <label class="form-label" for="cmsContactName">Full name</label>
-            <input type="text" class="form-control" id="cmsContactName" name="name" required>
+            <div class="contact-field">
+                <span class="field-icon" aria-hidden="true"><i class="fa fa-user"></i></span>
+                <label class="visually-hidden" for="cmsContactName">Full name</label>
+                <input type="text" class="form-control" id="cmsContactName" name="name" placeholder="Full name" autocomplete="name" required>
+            </div>
         </div>
         <div class="col-md-6">
-            <label class="form-label" for="cmsContactEmail">Email</label>
-            <input type="email" class="form-control" id="cmsContactEmail" name="email" required>
+            <div class="contact-field">
+                <span class="field-icon" aria-hidden="true"><i class="fa fa-envelope"></i></span>
+                <label class="visually-hidden" for="cmsContactEmail">Email</label>
+                <input type="email" class="form-control" id="cmsContactEmail" name="email" placeholder="Email address" autocomplete="email" required>
+            </div>
         </div>
         <div class="col-md-6">
-            <label class="form-label" for="cmsContactPhone">Phone (optional)</label>
-            <input type="tel" class="form-control" id="cmsContactPhone" name="phone">
+            <div class="contact-field">
+                <span class="field-icon" aria-hidden="true"><i class="fa fa-phone"></i></span>
+                <label class="visually-hidden" for="cmsContactPhone">Phone</label>
+                <input type="tel" class="form-control" id="cmsContactPhone" name="phone" placeholder="Phone (optional)" autocomplete="tel">
+            </div>
         </div>
         <div class="col-md-6">
-            <label class="form-label" for="cmsContactSubject">Subject / prayer topic</label>
-            <input type="text" class="form-control" id="cmsContactSubject" name="subject" required>
+            <div class="contact-field">
+                <span class="field-icon" aria-hidden="true"><i class="fa fa-bookmark"></i></span>
+                <label class="visually-hidden" for="contactSubject">Subject</label>
+                <input type="text" class="form-control" id="contactSubject" name="subject" placeholder="How can we help you?" required>
+            </div>
         </div>
         <div class="col-12">
-            <label class="form-label" for="cmsContactMessage">Message</label>
-            <textarea class="form-control" id="cmsContactMessage" name="message" rows="5" required></textarea>
+            <div class="contact-field">
+                <span class="field-icon field-icon--textarea" aria-hidden="true"><i class="fa fa-comment-alt"></i></span>
+                <label class="visually-hidden" for="cmsContactMessage">Message</label>
+                <textarea class="form-control" id="cmsContactMessage" name="message" rows="5" placeholder="Write your message…" required></textarea>
+            </div>
         </div>
-        <div class="col-12">
-            <button type="submit" class="btn btn-primary py-3 px-4" id="cmsContactSubmit">Send message</button>
+        <div class="col-12 contact-submit-wrap">
+            <button type="submit" class="btn btn-primary" id="cmsContactSubmit">
+                <i class="fa fa-paper-plane me-2"></i>Send Message
+            </button>
         </div>
     </div>
 </form>
-<script>
-(function () {
-    var form = document.getElementById('cmsContactForm');
-    if (!form) return;
-    var alertBox = document.getElementById('cmsContactAlert');
-    var submitBtn = document.getElementById('cmsContactSubmit');
-    var submitUrl = form.getAttribute('data-submit-url') || '';
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        alertBox.classList.add('d-none');
-        submitBtn.disabled = true;
-        fetch(submitUrl, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-            },
-            body: new FormData(form)
-        }).then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
-        .then(function (result) {
-            alertBox.classList.remove('d-none', 'alert-success', 'alert-danger');
-            alertBox.classList.add(result.ok ? 'alert-success' : 'alert-danger');
-            alertBox.textContent = result.data.message || (result.ok ? 'Message sent.' : 'Unable to send message.');
-            if (result.ok) {
-                form.reset();
-                if (window.AG_ANALYTICS && typeof window.AG_ANALYTICS.event === 'function') {
-                    window.AG_ANALYTICS.event('contact_form_submit', { form_name: 'contact' });
-                }
-            }
-        }).catch(function () {
-            alertBox.classList.remove('d-none', 'alert-success');
-            alertBox.classList.add('alert-danger');
-            alertBox.textContent = 'Unable to send message. Please try again.';
-        }).finally(function () {
-            submitBtn.disabled = false;
-        });
-    });
-})();
-</script>

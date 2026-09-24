@@ -9,7 +9,7 @@ export default {
         './resources/views/**/*.blade.php',
     ],
 
-    // Do not reset legacy CMS styles (main.css). Utilities only.
+    // Do not reset legacy admin styles (main.css). Utilities only.
     corePlugins: {
         preflight: false,
     },

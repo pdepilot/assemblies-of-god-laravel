@@ -90,7 +90,7 @@ final class ChurchEmailBrandingService
         $churchName = e((string) ($settings['from_name'] ?? ($emailIdentity['from_name'] ?? 'Assemblies of God Church Ikenegbu')));
         $website = e((string) ($settings['church_website'] ?? ($emailIdentity['church_website'] ?? config('app.url'))));
         $address = e((string) ($settings['church_address'] ?? ($emailIdentity['church_address'] ?? '11 Archdeacon, Dennis Street, Ikenegbu, Owerri, Imo State')));
-        $phone = e((string) ($settings['church_phone'] ?? ($emailIdentity['church_phone'] ?? '+234 800 000 0000')));
+        $phone = e((string) ($settings['church_phone'] ?? ($emailIdentity['church_phone'] ?? '08034095171')));
         $email = e((string) ($settings['church_email'] ?? ($settings['from_email'] ?? ($emailIdentity['from_email'] ?? 'info@agikenebgu.org'))));
         $logoUrl = e($this->logoSrc($settings, $preferCid));
         $year = date('Y');
@@ -163,7 +163,7 @@ final class ChurchEmailBrandingService
             'from_name' => config('identity.email.from_name', 'Assemblies of God Church Ikenegbu'),
             'from_email' => config('identity.email.from_email', 'info@agikenebgu.org'),
             'church_address' => config('identity.email.church_address', '11 Archdeacon, Dennis Street, Ikenegbu, Owerri, Imo State'),
-            'church_phone' => config('identity.email.church_phone', '+234 800 000 0000'),
+            'church_phone' => config('identity.email.church_phone', '08034095171'),
             'church_email' => config('identity.email.from_email', 'info@agikenebgu.org'),
             'church_website' => rtrim((string) config('identity.email.church_website', config('portal.media_base', config('app.url'))), '/'),
             'pastor_name' => config('identity.email.pastor_name', 'Pastor Emmanuel'),

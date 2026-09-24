@@ -55,9 +55,10 @@
     <link href="{{ asset('site/lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
     <link href="{{ asset('site/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('site/css/style.css') }}" rel="stylesheet">
-    <link href="{{ asset('site/css/brand.css') }}" rel="stylesheet">
+    <link href="{{ asset('site/css/brand.css') }}?v={{ is_file(public_path('site/css/brand.css')) ? filemtime(public_path('site/css/brand.css')) : time() }}" rel="stylesheet">
     <link href="{{ asset('site/css/preloader.css') }}" rel="stylesheet">
     <link href="{{ asset('site/css/ag-cookie-banner.css') }}" rel="stylesheet">
+    <link href="{{ asset('site/css/ag-promotion-banner.css') }}" rel="stylesheet">
     <link href="{{ asset('site/css/seo-components.css') }}" rel="stylesheet">
     <link rel="icon" href="{{ $defaultLogo }}" type="image/jpeg">
     <script src="{{ asset('site/js/seo-performance.js') }}" defer></script>
@@ -118,6 +119,7 @@
     <script src="{{ asset('site/js/testimony-form.js') }}"></script>
     <script src="{{ asset('site/js/main.js') }}"></script>
     <script src="{{ asset('site/js/newsletter.js') }}" defer></script>
+    <script src="{{ asset('site/js/ag-promotion-banner.js') }}"></script>
     <script src="{{ asset('site/js/ag-cookie-banner.js') }}"></script>
     <script>
         window.AG_SITE_TRAFFIC = window.AG_SITE_TRAFFIC || {

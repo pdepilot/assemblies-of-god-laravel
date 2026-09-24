@@ -23,16 +23,7 @@
             <div class="collapse navbar-collapse bg-white" id="navbarCollapse">
                 @include('public.partials.nav', ['navActive' => $navActive ?? ''])
                 <div class="navbar-cta-group align-items-center flex-shrink-0">
-                    <a
-                        href="{{ rtrim((string) ($publicIdentity['sdtg_site_url'] ?? 'https://senddownthyglory.org'), '/') }}"
-                        class="btn btn-sdtg-nav"
-                        title="Visit {{ $publicIdentity['sdtg_site_label'] ?? 'Send Down Thy Glory' }}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        <i class="fas fa-globe-africa" aria-hidden="true"></i>
-                        <span>{{ $publicIdentity['sdtg_site_label'] ?? 'Send Down Thy Glory' }}</span>
-                    </a>
+                    @include('public.partials.sdtg-site-button')
                     <a href="{{ route('public.donate') }}" class="btn btn-primary py-2 px-4{{ ($navActive ?? '') === 'donate' ? ' is-give-active' : '' }}"@if (($navActive ?? '') === 'donate') aria-current="page"@endif>Give</a>
                 </div>
             </div>

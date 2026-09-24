@@ -10,17 +10,17 @@ use Illuminate\Support\Facades\Schema;
 final class MemberReadService
 {
     public const DEPARTMENTS = [
-        'Member', 'Pastor', 'Reverend', 'Leadership', 'Leadership Team', 'Workers',
-        'Children', 'Children Ministry', 'Sunday School', 'Teen Ministry', 'Youth', 'Youth Ministry',
-        "Men's Ministry", "Women's Ministry", 'Widowers Ministry', 'Widows Ministry',
-        'Music', 'Music Department', 'Choir', 'Ushering', 'Media', 'Media Team',
-        'Prayer', 'Prayer Chain', 'Welfare', 'Welfare Ministry', 'Discipleship',
-        'Evangelism', 'Evangelism & Outreach', 'Crusade Ministry',
+        'Member', 'Pastor', 'Reverend', 'Leadership', 'Workers', 'Sunday School',
     ];
 
     public const STATUSES = [
         'new_member', 'active', 'full_member', 'inactive', 'visitor',
         'baptized', 'unbaptized', 'worker', 'suspended', 'restored', 'transferred', 'deceased',
+    ];
+
+    /** Statuses shown on the public join form (same living options as add-member). */
+    public const PUBLIC_JOIN_STATUSES = [
+        'full_member', 'baptized', 'visitor', 'unbaptized', 'active', 'worker', 'inactive',
     ];
 
     /**
@@ -63,6 +63,8 @@ final class MemberReadService
             ->map(fn ($row) => $this->formatMember((array) $row))
             ->all();
 
+        $items = $this->attachChildren($items);
+
         return [
             'items' => $items,
             'total' => $total,
@@ -78,8 +80,14 @@ final class MemberReadService
     public function getMember(int $id): ?array
     {
         $row = DB::table('members')->where('id', $id)->first();
+        if (! $row) {
+            return null;
+        }
 
-        return $row ? $this->formatMember((array) $row) : null;
+        $member = $this->formatMember((array) $row);
+        $withChildren = $this->attachChildren([$member]);
+
+        return $withChildren[0];
     }
 
     /**
@@ -106,14 +114,6 @@ final class MemberReadService
                     $q->where('marital_status', 'widow')
                         ->orWhere(function ($q2) {
                             $q2->where('marital_status', 'widowed')->where('gender', 'female');
-                        });
-                })->count(),
-            'widowers' => (int) DB::table('members')
-                ->whereNotIn('status', ['deceased', 'inactive'])
-                ->where(function ($q) {
-                    $q->where('marital_status', 'widower')
-                        ->orWhere(function ($q2) {
-                            $q2->where('marital_status', 'widowed')->where('gender', 'male');
                         });
                 })->count(),
         ];
@@ -262,48 +262,149 @@ final class MemberReadService
         return $member;
     }
 
+    public function canonicalDepartmentLabel(string $name): string
+    {
+        $name = trim(preg_replace('/\s+/', ' ', $name) ?? $name);
+        if ($name === '') {
+            return '';
+        }
+
+        $map = $this->departmentCanonicalMap();
+        $lower = mb_strtolower($name);
+        $stem = $this->departmentDedupeKey($name);
+
+        return $map[$lower] ?? $map[$stem] ?? $name;
+    }
+
     /** @return list<string> */
     public function listDepartmentOptions(): array
     {
-        $options = self::DEPARTMENTS;
+        $seen = [];
+        $options = [];
+        $add = function (mixed $raw) use (&$seen, &$options): void {
+            $name = $this->canonicalDepartmentLabel((string) $raw);
+            if ($name === '') {
+                return;
+            }
+            $key = $this->departmentDedupeKey($name);
+            if ($key === '' || isset($seen[$key])) {
+                return;
+            }
+            $seen[$key] = true;
+            $options[] = $name;
+        };
 
         if (Schema::hasTable('ministry_settings')) {
-            $fromSettings = DB::table('ministry_settings')
+            DB::table('ministry_settings')
                 ->where('is_enabled', true)
                 ->orderBy('sort_order')
                 ->orderBy('name')
                 ->pluck('name')
-                ->map(static fn ($v) => trim((string) $v))
-                ->filter()
-                ->all();
-            $options = array_merge($options, $fromSettings);
+                ->each($add);
+        }
+
+        foreach (self::DEPARTMENTS as $dept) {
+            $add($dept);
         }
 
         if (Schema::hasTable('members')) {
-            $fromMembers = DB::table('members')
+            DB::table('members')
                 ->where('department', '<>', '')
                 ->distinct()
                 ->orderBy('department')
                 ->pluck('department')
-                ->all();
-            $options = array_merge($options, $fromMembers);
+                ->each($add);
         }
 
         if (Schema::hasTable('sunday_school_students')) {
-            $fromStudents = DB::table('sunday_school_students')
+            DB::table('sunday_school_students')
                 ->whereNotNull('department')
                 ->where('department', '<>', '')
                 ->distinct()
                 ->orderBy('department')
                 ->pluck('department')
-                ->all();
-            $options = array_merge($options, $fromStudents);
+                ->each($add);
         }
 
-        $options = array_values(array_unique(array_filter(array_map('strval', $options))));
         natcasesort($options);
 
         return array_values($options);
+    }
+
+    private function departmentDedupeKey(string $name): string
+    {
+        $key = mb_strtolower(trim($name));
+        $key = strtr($key, [
+            "'" => '',
+            '’' => '',
+            '`' => '',
+            '-' => ' ',
+            '&' => ' and ',
+        ]);
+        $key = preg_replace('/\s+/', ' ', $key) ?? $key;
+        $key = preg_replace('/\s+(ministry|department|team|chain|group|unit)$/u', '', $key) ?? $key;
+
+        return trim($key);
+    }
+
+    /** @return array<string, string> */
+    private function departmentCanonicalMap(): array
+    {
+        $map = [
+            'children' => 'Children Ministry',
+            'youth' => 'Youth Ministry',
+            'youths' => 'Youth Ministry',
+            'teen' => 'Teen Ministry',
+            'teens' => 'Teen Ministry',
+            'men' => "Men's Ministry",
+            'women' => "Women's Ministry",
+            'widows ministry' => 'Widows',
+            'widowers' => "Men's Ministry",
+            'widowers ministry' => "Men's Ministry",
+            'music' => 'Music Department',
+            'media' => 'Media Team',
+            'ushers' => 'Ushering',
+            'leadership team' => 'Leadership',
+            'welfare ministry' => 'Welfare',
+            'evangelism & outreach' => 'Evangelism',
+            'evangelism and outreach' => 'Evangelism',
+            'sdtg / crusade ministry' => 'Crusade Ministry',
+            'sdtg/crusade ministry' => 'Crusade Ministry',
+            'sdtg' => 'Crusade Ministry',
+        ];
+
+        $aliasesByKey = [
+            'children' => ['Children Ministry', 'Children'],
+            'teens' => ['Teen Ministry', 'Teens', 'Teen'],
+            'youths' => ['Youth Ministry', 'Youth', 'Youths'],
+            'men' => ["Men's Ministry", 'Men'],
+            'women' => ["Women's Ministry", 'Women'],
+            'widows' => ['Widows', 'Widows Ministry'],
+            'music' => ['Music Department', 'Music'],
+            'choir' => ['Choir'],
+            'ushers' => ['Ushering', 'Ushers'],
+            'media' => ['Media Team', 'Media'],
+        ];
+
+        if (Schema::hasTable('ministry_settings')) {
+            $rows = DB::table('ministry_settings')
+                ->where('is_enabled', true)
+                ->get(['ministry_key', 'name']);
+
+            foreach ($rows as $row) {
+                $canonical = trim((string) ($row->name ?? ''));
+                if ($canonical === '') {
+                    continue;
+                }
+                $map[mb_strtolower($canonical)] = $canonical;
+                $ministryKey = (string) ($row->ministry_key ?? '');
+                foreach ($aliasesByKey[$ministryKey] ?? [] as $alias) {
+                    $map[mb_strtolower($alias)] = $canonical;
+                }
+            }
+        }
+
+        return $map;
     }
 
     /** @return array<string, string> */
@@ -323,6 +424,130 @@ final class MemberReadService
             'transferred' => 'Transferred',
             'deceased' => 'Deceased',
         ];
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $members
+     * @return list<array<string, mixed>>
+     */
+    private function attachChildren(array $members): array
+    {
+        if ($members === [] || ! Schema::hasColumn('members', 'parent_name')) {
+            return array_map(static function (array $member): array {
+                $member['children'] = $member['children'] ?? [];
+
+                return $member;
+            }, $members);
+        }
+
+        $candidates = DB::table('members')
+            ->where(function ($q) {
+                $q->where(function ($inner) {
+                    $inner->whereNotNull('parent_name')->where('parent_name', '!=', '');
+                })->orWhere(function ($inner) {
+                    $inner->whereNotNull('parent_phone')->where('parent_phone', '!=', '');
+                })->orWhere(function ($inner) {
+                    $inner->whereNotNull('parent_email')->where('parent_email', '!=', '');
+                });
+            })
+            ->orderBy('full_name')
+            ->get();
+
+        $childrenByParent = [];
+        foreach ($members as $parent) {
+            $childrenByParent[(int) $parent['id']] = [];
+        }
+
+        foreach ($candidates as $candidateRow) {
+            $child = $this->formatMember((array) $candidateRow);
+            if (! $this->looksLikeDependent($child)) {
+                continue;
+            }
+
+            foreach ($members as $parent) {
+                if ((int) $child['id'] === (int) $parent['id'] || ! $this->childBelongsToParent($child, $parent)) {
+                    continue;
+                }
+                $parentId = (int) $parent['id'];
+                $childrenByParent[$parentId][] = [
+                    'id' => (int) $child['id'],
+                    'full_name' => (string) ($child['full_name'] ?? ''),
+                    'member_code' => (string) ($child['member_code'] ?? ''),
+                    'photo_url' => $child['photo_url'] ?? null,
+                    'age' => $child['age'] ?? null,
+                ];
+            }
+        }
+
+        return array_map(static function (array $member) use ($childrenByParent): array {
+            $member['children'] = $childrenByParent[(int) $member['id']] ?? [];
+
+            return $member;
+        }, $members);
+    }
+
+    /**
+     * @param  array<string, mixed>  $member
+     */
+    private function looksLikeDependent(array $member): bool
+    {
+        $age = $member['age'] ?? null;
+        if (is_int($age) && $age > 19) {
+            return false;
+        }
+
+        return filled($member['parent_name'] ?? null)
+            || filled($member['parent_phone'] ?? null)
+            || filled($member['parent_email'] ?? null);
+    }
+
+    /**
+     * @param  array<string, mixed>  $child
+     * @param  array<string, mixed>  $parent
+     */
+    private function childBelongsToParent(array $child, array $parent): bool
+    {
+        $parentName = $this->nameKey((string) ($parent['full_name'] ?? ''));
+        $childParentName = $this->nameKey((string) ($child['parent_name'] ?? ''));
+        if ($parentName !== '' && $childParentName !== '' && $parentName === $childParentName) {
+            return true;
+        }
+
+        $parentPhones = array_filter([
+            $this->phoneKey((string) ($parent['phone'] ?? '')),
+            $this->phoneKey((string) ($parent['phone_alt'] ?? '')),
+        ]);
+        $childPhone = $this->phoneKey((string) ($child['parent_phone'] ?? ''));
+        if ($childPhone !== '' && in_array($childPhone, $parentPhones, true)) {
+            return true;
+        }
+
+        $parentEmail = $this->emailKey((string) ($parent['email'] ?? ''));
+        $childEmail = $this->emailKey((string) ($child['parent_email'] ?? ''));
+
+        return $parentEmail !== '' && $childEmail !== '' && $parentEmail === $childEmail;
+    }
+
+    private function nameKey(string $value): string
+    {
+        $value = mb_strtolower(trim(preg_replace('/\s+/', ' ', $value) ?? ''));
+
+        return $value;
+    }
+
+    private function phoneKey(string $value): string
+    {
+        $digits = preg_replace('/\D+/', '', $value) ?? '';
+        if (strlen($digits) >= 10) {
+            return substr($digits, -10);
+        }
+
+        return $digits;
+    }
+
+    private function emailKey(string $value): string
+    {
+        return mb_strtolower(trim($value));
     }
 
     /**
@@ -349,13 +574,18 @@ final class MemberReadService
             $row['country'] ?? '',
         ]);
 
-        return [
+        $formatted = [
             ...$row,
             'id' => (int) $row['id'],
             'age' => $age,
+            'occupation' => filled($row['occupation'] ?? null) ? (string) $row['occupation'] : null,
             'address' => implode(', ', $addressParts),
             'photo_url' => $this->photoUrl($row['photo_path'] ?? null),
+            'portal_enabled' => (int) ($row['portal_enabled'] ?? 0) === 1,
         ];
+        unset($formatted['portal_password_hash']);
+
+        return $formatted;
     }
 
     public function photoUrl(mixed $path): ?string

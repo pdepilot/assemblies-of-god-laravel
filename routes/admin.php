@@ -1,6 +1,26 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Support\Facades\Route;
+
+Route::middleware('guest:admin')->group(function () {
+    Route::get('/portal/login', [AuthenticatedSessionController::class, 'create'])
+        ->name('login');
+    Route::post('/portal/login', [AuthenticatedSessionController::class, 'store']);
+});
+
+Route::middleware(['auth:admin', 'admin.idle'])->group(function () {
+    Route::match(['get', 'post'], '/portal/handlers/dashboard-handler', [\App\Http\Controllers\Portal\DashboardHandlerController::class, 'handle'])
+        ->name('handlers.dashboard.legacy-path');
+});
+
+Route::middleware(['auth:admin', 'admin.idle', 'admin.rbac'])->group(function () {
+    Route::get('/portal/website/pages', fn () => redirect()->route('website.pages.index'));
+    Route::get('/portal/website/pages/{pageKey}/edit', fn (string $pageKey) => redirect()->route('website.pages.edit', $pageKey))
+        ->where('pageKey', '[A-Za-z0-9\-]+');
+    Route::get('/portal/website/worship/edit', fn () => redirect()->route('website.worship.edit'));
+    Route::get('/portal/website/activities/edit', fn () => redirect()->route('website.activities.edit'));
+});
 
 Route::prefix('admin')->group(function () {
     require __DIR__.'/auth.php';
@@ -9,9 +29,12 @@ Route::prefix('admin')->group(function () {
         ->middleware(['auth:admin', 'admin.idle', 'admin.rbac'])
         ->name('dashboard');
 
+    Route::middleware(['auth:admin', 'admin.idle'])->group(function () {
+        Route::match(['get', 'post'], '/handlers/dashboard-handler', [\App\Http\Controllers\Portal\DashboardHandlerController::class, 'handle'])
+            ->name('handlers.dashboard');
+    });
+
     Route::middleware(['auth:admin', 'admin.idle', 'admin.rbac'])->group(function () {
-    Route::match(['get', 'post'], '/handlers/dashboard-handler', [\App\Http\Controllers\Portal\DashboardHandlerController::class, 'handle'])
-        ->name('handlers.dashboard');
 
     Route::get('/settings', [\App\Http\Controllers\Settings\SettingsController::class, 'index'])
         ->name('settings.index');
@@ -636,6 +659,16 @@ Route::prefix('admin')->group(function () {
     Route::match(['post', 'put'], '/website/about/reset', [\App\Http\Controllers\Website\AboutContentController::class, 'reset'])
         ->name('website.about.reset');
 
+    Route::get('/website/worship/edit', [\App\Http\Controllers\Website\WorshipController::class, 'edit'])
+        ->name('website.worship.edit');
+    Route::put('/website/worship', [\App\Http\Controllers\Website\WorshipController::class, 'update'])
+        ->name('website.worship.update');
+
+    Route::get('/website/activities/edit', [\App\Http\Controllers\Website\ActivitiesController::class, 'edit'])
+        ->name('website.activities.edit');
+    Route::put('/website/activities', [\App\Http\Controllers\Website\ActivitiesController::class, 'update'])
+        ->name('website.activities.update');
+
     Route::get('/website/team', [\App\Http\Controllers\Website\TeamController::class, 'index'])
         ->name('website.team.index');
     Route::get('/website/team/create', [\App\Http\Controllers\Website\TeamController::class, 'create'])
@@ -669,6 +702,19 @@ Route::prefix('admin')->group(function () {
 
     Route::get('/website/media', [\App\Http\Controllers\Website\MediaLibraryController::class, 'index'])
         ->name('website.media.index');
+
+    Route::get('/website/promotions', [\App\Http\Controllers\Website\PromotionController::class, 'index'])
+        ->name('website.promotions.index');
+    Route::get('/website/promotions/create', [\App\Http\Controllers\Website\PromotionController::class, 'create'])
+        ->name('website.promotions.create');
+    Route::post('/website/promotions', [\App\Http\Controllers\Website\PromotionController::class, 'store'])
+        ->name('website.promotions.store');
+    Route::get('/website/promotions/{promotion}/edit', [\App\Http\Controllers\Website\PromotionController::class, 'edit'])
+        ->name('website.promotions.edit');
+    Route::put('/website/promotions/{promotion}', [\App\Http\Controllers\Website\PromotionController::class, 'update'])
+        ->name('website.promotions.update');
+    Route::delete('/website/promotions/{promotion}', [\App\Http\Controllers\Website\PromotionController::class, 'destroy'])
+        ->name('website.promotions.destroy');
 
     Route::get('/analytics/site-traffic', [\App\Http\Controllers\Analytics\SiteTrafficController::class, 'index'])
         ->name('analytics.site-traffic.index');

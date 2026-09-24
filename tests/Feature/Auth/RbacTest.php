@@ -67,12 +67,13 @@ test('admin with assigned role permissions is scoped correctly', function () {
 });
 
 test('successful login writes audit row when login_attempts table exists', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create([
         'email' => 'audit@example.com',
         'role' => 'admin',
     ]);
 
-    $response = $this->post('/admin/login', [
+    $response = $this->post('/portal/login', [
         'email' => 'audit@example.com',
         'password' => 'password',
     ]);
@@ -89,11 +90,12 @@ test('successful login writes audit row when login_attempts table exists', funct
 });
 
 test('failed login writes audit row', function () {
+    /** @var \Tests\TestCase $this */
     Admin::factory()->create([
         'email' => 'fail@example.com',
     ]);
 
-    $this->post('/admin/login', [
+    $this->post('/portal/login', [
         'email' => 'fail@example.com',
         'password' => 'wrong-password',
     ]);

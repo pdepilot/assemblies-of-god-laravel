@@ -19,7 +19,7 @@ final class SettingsController
     public function __construct(
         private readonly PlatformSettingsReadService $read,
         private readonly PlatformSettingsWriteService $write,
-        private readonly RbacWriteService $rbac,
+        private readonly RbacWriteService $rbacWrite,
         private readonly AdminWriteService $admins,
         private readonly SettingsPolicy $policy,
     ) {}
@@ -39,7 +39,7 @@ final class SettingsController
         // Eager-load for super admins: settings tabs switch client-side without a reload.
         if ($canManageRbac) {
             $assignAdminId = max(0, (int) request()->query('assign_admin', 0));
-            $assignmentAdmins = $this->rbac->listAdminsForAssignment(\App\Support\RbacPlatform::AG);
+            $assignmentAdmins = $this->rbacWrite->listAdminsForAssignment(\App\Support\RbacPlatform::AG);
             $selectedAdmin = null;
             foreach ($assignmentAdmins as $row) {
                 if ((int) $row['id'] === $assignAdminId) {
@@ -52,10 +52,10 @@ final class SettingsController
             }
 
             $rbacPayload = [
-                'roles' => $this->rbac->listRoles(\App\Support\RbacPlatform::AG),
+                'roles' => $this->rbacWrite->listRoles(\App\Support\RbacPlatform::AG),
                 'admins' => $assignmentAdmins,
                 'selected_admin' => $selectedAdmin,
-                'permission_count' => count($this->rbac->listPermissionsGrouped(\App\Support\RbacPlatform::AG)['items']),
+                'permission_count' => count($this->rbacWrite->listPermissionsGrouped(\App\Support\RbacPlatform::AG)['items']),
             ];
 
             $managedAdmins = $this->admins->listAdmins($adminsQuery);
@@ -70,7 +70,7 @@ final class SettingsController
             'canManageRbac' => $canManageRbac,
             'isSuper' => $admin->isSuperAdmin() || (string) $admin->role === 'super_admin',
             'activeTab' => $activeTab,
-            'rbac' => $rbacPayload,
+            'rbacPanel' => $rbacPayload,
             'managedAdmins' => $managedAdmins,
             'adminsQuery' => $adminsQuery,
         ]);

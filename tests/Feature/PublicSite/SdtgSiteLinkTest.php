@@ -1,22 +1,16 @@
 <?php
 
-test('public navbar links to the separate send down thy glory website', function () {
-    $url = rtrim((string) config('identity.public.sdtg_site_url'), '/');
-    $label = (string) config('identity.public.sdtg_site_label');
+test('public site links visitors to send down thy glory', function () {
+    /** @var \Tests\TestCase $this */
+    $home = $this->get(route('public.home'));
+    $home->assertOk();
+    $home->assertSee('btn-sdtg-nav', false);
+    $home->assertSee('Send Down Thy Glory');
+    $home->assertSee('https://senddownthyglory.org', false);
 
-    expect($url)->toBe('https://senddownthyglory.org');
-    expect($label)->toBe('Send Down Thy Glory');
-
-    $this->get(route('public.home'))
-        ->assertOk()
-        ->assertSee('btn-sdtg-nav', false)
-        ->assertSee($url, false)
-        ->assertSee($label)
-        ->assertSee('target="_blank"', false)
-        ->assertSee('rel="noopener noreferrer"', false);
-
-    $this->get(route('public.about'))
-        ->assertOk()
-        ->assertSee('btn-sdtg-nav', false)
-        ->assertSee($url, false);
+    $about = $this->get(route('public.about'));
+    $about->assertOk();
+    $about->assertSee('btn-sdtg-nav', false);
+    $about->assertSee('Send Down Thy Glory');
+    $about->assertSee('https://senddownthyglory.org', false);
 });

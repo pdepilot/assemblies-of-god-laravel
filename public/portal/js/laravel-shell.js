@@ -88,7 +88,7 @@
             if (!link) return;
             var idMatch = false;
             // Prefer data-page id from body — shell marks via class at build time already
-            // Re-apply from body attribute by scanning CMS_CONFIG
+            // Re-apply from body attribute by scanning config
         });
 
         if (window.CMS_CONFIG && Array.isArray(window.CMS_CONFIG.nav)) {

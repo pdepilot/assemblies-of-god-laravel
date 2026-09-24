@@ -72,20 +72,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium" for="platform">Platform</label>
-                        @if (($role['slug'] ?? '') === 'super_admin')
-                            <input type="hidden" name="platform" value="both">
-                            <div class="mt-1 rounded-md border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm bg-gray-50 dark:bg-gray-900">
-                                both (required)
-                            </div>
-                        @else
-                            <input type="hidden" name="platform" value="ag">
-                            <div class="mt-1 rounded-md border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm bg-gray-50 dark:bg-gray-900">
-                                AG
-                            </div>
-                        @endif
-                    </div>
+                    <input type="hidden" name="platform" value="ag">
                     <div class="flex items-end pb-2">
                         <label class="inline-flex items-center gap-2 text-sm">
                             <input type="hidden" name="is_active" value="0">

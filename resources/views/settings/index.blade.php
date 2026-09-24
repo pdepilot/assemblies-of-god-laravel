@@ -258,7 +258,7 @@
         {{-- Preferences --}}
         <div class="cms-tab-panel{{ $tab === 'preferences' ? ' is-active' : '' }}" data-panel="preferences">
             <article class="cms-card">
-                <div class="cms-card__head"><h2 class="cms-card__title">My CMS Preferences</h2></div>
+                <div class="cms-card__head"><h2 class="cms-card__title">My Preferences</h2></div>
                 <div class="cms-card__body">
                     <form method="POST" action="{{ route('settings.preferences.update') }}" id="settingsFormPreferences" data-settings-form="preferences">
                         @csrf
@@ -295,7 +295,7 @@
 
         {{-- Roles / RBAC --}}
         <div class="cms-tab-panel{{ $tab === 'roles' ? ' is-active' : '' }}" data-panel="roles">
-            @if ($canManageRbac && is_array($rbac ?? null))
+            @if ($canManageRbac && is_array($rbacPanel ?? null))
                 @include('settings._roles-panel')
             @elseif ($canManageRbac)
                 <article class="cms-card">

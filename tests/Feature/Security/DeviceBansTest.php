@@ -1,11 +1,13 @@
 <?php
 
 use App\Models\Admin;
+use App\Models\Member;
 use App\Services\Security\DeviceBanService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
 test('admin can view banned ips list and details then unban', function () {
+    /** @var \Tests\TestCase $this */
     Http::fake([
         'ip-api.com/*' => Http::response([
             'status' => 'success',
@@ -107,6 +109,7 @@ test('failed logins apply a device ban after max attempts', function () {
 });
 
 test('member portal failed logins apply a sourced ban and can be filtered', function () {
+    /** @var \Tests\TestCase $this */
     Http::fake([
         'ip-api.com/*' => Http::response([
             'status' => 'success',
@@ -152,5 +155,139 @@ test('member portal failed logins apply a sourced ban and can be filtered', func
     $this->actingAs($admin, 'admin')
         ->get(route('security.bans.index', ['source' => DeviceBanService::SOURCE_ADMIN_LOGIN]))
         ->assertOk()
-        ->assertSee('No banned IPs found for this filter.');
+        ->assertSee('No banned accounts found for this filter.');
 });
+
+test('super admin can search a banned member by email or phone and unban them', function () {
+    /** @var \Tests\TestCase $this */
+    Http::fake([
+        'ip-api.com/*' => Http::response([
+            'status' => 'success',
+            'country' => 'Nigeria',
+            'regionName' => 'Imo',
+            'city' => 'Owerri',
+            'isp' => 'Example ISP',
+            'query' => '203.0.113.44',
+        ]),
+    ]);
+
+    $super = Admin::factory()->create(['role' => 'super_admin']);
+    Member::factory()->create([
+        'full_name' => 'Banned Member',
+        'email' => 'banned.member@example.com',
+        'phone' => '08034095171',
+    ]);
+    $fp = hash('sha256', 'member-ban-search');
+    $source = DeviceBanService::SOURCE_MEMBER_PORTAL_LOGIN;
+    $banId = DB::table('device_bans')->insertGetId([
+        'device_fingerprint' => $fp,
+        'source' => $source,
+        'ip_address' => '203.0.113.44',
+        'user_agent' => 'Mozilla/5.0',
+        'browser_info' => 'Chrome',
+        'ban_level' => 1,
+        'ban_count' => 1,
+        'ban_start' => now()->subHour(),
+        'ban_expires' => now()->addDays(15),
+        'is_active' => 1,
+        'lifted_at' => null,
+        'created_at' => now()->subHour(),
+    ]);
+    DB::table('login_attempts')->insert([
+        'admin_id' => null,
+        'email_attempted' => 'banned.member@example.com',
+        'device_fingerprint' => $fp,
+        'source' => $source,
+        'ip_address' => '203.0.113.44',
+        'user_agent' => 'Mozilla/5.0',
+        'browser_info' => 'Chrome',
+        'success' => 0,
+        'failure_reason' => 'invalid_credentials',
+        'created_at' => now()->subMinutes(5),
+    ]);
+
+    $this->actingAs($super, 'admin')
+        ->get(route('security.bans.index', ['q' => 'banned.member@example.com']))
+        ->assertOk()
+        ->assertSee('Banned Member')
+        ->assertSee('banned.member@example.com')
+        ->assertSee('Unban');
+
+    $this->actingAs($super, 'admin')
+        ->get(route('security.bans.index', ['q' => '08034095171']))
+        ->assertOk()
+        ->assertSee('Banned Member')
+        ->assertSee('203.0.113.44');
+
+    $this->actingAs($super, 'admin')
+        ->delete(route('security.bans.destroy', $banId))
+        ->assertRedirect(route('security.bans.index'));
+
+    $this->assertDatabaseHas('device_bans', [
+        'id' => $banId,
+        'is_active' => 0,
+    ]);
+
+    $service = app(DeviceBanService::class);
+    expect($service->getActiveBan($fp, $source))->toBeNull();
+    expect($service->consecutiveFailures($fp, $source))->toBe(0);
+});
+
+test('super admin can search a banned admin by email or phone and unban them', function () {
+    /** @var \Tests\TestCase $this */
+    Http::fake([
+        'ip-api.com/*' => Http::response(['status' => 'fail']),
+    ]);
+
+    $super = Admin::factory()->create(['role' => 'super_admin']);
+    $blocked = Admin::factory()->create([
+        'role' => 'admin',
+        'full_name' => 'Locked Pastor',
+        'email' => 'locked.pastor@example.com',
+        'phone' => '08011112222',
+    ]);
+    $fp = hash('sha256', 'admin-ban-search');
+    $source = DeviceBanService::SOURCE_ADMIN_LOGIN;
+    $banId = DB::table('device_bans')->insertGetId([
+        'device_fingerprint' => $fp,
+        'source' => $source,
+        'ip_address' => '203.0.113.55',
+        'user_agent' => 'Mozilla/5.0',
+        'browser_info' => 'Firefox',
+        'ban_level' => 1,
+        'ban_count' => 1,
+        'ban_start' => now()->subHour(),
+        'ban_expires' => now()->addDays(15),
+        'is_active' => 1,
+        'lifted_at' => null,
+        'created_at' => now()->subHour(),
+    ]);
+    DB::table('login_attempts')->insert([
+        'admin_id' => $blocked->id,
+        'email_attempted' => 'locked.pastor@example.com',
+        'device_fingerprint' => $fp,
+        'source' => $source,
+        'ip_address' => '203.0.113.55',
+        'user_agent' => 'Mozilla/5.0',
+        'browser_info' => 'Firefox',
+        'success' => 0,
+        'failure_reason' => 'invalid_credentials',
+        'created_at' => now()->subMinutes(3),
+    ]);
+
+    $this->actingAs($super, 'admin')
+        ->get(route('security.bans.index', ['q' => '08011112222']))
+        ->assertOk()
+        ->assertSee('Locked Pastor')
+        ->assertSee('Unban');
+
+    $this->actingAs($super, 'admin')
+        ->delete(route('security.bans.destroy', $banId))
+        ->assertRedirect(route('security.bans.index'));
+
+    $this->assertDatabaseHas('device_bans', [
+        'id' => $banId,
+        'is_active' => 0,
+    ]);
+});
+

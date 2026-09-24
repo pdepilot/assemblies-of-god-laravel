@@ -22,7 +22,7 @@ final class ChurchContentReadService
         }
 
         // If About Page has never been saved, inherit shared body fields from the
-        // Homepage About section so CMS edits are not "lost" on /about.
+        // Homepage About section so editor changes are not "lost" on /about.
         if (! isset($stored['about_page']) && isset($stored['homepage_about'])) {
             $stored['about_page'] = $this->sharedBodyFrom($stored['homepage_about']);
         }
@@ -89,7 +89,7 @@ final class ChurchContentReadService
             'vision_title' => 'Our Vision',
             'vision_text' => 'A thriving church where every generation encounters God and lives transformed by the Gospel.',
             'mission_title' => 'Our Mission',
-            'mission_text' => 'To worship God, disciple believers, strengthen families, and serve Ikenegbu with compassion and hope.',
+            'mission_text' => 'Transforming the lives of people to be heavenly conscious and earthly useful',
             'gallery' => [
                 ['image' => 'images/main1.jpg', 'alt' => 'Congregation worshiping at AGC Ikenegbu church'],
                 ['image' => 'images/rev1.jpg', 'alt' => 'Church worship gathering'],
@@ -140,7 +140,7 @@ final class ChurchContentReadService
             'vision_title' => 'Our Vision',
             'vision_text' => 'To see lives transformed by the Gospel and communities filled with the glory of God.',
             'mission_title' => 'Our Mission',
-            'mission_text' => 'To proclaim Christ, disciple believers, and serve our city with compassion and holy fire.',
+            'mission_text' => 'Transforming the lives of people to be heavenly conscious and earthly useful',
             'gallery' => [
                 ['image' => 'images/main1.jpg', 'alt' => 'Congregation worshiping at AGC Ikenegbu church'],
                 ['image' => 'images/rev1.jpg', 'alt' => 'Church worship gathering'],

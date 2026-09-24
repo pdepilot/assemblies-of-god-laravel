@@ -4,7 +4,38 @@ use App\Models\Admin;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
+test('dashboard bootstrap handler returns json for authenticated admin', function () {
+    /** @var \Tests\TestCase $this */
+    $admin = Admin::factory()->create(['role' => 'admin']);
+
+    $response = $this->actingAs($admin, 'admin')->getJson('/admin/handlers/dashboard-handler?action=bootstrap');
+
+    $response->assertOk();
+    $response->assertJsonPath('success', true);
+    $response->assertJsonStructure([
+        'overview' => ['ag', 'sunday_school', 'finance'],
+        'charts',
+        'activity',
+        'notifications',
+        'unread_count',
+        'latest_id',
+        'last_read_id',
+        'csrf_token',
+    ]);
+});
+
+test('dashboard bootstrap handler is also available at the former portal path', function () {
+    /** @var \Tests\TestCase $this */
+    $admin = Admin::factory()->create(['role' => 'admin']);
+
+    $this->actingAs($admin, 'admin')
+        ->getJson('/portal/handlers/dashboard-handler?action=bootstrap')
+        ->assertOk()
+        ->assertJsonPath('success', true);
+});
+
 test('dashboard notifications handler returns json for authenticated admin', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
 
     DB::table('security_logs')->insert([
@@ -24,6 +55,7 @@ test('dashboard notifications handler returns json for authenticated admin', fun
 });
 
 test('dashboard notifications handler marks notifications as read', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
 
     $logId = DB::table('security_logs')->insertGetId([
@@ -49,6 +81,7 @@ test('dashboard notifications handler marks notifications as read', function () 
 });
 
 test('dashboard notifications include hub items and support since_id polling', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
 
     $firstId = DB::table('security_logs')->insertGetId([
@@ -96,6 +129,7 @@ test('dashboard notifications include hub items and support since_id polling', f
 });
 
 test('public contact testimony and newsletter create dashboard notifications', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
 
     $this->postJson(route('public.contact.submit'), [
@@ -125,6 +159,7 @@ test('public contact testimony and newsletter create dashboard notifications', f
     $response = $this->actingAs($admin, 'admin')->getJson('/admin/handlers/dashboard-handler?action=notifications');
     $response->assertOk()->assertJsonPath('success', true);
     $response->assertJsonFragment(['title' => 'Contact Message']);
+    $response->assertJsonFragment(['play_alert' => true]);
     $response->assertJsonFragment(['title' => 'New Testimony']);
     $response->assertJsonFragment(['title' => 'Newsletter']);
 });

@@ -36,9 +36,6 @@
                 @elseif (($pageKey ?? '') !== 'contact')
                     <p class="text-muted">Content for this page will appear here once it is added in Website → Pages.</p>
                 @endif
-                @if (($pageKey ?? '') === 'contact')
-                    @include('public.partials.contact-form')
-                @endif
                 @if ($ctaLabel !== '')
                     <div class="mt-4">
                         <a href="{{ $toHref($ctaUrl !== '' ? $ctaUrl : 'contact') }}" class="btn btn-primary py-3 px-4">{{ $ctaLabel }}</a>

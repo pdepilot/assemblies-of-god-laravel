@@ -5,6 +5,7 @@ use App\Models\Member;
 use Illuminate\Support\Facades\DB;
 
 test('admin can view ministries hub with seeded settings', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
 
     $response = $this->actingAs($admin, 'admin')->get(route('ministries.settings.index'));
@@ -12,9 +13,11 @@ test('admin can view ministries hub with seeded settings', function () {
     $response->assertOk();
     $response->assertSee('Children Ministry');
     $response->assertSee('Music Department');
+    $response->assertDontSee('Widowers Ministry');
 });
 
 test('admin can register a ministry roster person without touching church members', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'church_administrator']);
     $membersBefore = DB::table('members')->count();
 
@@ -37,6 +40,7 @@ test('admin can register a ministry roster person without touching church member
 });
 
 test('children ministry requires parent details', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
 
     $this->actingAs($admin, 'admin')
@@ -65,6 +69,7 @@ test('children ministry requires parent details', function () {
 });
 
 test('ministry roster shows total members', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
 
     DB::table('ministry_roster_people')->insert([
@@ -86,6 +91,7 @@ test('ministry roster shows total members', function () {
 });
 
 test('admin can record ministry roster attendance', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
     $personId = DB::table('ministry_roster_people')->insertGetId([
         'ministry_key' => 'choir',
@@ -113,6 +119,7 @@ test('admin can record ministry roster attendance', function () {
 });
 
 test('ministry import form lists church members in dropdown', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
     $member = Member::factory()->create([
         'full_name' => 'Available Church Member',
@@ -132,6 +139,7 @@ test('ministry import form lists church members in dropdown', function () {
 });
 
 test('church member already on roster is excluded from import dropdown', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
     $onRoster = Member::factory()->create(['full_name' => 'Already On Roster']);
     $available = Member::factory()->create(['full_name' => 'Still Available Member']);
@@ -159,6 +167,7 @@ test('church member already on roster is excluded from import dropdown', functio
 });
 
 test('legacy ministry members appear in roster and attendance dropdown', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
     $member = Member::factory()->create([
         'full_name' => 'Legacy Men Member',
@@ -183,6 +192,7 @@ test('legacy ministry members appear in roster and attendance dropdown', functio
 });
 
 test('importing a church member enrolls in ministry_members when available', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
     $member = Member::factory()->create([
         'full_name' => 'Copied Member',
@@ -205,6 +215,7 @@ test('importing a church member enrolls in ministry_members when available', fun
 });
 
 test('admin can update ministry setting', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'admin']);
     $settingId = DB::table('ministry_settings')->where('ministry_key', 'music')->value('id');
 
@@ -224,6 +235,7 @@ test('admin can update ministry setting', function () {
 });
 
 test('finance role cannot access ministries module', function () {
+    /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'finance']);
 
     $this->actingAs($admin, 'admin')->get(route('ministries.settings.index'))->assertForbidden();

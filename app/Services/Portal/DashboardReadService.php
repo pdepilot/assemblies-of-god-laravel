@@ -49,9 +49,12 @@ final class DashboardReadService
             return 0.0;
         }
 
-        $query = DB::table('donations')
-            ->whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year);
+        $query = DB::table('donations');
+
+        if (Schema::hasColumn('donations', 'created_at')) {
+            $query->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year);
+        }
 
         if (Schema::hasColumn('donations', 'status')) {
             $query->whereIn('status', ['completed', 'success', 'paid', 'confirmed']);
@@ -66,8 +69,14 @@ final class DashboardReadService
             return 0;
         }
 
-        return (int) DB::table('site_sessions')
-            ->whereDate('started_at', now()->toDateString())
-            ->count();
+        $query = DB::table('site_sessions');
+
+        if (Schema::hasColumn('site_sessions', 'started_at')) {
+            $query->whereDate('started_at', now()->toDateString());
+        } elseif (Schema::hasColumn('site_sessions', 'created_at')) {
+            $query->whereDate('created_at', now()->toDateString());
+        }
+
+        return (int) $query->count();
     }
 }

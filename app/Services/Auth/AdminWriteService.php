@@ -347,8 +347,8 @@ final class AdminWriteService
                 throw new InvalidArgumentException('Super Admin cannot be assigned from this form.');
             }
 
-            $adminAccess = \App\Support\RbacPlatform::normalize((string) ($data['platform_access'] ?? \App\Support\RbacPlatform::BOTH));
-            $rolePlatform = \App\Support\RbacPlatform::normalize((string) ($role->platform ?? \App\Support\RbacPlatform::BOTH));
+            $adminAccess = \App\Support\RbacPlatform::normalize((string) ($data['platform_access'] ?? \App\Support\RbacPlatform::AG));
+            $rolePlatform = \App\Support\RbacPlatform::normalize((string) ($role->platform ?? \App\Support\RbacPlatform::AG));
             if (! \App\Support\RbacPlatform::adminCanReceiveRole($adminAccess, $rolePlatform)) {
                 throw new InvalidArgumentException(sprintf(
                     'Role platform "%s" is incompatible with administrator platform access "%s".',
@@ -630,7 +630,7 @@ final class AdminWriteService
 
     /** @param  array<string, mixed>  $admin */
     /**
-     * Finance-scoped roles should share the CMS password with Financial ERP login.
+     * Finance-scoped roles should share the portal password with Financial ERP login.
      *
      * @param  array{role?: string, role_id?: int|null, slug?: string|null}  $selection
      */

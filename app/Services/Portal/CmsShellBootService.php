@@ -45,13 +45,16 @@ final class CmsShellBootService
             $platform,
         );
 
+        $adminBase = $this->liveAdminBase();
+
         return [
             'platform' => $platform,
             'identity' => $identity,
             'favicon_url' => $mediaBase.'/'.$faviconPath,
             'config' => $cmsConfig,
             'media_base' => config('portal.media_base'),
-            'admin_base' => url('/admin'),
+            'admin_base' => $adminBase,
+            'dashboard_handler_url' => $adminBase.'/handlers/dashboard-handler',
             'legacy_admin_base' => config('portal.legacy_admin_base'),
             'brand_subtitle' => $identity['brand_subtitle'],
             'admin_user' => [
@@ -94,10 +97,18 @@ final class CmsShellBootService
         return [
             'brand_name' => (string) ($admin['brand_name'] ?? 'AGC IKENEGBU'),
             'brand_subtitle' => (string) ($admin['brand_subtitle'] ?? 'Church Management System'),
-            'page_title_suffix' => (string) ($admin['page_title_suffix'] ?? 'AGC IKENEGBU CMS'),
+            'page_title_suffix' => (string) ($admin['page_title_suffix'] ?? 'AGC IKENEGBU'),
             'favicon_path' => (string) ($admin['favicon_path'] ?? 'images/ag-logo.jpeg'),
             'logo_video_path' => (string) ($admin['primary_logo_video_path'] ?? 'videos/Create_a_cinematic_D_animatio.mp4'),
             'search_placeholder' => (string) ($admin['search_placeholder'] ?? 'Search members, events, pages...'),
         ];
+    }
+
+    private function liveAdminBase(): string
+    {
+        $request = request();
+        $root = rtrim($request->getSchemeAndHttpHost().str_replace('\\', '/', (string) $request->getBasePath()), '/');
+
+        return $root.'/admin';
     }
 }

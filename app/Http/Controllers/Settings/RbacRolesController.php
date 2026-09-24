@@ -122,7 +122,7 @@ final class RbacRolesController
             'slug' => ['nullable', 'string', 'max:64'],
             'description' => ['nullable', 'string', 'max:1000'],
             'dashboard_type' => ['required', 'string', 'max:64'],
-            'platform' => ['nullable', 'in:ag,both'],
+            'platform' => ['nullable', 'in:ag'],
             'is_active' => ['nullable', 'boolean'],
             'permission_ids' => ['nullable', 'array'],
             'permission_ids.*' => ['integer', 'min:1'],
@@ -132,10 +132,7 @@ final class RbacRolesController
             $data['id'] = $roleId;
         }
         $data['is_active'] = $request->boolean('is_active', true);
-        $data['platform'] = \App\Support\RbacPlatform::normalize(
-            (string) ($data['platform'] ?? \App\Support\RbacPlatform::AG),
-            \App\Support\RbacPlatform::AG
-        );
+        $data['platform'] = \App\Support\RbacPlatform::AG;
 
         try {
             $saved = $this->rbac->saveRole(

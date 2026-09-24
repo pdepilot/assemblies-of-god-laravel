@@ -53,7 +53,7 @@
                             <span class="bg-primary btn-md-square rounded-circle mt-4 me-2"><i class="fa fa-flag text-dark fa-4x mb-5 pb-2"></i></span>
                             <div class="ms-4">
                                 <h5>{{ $about['mission_title'] ?? 'Our Mission' }}</h5>
-                                <p>{{ $about['mission_text'] ?? '' }}</p>
+                                <p>Transforming the lives of people to be heavenly conscious and earthly useful</p>
                             </div>
                         </div>
                     </div>

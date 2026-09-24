@@ -114,11 +114,15 @@ final class DeviceBanService
         $query = trim($query);
         if ($query !== '') {
             $like = '%'.$query.'%';
-            $builder->where(function ($q) use ($like) {
+            $identityFingerprints = $this->fingerprintsForIdentitySearch($query);
+            $builder->where(function ($q) use ($like, $identityFingerprints) {
                 $q->where('ip_address', 'like', $like)
                     ->orWhere('browser_info', 'like', $like)
                     ->orWhere('user_agent', 'like', $like)
                     ->orWhere('device_fingerprint', 'like', $like);
+                if ($identityFingerprints !== []) {
+                    $q->orWhereIn('device_fingerprint', $identityFingerprints);
+                }
             });
         }
 
@@ -130,6 +134,7 @@ final class DeviceBanService
             ->get()
             ->map(fn ($row) => $this->formatBan((array) $row, true))
             ->all();
+        $rows = $this->attachIdentities($rows);
 
         $activeQuery = DB::table('device_bans')
             ->where('is_active', 1)
@@ -163,7 +168,13 @@ final class DeviceBanService
         $this->expireBans();
         $row = DB::table('device_bans')->where('id', $id)->first();
 
-        return $row ? $this->formatBan((array) $row, true, true) : null;
+        if ($row === null) {
+            return null;
+        }
+
+        $formatted = $this->attachIdentities([$this->formatBan((array) $row, true, true)]);
+
+        return $formatted[0] ?? null;
     }
 
     /**
@@ -305,6 +316,11 @@ final class DeviceBanService
             $query->where('source', $source);
         }
 
+        $liftedAt = $this->latestLiftedAt($fingerprint, $source);
+        if ($liftedAt !== null) {
+            $query->where('created_at', '>', $liftedAt);
+        }
+
         $rows = $query
             ->orderByDesc('created_at')
             ->limit(20)
@@ -350,6 +366,10 @@ final class DeviceBanService
             'created_at' => (string) ($row['created_at'] ?? ''),
             'location' => null,
             'recent_attempts' => [],
+            'identifier_tried' => null,
+            'account_name' => null,
+            'account_contact' => null,
+            'account_kind' => null,
         ];
 
         if ($withGeo) {
@@ -371,6 +391,292 @@ final class DeviceBanService
         }
 
         return $formatted;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function fingerprintsForIdentitySearch(string $query): array
+    {
+        $needle = trim($query);
+        if ($needle === '') {
+            return [];
+        }
+
+        $like = '%'.$needle.'%';
+        $digits = preg_replace('/\D+/', '', $needle) ?? '';
+        $last10 = strlen($digits) >= 7 ? substr($digits, -10) : '';
+        $fingerprints = [];
+
+        if (Schema::hasTable('login_attempts')) {
+            $attempts = DB::table('login_attempts')->where('email_attempted', 'like', $like);
+            if ($last10 !== '') {
+                $attempts->orWhere('email_attempted', 'like', '%'.$last10.'%');
+            }
+            $fingerprints = array_merge($fingerprints, $attempts->limit(500)->pluck('device_fingerprint')->all());
+        }
+
+        $identifiers = $this->identifiersMatchingDirectory($like, $last10);
+        if ($identifiers !== [] && Schema::hasTable('login_attempts')) {
+            $related = DB::table('login_attempts')
+                ->where(function ($q) use ($identifiers, $last10) {
+                    $q->whereIn('email_attempted', $identifiers);
+                    if ($last10 !== '') {
+                        $q->orWhere('email_attempted', 'like', '%'.$last10.'%');
+                    }
+                })
+                ->limit(500)
+                ->pluck('device_fingerprint')
+                ->all();
+            $fingerprints = array_merge($fingerprints, $related);
+        }
+
+        return array_values(array_unique(array_filter($fingerprints, static fn ($fp) => is_string($fp) && $fp !== '')));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function identifiersMatchingDirectory(string $like, string $last10): array
+    {
+        $identifiers = [];
+
+        if (Schema::hasTable('members')) {
+            $members = DB::table('members')
+                ->where(function ($q) use ($like, $last10) {
+                    $q->where('email', 'like', $like)
+                        ->orWhere('phone', 'like', $like)
+                        ->orWhere('phone_alt', 'like', $like)
+                        ->orWhere('full_name', 'like', $like)
+                        ->orWhere('member_code', 'like', $like);
+                    if ($last10 !== '') {
+                        $q->orWhere('phone', 'like', '%'.$last10.'%')
+                            ->orWhere('phone_alt', 'like', '%'.$last10.'%');
+                    }
+                })
+                ->limit(100)
+                ->get(['email', 'phone', 'phone_alt', 'member_code']);
+
+            foreach ($members as $member) {
+                foreach ([(string) ($member->email ?? ''), (string) ($member->phone ?? ''), (string) ($member->phone_alt ?? ''), (string) ($member->member_code ?? '')] as $value) {
+                    $value = trim($value);
+                    if ($value !== '') {
+                        $identifiers[] = $value;
+                    }
+                }
+            }
+        }
+
+        if (Schema::hasTable('admins')) {
+            $admins = DB::table('admins')
+                ->where(function ($q) use ($like, $last10) {
+                    $q->where('email', 'like', $like)
+                        ->orWhere('phone', 'like', $like)
+                        ->orWhere('full_name', 'like', $like)
+                        ->orWhere('username', 'like', $like);
+                    if (Schema::hasColumn('admins', 'recovery_email')) {
+                        $q->orWhere('recovery_email', 'like', $like);
+                    }
+                    if ($last10 !== '') {
+                        $q->orWhere('phone', 'like', '%'.$last10.'%');
+                        if (Schema::hasColumn('admins', 'recovery_phone')) {
+                            $q->orWhere('recovery_phone', 'like', '%'.$last10.'%');
+                        }
+                    }
+                })
+                ->limit(100)
+                ->get(['email', 'phone', 'username', 'recovery_email', 'recovery_phone']);
+
+            foreach ($admins as $admin) {
+                foreach ([(string) ($admin->email ?? ''), (string) ($admin->phone ?? ''), (string) ($admin->username ?? ''), (string) ($admin->recovery_email ?? ''), (string) ($admin->recovery_phone ?? '')] as $value) {
+                    $value = trim($value);
+                    if ($value !== '') {
+                        $identifiers[] = $value;
+                    }
+                }
+            }
+        }
+
+        return array_values(array_unique($identifiers));
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $bans
+     * @return list<array<string, mixed>>
+     */
+    private function attachIdentities(array $bans): array
+    {
+        if ($bans === [] || ! Schema::hasTable('login_attempts')) {
+            return $bans;
+        }
+
+        $fingerprints = array_values(array_unique(array_filter(array_map(
+            static fn (array $ban): string => (string) ($ban['device_fingerprint'] ?? ''),
+            $bans,
+        ))));
+        if ($fingerprints === []) {
+            return $bans;
+        }
+
+        $attempts = DB::table('login_attempts')
+            ->whereIn('device_fingerprint', $fingerprints)
+            ->orderByDesc('created_at')
+            ->get(['device_fingerprint', 'email_attempted', 'source', 'admin_id']);
+
+        $latestByFingerprint = [];
+        foreach ($attempts as $attempt) {
+            $fp = (string) $attempt->device_fingerprint;
+            if (! isset($latestByFingerprint[$fp])) {
+                $latestByFingerprint[$fp] = trim((string) ($attempt->email_attempted ?? ''));
+            }
+        }
+
+        $identifiers = array_values(array_unique(array_filter($latestByFingerprint)));
+        $directory = $this->directoryByIdentifier($identifiers);
+
+        foreach ($bans as $index => $ban) {
+            $fp = (string) ($ban['device_fingerprint'] ?? '');
+            $identifier = $latestByFingerprint[$fp] ?? '';
+            $match = $identifier !== '' ? ($directory[$this->identityKey($identifier)] ?? null) : null;
+            $bans[$index]['identifier_tried'] = $identifier !== '' ? $identifier : null;
+            $bans[$index]['account_name'] = $match['name'] ?? null;
+            $bans[$index]['account_contact'] = $match['contact'] ?? ($identifier !== '' ? $identifier : null);
+            $bans[$index]['account_kind'] = $match['kind'] ?? null;
+        }
+
+        return $bans;
+    }
+
+    /**
+     * @param  list<string>  $identifiers
+     * @return array<string, array{name: string, contact: string, kind: string}>
+     */
+    private function directoryByIdentifier(array $identifiers): array
+    {
+        $map = [];
+        if ($identifiers === []) {
+            return $map;
+        }
+
+        $digitKeys = [];
+        foreach ($identifiers as $identifier) {
+            $digits = $this->phoneKey($identifier);
+            if ($digits !== '') {
+                $digitKeys[$digits] = $identifier;
+            }
+        }
+
+        if (Schema::hasTable('members')) {
+            $members = DB::table('members')
+                ->where(function ($q) use ($identifiers, $digitKeys) {
+                    $q->whereIn('email', $identifiers)
+                        ->orWhereIn('phone', $identifiers)
+                        ->orWhereIn('phone_alt', $identifiers)
+                        ->orWhereIn('member_code', $identifiers);
+                    foreach (array_keys($digitKeys) as $digits) {
+                        $q->orWhere('phone', 'like', '%'.$digits)
+                            ->orWhere('phone_alt', 'like', '%'.$digits);
+                    }
+                })
+                ->limit(200)
+                ->get(['full_name', 'email', 'phone', 'phone_alt', 'member_code']);
+
+            foreach ($members as $member) {
+                $contact = trim((string) ($member->email ?: $member->phone ?: $member->phone_alt ?: $member->member_code));
+                $entry = [
+                    'name' => (string) ($member->full_name ?? 'Member'),
+                    'contact' => $contact,
+                    'kind' => 'member',
+                ];
+                foreach ([(string) $member->email, (string) $member->phone, (string) $member->phone_alt, (string) $member->member_code] as $value) {
+                    $key = $this->identityKey($value);
+                    if ($key !== '') {
+                        $map[$key] = $entry;
+                    }
+                }
+            }
+        }
+
+        if (Schema::hasTable('admins')) {
+            $admins = DB::table('admins')
+                ->where(function ($q) use ($identifiers, $digitKeys) {
+                    $q->whereIn('email', $identifiers)
+                        ->orWhereIn('phone', $identifiers)
+                        ->orWhereIn('username', $identifiers);
+                    if (Schema::hasColumn('admins', 'recovery_email')) {
+                        $q->orWhereIn('recovery_email', $identifiers);
+                    }
+                    foreach (array_keys($digitKeys) as $digits) {
+                        $q->orWhere('phone', 'like', '%'.$digits);
+                    }
+                })
+                ->limit(200)
+                ->get(['full_name', 'email', 'phone', 'username']);
+
+            foreach ($admins as $admin) {
+                $contact = trim((string) ($admin->email ?: $admin->phone ?: $admin->username));
+                $entry = [
+                    'name' => (string) ($admin->full_name ?: $admin->email ?: 'Admin'),
+                    'contact' => $contact,
+                    'kind' => 'admin',
+                ];
+                foreach ([(string) $admin->email, (string) $admin->phone, (string) $admin->username] as $value) {
+                    $key = $this->identityKey($value);
+                    if ($key !== '') {
+                        $map[$key] = $entry;
+                    }
+                }
+            }
+        }
+
+        return $map;
+    }
+
+    private function identityKey(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return '';
+        }
+
+        if (str_contains($value, '@')) {
+            return 'e:'.mb_strtolower($value);
+        }
+
+        $phone = $this->phoneKey($value);
+        if ($phone !== '') {
+            return 'p:'.$phone;
+        }
+
+        return 'e:'.mb_strtolower($value);
+    }
+
+    private function phoneKey(string $value): string
+    {
+        $digits = preg_replace('/\D+/', '', $value) ?? '';
+        if (strlen($digits) >= 7) {
+            return substr($digits, -10);
+        }
+
+        return '';
+    }
+
+    private function latestLiftedAt(string $fingerprint, string $source): ?string
+    {
+        if (! Schema::hasTable('device_bans')) {
+            return null;
+        }
+
+        $query = DB::table('device_bans')
+            ->where('device_fingerprint', $fingerprint)
+            ->whereNotNull('lifted_at');
+        if ($this->hasSourceColumn()) {
+            $query->where('source', $source);
+        }
+
+        $value = $query->orderByDesc('lifted_at')->value('lifted_at');
+
+        return $value ? (string) $value : null;
     }
 
     private function shortFingerprint(string $fp): string

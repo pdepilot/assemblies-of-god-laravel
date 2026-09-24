@@ -9,6 +9,8 @@ use App\Services\Security\SecurityAuditService;
 use DateTimeImmutable;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -44,6 +46,7 @@ final class MemberWriteService
             'photo_path' => $photoPath,
             'created_by' => $adminId,
         ]);
+        $this->syncPortalAccess($member, $data);
 
         $this->logStatusChange(
             (int) $member->id,
@@ -125,6 +128,7 @@ final class MemberWriteService
             ...$validated,
             'photo_path' => $photoPath,
         ]);
+        $this->syncPortalAccess($member->fresh() ?? $member, $data);
 
         if ($previousStatus !== $validated['status']) {
             $this->logStatusChange(
@@ -305,7 +309,7 @@ final class MemberWriteService
             throw new InvalidArgumentException('State is required.');
         }
 
-        $department = trim((string) ($data['department'] ?? ''));
+        $department = $this->read->canonicalDepartmentLabel((string) ($data['department'] ?? ''));
         if ($department === '' || ! in_array($department, $this->read->listDepartmentOptions(), true)) {
             throw new InvalidArgumentException('Please select a valid department.');
         }
@@ -324,19 +328,12 @@ final class MemberWriteService
             throw new InvalidArgumentException('Joined date must be in YYYY-MM-DD format.');
         }
 
-        $dateOfDeath = null;
         $deathNotes = null;
         if ($status === 'deceased') {
-            $death = $this->validateDeathFields(
-                (string) ($data['date_of_death'] ?? ''),
-                isset($data['death_notes']) ? (string) $data['death_notes'] : null,
-                $joinedDate,
-            );
-            $dateOfDeath = $death['date_of_death'];
-            $deathNotes = $death['death_notes'];
+            $deathNotes = trim((string) ($data['death_notes'] ?? '')) ?: null;
         }
 
-        return [
+        $payload = [
             'first_name' => $firstName,
             'last_name' => $lastName !== '' ? $lastName : null,
             'full_name' => $fullName,
@@ -359,10 +356,57 @@ final class MemberWriteService
             'department' => $department,
             'status' => $status,
             'joined_date' => $joinedDate,
-            'date_of_death' => $dateOfDeath,
             'death_notes' => $deathNotes,
             'notes' => trim((string) ($data['notes'] ?? '')) ?: null,
         ];
+
+        if (Schema::hasColumn('members', 'occupation')) {
+            $payload['occupation'] = $this->nullableOccupation((string) ($data['occupation'] ?? ''));
+        }
+
+        return $payload;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function syncPortalAccess(Member $member, array $data): void
+    {
+        if (! Schema::hasColumn('members', 'portal_enabled')) {
+            return;
+        }
+
+        $updates = [];
+
+        if (array_key_exists('portal_enabled', $data)) {
+            $updates['portal_enabled'] = $this->isTruthy($data['portal_enabled']) ? 1 : 0;
+        }
+
+        $password = trim((string) ($data['portal_password'] ?? ''));
+        if ($password !== '') {
+            if (mb_strlen($password) < 6) {
+                throw new InvalidArgumentException('Member portal password must be at least 6 characters.');
+            }
+            if (Schema::hasColumn('members', 'portal_password_hash')) {
+                $updates['portal_password_hash'] = Hash::make($password);
+            }
+            if (! array_key_exists('portal_enabled', $data)) {
+                $updates['portal_enabled'] = 1;
+            }
+        }
+
+        if ($updates !== []) {
+            $member->update($updates);
+        }
+    }
+
+    private function isTruthy(mixed $value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        return in_array((string) $value, ['1', 'true', 'on', 'yes'], true);
     }
 
     /**
@@ -395,6 +439,19 @@ final class MemberWriteService
             'date_of_death' => $dateOfDeath,
             'death_notes' => trim((string) ($deathNotes ?? '')) ?: null,
         ];
+    }
+
+    private function nullableOccupation(string $occupation): ?string
+    {
+        $occupation = trim($occupation);
+        if ($occupation === '') {
+            return null;
+        }
+        if (mb_strlen($occupation) > 120) {
+            throw new InvalidArgumentException('Occupation must be 120 characters or less.');
+        }
+
+        return $occupation;
     }
 
     private function normalizePhone(string $phone, bool $optional): ?string

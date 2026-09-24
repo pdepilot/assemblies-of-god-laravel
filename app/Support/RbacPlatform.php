@@ -5,7 +5,7 @@ namespace App\Support;
 use App\Models\Admin;
 
 /**
- * Platform scoping for shared RBAC (AG church CMS only after SDTG extraction).
+ * Platform scoping for shared RBAC (AG church portal only after SDTG extraction).
  */
 final class RbacPlatform
 {

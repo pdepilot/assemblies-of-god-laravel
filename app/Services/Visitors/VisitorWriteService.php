@@ -158,9 +158,9 @@ final class VisitorWriteService
             throw new InvalidArgumentException('Please confirm full membership before promoting this visitor.');
         }
 
-        $department = trim((string) ($data['department'] ?? ''));
+        $department = $this->members->canonicalDepartmentLabel((string) ($data['department'] ?? ''));
         if ($department === '') {
-            $department = trim((string) ($visitor->interested_department ?? ''));
+            $department = $this->members->canonicalDepartmentLabel((string) ($visitor->interested_department ?? ''));
         }
         if ($department === '' || ! in_array($department, $this->members->listDepartmentOptions(), true)) {
             $department = 'Member';
@@ -309,7 +309,7 @@ final class VisitorWriteService
             throw new InvalidArgumentException('Please select how they heard about the church.');
         }
 
-        $interestedDepartment = trim((string) ($data['interested_department'] ?? ''));
+        $interestedDepartment = $this->members->canonicalDepartmentLabel((string) ($data['interested_department'] ?? ''));
         if ($interestedDepartment !== '' && ! in_array($interestedDepartment, $this->members->listDepartmentOptions(), true)) {
             throw new InvalidArgumentException('Please select a valid interested department.');
         }

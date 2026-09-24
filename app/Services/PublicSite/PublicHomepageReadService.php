@@ -2,7 +2,9 @@
 
 namespace App\Services\PublicSite;
 
+use App\Services\Website\ActivityReadService;
 use App\Services\Website\WebsitePagesReadService;
+use App\Services\Website\WorshipReadService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
@@ -11,6 +13,8 @@ final class PublicHomepageReadService
 {
     public function __construct(
         private readonly PublicAssetResolver $assets,
+        private readonly WorshipReadService $worship,
+        private readonly ActivityReadService $activities,
     ) {}
 
     /** @return array<string, mixed> */
@@ -42,10 +46,12 @@ final class PublicHomepageReadService
             'hero_interval_ms' => max(2000, min(30000, (int) ($hero['interval_ms'] ?? 7000))),
             'hero_slides' => $slides,
             'about' => $this->aboutSection(),
-            'activities' => $this->activities(),
+            'activities' => $this->activities->published(),
             'events' => $this->events(),
             'sermons' => $this->sermons(),
             'team' => $this->team(),
+            'worshipPrograms' => $this->worship->programs(),
+            'worshipLocation' => $this->worship->location(),
             'legacy_base' => url('/'),
             'legacy_api_base' => rtrim((string) config('portal.legacy_api_base'), '/'),
             'asset_base' => asset('site'),
@@ -220,9 +226,9 @@ final class PublicHomepageReadService
         $defaults = [
             'church_name' => (string) ($publicIdentity['site_name'] ?? 'AGC Ikenegbu Assemblies of God'),
             'short_name' => (string) ($publicIdentity['short_name'] ?? 'AGC Ikenegbu'),
-            'phone' => '+2348034567890',
-            'phone_display' => '+234 803 456 7890',
-            'phone_tel' => '+2348034567890',
+            'phone' => '+2348034095171',
+            'phone_display' => '08034095171',
+            'phone_tel' => '+2348034095171',
             'email' => 'info@agikenebgu.org',
             'address_full' => 'AGC Ikenegbu, Ikenebgu Layout, Owerri, Imo State',
             'sunday_worship' => '8:00 AM & 10:30 AM',
@@ -300,7 +306,7 @@ final class PublicHomepageReadService
             'vision_title' => 'Our Vision',
             'vision_text' => 'To raise disciples who know Christ and make Him known.',
             'mission_title' => 'Our Mission',
-            'mission_text' => 'Proclaim the full Gospel through worship, teaching, fellowship, and compassion.',
+            'mission_text' => 'Transforming the lives of people to be heavenly conscious and earthly useful',
             'gallery' => [
                 ['image' => 'images/main1.jpg', 'alt' => ((string) ($publicIdentity['short_name'] ?? 'AGC Ikenegbu')).' church'],
                 ['image' => 'images/main2.jpg', 'alt' => 'Worship gathering'],
@@ -353,22 +359,6 @@ final class PublicHomepageReadService
         }
 
         return $content;
-    }
-
-    /** @return list<array<string, mixed>> */
-    private function activities(): array
-    {
-        if (! Schema::hasTable('church_activities')) {
-            return [];
-        }
-
-        return DB::table('church_activities')
-            ->where('is_published', 1)
-            ->orderBy('sort_order')
-            ->orderBy('title')
-            ->get()
-            ->map(fn ($row) => (array) $row)
-            ->all();
     }
 
     /** @return list<array<string, mixed>> */

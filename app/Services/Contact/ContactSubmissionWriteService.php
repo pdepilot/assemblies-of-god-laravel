@@ -2,6 +2,7 @@
 
 namespace App\Services\Contact;
 
+use App\Jobs\SendContactAcknowledgementJob;
 use App\Services\Security\SecurityAuditService;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -172,7 +173,7 @@ final class ContactSubmissionWriteService
             'subject' => $subject,
         ];
 
-        $ackSent = $this->mail->sendAcknowledgement($submission);
+        SendContactAcknowledgementJob::dispatch($submission);
 
         $this->audit->log(
             'contact_submission',
@@ -190,16 +191,12 @@ final class ContactSubmissionWriteService
             'id' => $id,
             'submission_code' => $code,
             'inquiry_type' => $type,
-            'ack_sent' => $ackSent,
+            'ack_sent' => false,
         ];
     }
 
     private function generateSubmissionCode(): string
     {
-        do {
-            $code = 'CNT-'.strtoupper(bin2hex(random_bytes(4)));
-        } while (DB::table('contact_submissions')->where('submission_code', $code)->exists());
-
-        return $code;
+        return 'CNT-'.strtoupper(bin2hex(random_bytes(4)));
     }
 }

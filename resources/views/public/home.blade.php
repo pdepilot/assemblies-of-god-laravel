@@ -33,13 +33,15 @@
 @section('content')
 @if ($preloaderEnabled)
     <div id="agPreloader" class="ag-preloader show" role="status" aria-live="polite" aria-label="Loading {{ $shortName }}" data-max-wait="{{ $preloaderMaxWait }}">
-        <video id="agPreloaderVideo" class="ag-preloader__video" src="{{ $preloaderVideo }}" playsinline webkit-playsinline autoplay preload="auto" aria-label="{{ $welcomeVideoLabel }}"></video>
+        <video id="agPreloaderVideo" class="ag-preloader__video" src="{{ $preloaderVideo }}" playsinline webkit-playsinline autoplay muted preload="auto" aria-label="{{ $welcomeVideoLabel }}"></video>
         <div class="ag-preloader__overlay" aria-hidden="true"></div>
         @if ($preloaderShowSkip)
             <button type="button" class="ag-preloader__skip" id="agPreloaderSkip">Skip intro</button>
         @endif
     </div>
 @endif
+
+@include('public.partials.promotion-banner')
 
 <div class="container-fluid fixed-top">
     <div class="container topbar">
@@ -61,16 +63,7 @@
             <div class="collapse navbar-collapse bg-white" id="navbarCollapse">
                 @include('public.partials.nav', ['navActive' => 'home'])
                 <div class="navbar-cta-group align-items-center flex-shrink-0">
-                    <a
-                        href="{{ rtrim((string) ($publicIdentity['sdtg_site_url'] ?? 'https://senddownthyglory.org'), '/') }}"
-                        class="btn btn-sdtg-nav"
-                        title="Visit {{ $publicIdentity['sdtg_site_label'] ?? 'Send Down Thy Glory' }}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        <i class="fas fa-globe-africa" aria-hidden="true"></i>
-                        <span>{{ $publicIdentity['sdtg_site_label'] ?? 'Send Down Thy Glory' }}</span>
-                    </a>
+                    @include('public.partials.sdtg-site-button')
                     <a href="{{ route('public.donate') }}" class="btn btn-primary py-2 px-4">Give</a>
                 </div>
             </div>
@@ -112,12 +105,10 @@
 @include('public.partials.about')
 @include('public.partials.scripture-banner')
 
-@php $homePage = is_array($homePage ?? null) ? $homePage : []; @endphp
-<div class="container-fluid activities py-5">
+<div class="container-fluid activities py-5" id="activities">
     <div class="container py-5">
         <div class="mx-auto text-center mb-5 wow fadeIn" data-wow-delay="0.1s" style="max-width: 700px;">
-            <p class="fs-5 text-uppercase text-primary">{{ $homePage['ministries_eyebrow'] ?? 'Ministries' }}</p>
-            <h1 class="display-3">{{ $homePage['ministries_title'] ?? 'Serving God Through Every Season of Life' }}</h1>
+            <h1 class="display-3">Activities</h1>
         </div>
         @include('public.partials.activities')
     </div>
@@ -125,11 +116,9 @@
 
 <section class="container-fluid ag-events-section py-5">
     <div class="container py-5 position-relative">
-        <header class="ag-events-header text-center mx-auto mb-5 wow fadeIn" data-wow-delay="0.1s">
-            <span class="ag-events-badge">{{ $homePage['events_eyebrow'] ?? 'Gather With Us' }}</span>
-            <h2 class="display-4 mb-3">{{ $homePage['events_title'] ?? 'Upcoming Events' }}</h2>
-            <p class="ag-events-intro mb-0">{{ $homePage['events_intro'] ?? 'Worship, study, and prayer — rhythm of life together at '.$shortName.'. Mark your calendar and bring someone along.' }}</p>
-        </header>
+        <div class="mx-auto text-center mb-5 wow fadeIn" data-wow-delay="0.1s" style="max-width: 700px;">
+            <h1 class="display-3">Upcoming Events</h1>
+        </div>
         @include('public.partials.events')
         <div class="ag-events-footer text-center mt-5 pt-2 wow fadeIn" data-wow-delay="0.45s">
             <a href="{{ route('public.event') }}" class="btn btn-primary btn-lg px-5 py-3">View All Events</a>

@@ -7,7 +7,7 @@ use App\Policies\FinancialErpPolicy;
 use Illuminate\Http\RedirectResponse;
 
 /**
- * Church CMS → Financial ERP login (Laravel /erp/login → legacy ERP via proxy).
+ * Church portal → Financial ERP login (Laravel /erp/login → legacy ERP via proxy).
  */
 final class LaunchController
 {

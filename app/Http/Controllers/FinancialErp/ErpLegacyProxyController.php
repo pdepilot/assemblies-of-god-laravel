@@ -168,7 +168,7 @@ final class ErpLegacyProxyController extends Controller
     {
         $appErp = rtrim(url('/erp'), '/');
         $adminDash = url('/admin/dashboard');
-        $adminLogin = url('/admin/login');
+        $adminLogin = url('/portal/login');
         $legacyErp = $legacyBase.'/erp';
         $siteAsset = url('/site');
 
@@ -196,7 +196,7 @@ final class ErpLegacyProxyController extends Controller
 
         $html = str_replace(array_keys($replacements), array_values($replacements), $html);
 
-        // Ensure CMS exit links are marked external so ERP soft-nav never intercepts them.
+        // Ensure portal exit links are marked external so ERP soft-nav never intercepts them.
         $html = preg_replace_callback(
             '#<a\b([^>]*\bhref="'.preg_quote($adminDash, '#').'"[^>]*)>#i',
             static function (array $m): string {
@@ -210,7 +210,7 @@ final class ErpLegacyProxyController extends Controller
             $html
         ) ?? $html;
 
-        // Near-real-time CMS activity toasts while admins work inside legacy ERP.
+        // Near-real-time portal activity toasts while admins work inside legacy ERP.
         if (! str_contains($html, 'data-cms-notify-bridge="1"')) {
             $cmsNotifyUrlJs = json_encode(
                 url('/admin/handlers/dashboard-handler?action=notifications'),
@@ -234,7 +234,7 @@ final class ErpLegacyProxyController extends Controller
         var items = Array.isArray(d.notifications) ? d.notifications : [];
         if (ready && latest && items.length) {
           items.slice().reverse().forEach(function (n) {
-            var title = n.title || 'CMS update';
+            var title = n.title || 'Update';
             var text = n.text || '';
             toast(text ? (title + ': ' + text) : title);
           });

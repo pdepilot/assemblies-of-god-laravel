@@ -1,4 +1,4 @@
-/* CMS Navigation & Mock Data */
+/* Navigation & Mock Data */
 window.CMS_CONFIG = {
     brand: {
         name: 'AGC IKENEGBU',
@@ -18,15 +18,13 @@ window.CMS_CONFIG = {
                 { id: 'youths', label: 'Youth Ministry', icon: 'fa-people-group', href: 'youths' },
                 { id: 'men', label: "Men's Ministry", icon: 'fa-person', href: 'men' },
                 { id: 'women', label: "Women's Ministry", icon: 'fa-person-dress', href: 'women' },
-                { id: 'widowers', label: 'Widowers Ministry', icon: 'fa-person', href: 'widowers' },
-                { id: 'widows', label: 'Widows Ministry', icon: 'fa-person-dress', href: 'widows' },
+                { id: 'widows', label: 'Widows', icon: 'fa-person-dress', href: 'widows' },
                 { id: 'music', label: 'Music', icon: 'fa-music', href: 'music' },
                 { id: 'choir', label: 'Choir', icon: 'fa-users-line', href: 'choir' },
                 { id: 'ushers', label: 'Ushering', icon: 'fa-door-open', href: 'ushers' },
                 { id: 'media', label: 'Media Team', icon: 'fa-video', href: 'media' },
                 { id: 'visitors', label: 'Visitors', icon: 'fa-handshake', href: 'visitors' },
                 { id: 'attendance', label: 'Attendance', icon: 'fa-clipboard-check', href: 'attendance' },
-                { id: 'departments', label: 'Departments', icon: 'fa-sitemap', href: 'departments' },
                 { id: 'events', label: 'Events', icon: 'fa-calendar-days', href: 'events' },
                 { id: 'sermons', label: 'Sermons & Live', icon: 'fa-book-bible', href: 'sermon' },
                 { id: 'donations', label: 'Donations', icon: 'fa-hand-holding-heart', href: 'donations' },
@@ -78,8 +76,10 @@ window.CMS_CONFIG = {
         {
             id: 'website', label: 'WEBSITE MANAGEMENT', type: 'group', children: [
                 { id: 'pages', label: 'Pages', icon: 'fa-file-lines', href: 'website/pages' },
+                { id: 'homepage-activities', label: 'Homepage Activities', icon: 'fa-hands', href: 'website/pages#agActivitiesEditor' },
                 { id: 'blog', label: 'Blog', icon: 'fa-newspaper', href: 'website/blog' },
                 { id: 'about-content', label: 'About Content', icon: 'fa-church', href: 'website/about-content' },
+                { id: 'worship-schedule', label: 'Our Worship', icon: 'fa-calendar-days', href: 'website/worship/edit' },
                 { id: 'team-section', label: 'Team Sections', icon: 'fa-people-group', href: 'admin-team-section' },
                 { id: 'media-library', label: 'Media Library', icon: 'fa-folder-open', href: 'website/media-library' },
                 { id: 'seo', label: 'SEO Manager', icon: 'fa-magnifying-glass-chart', href: 'website/seo' },

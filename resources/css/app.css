@@ -1,7 +1,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* CMS-safe utility helpers for module pages */
+/* Utility helpers for module pages */
 body.cms-app .portal-module-content {
     color: var(--cms-text, #e8edf8);
 }

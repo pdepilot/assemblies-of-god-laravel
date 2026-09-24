@@ -8,6 +8,7 @@
             window.CMS_CONFIG = boot.config;
             window.CMS_MEDIA_BASE = boot.media_base;
             window.CMS_ADMIN_BASE = boot.admin_base;
+            window.CMS_DASHBOARD_HANDLER_URL = boot.dashboard_handler_url || (String(boot.admin_base || '').replace(/\/?$/, '/') + 'handlers/dashboard-handler');
             window.CMS_LEGACY_ADMIN_BASE = boot.legacy_admin_base;
             window.CMS_ADMIN_USER = boot.admin_user;
             window.CMS_LOGOUT_URL = boot.logout_url;

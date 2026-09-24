@@ -7,9 +7,50 @@
             @endif
             @include('website._nav', ['canManage' => $canManage])
 
-            <div class="rounded-lg border border-indigo-200 bg-indigo-50 dark:bg-indigo-950/40 dark:border-indigo-800 p-4 text-sm text-indigo-900 dark:text-indigo-100">
-                Manage each public website page from here. Open a page to edit its copy, header, SEO, and jump to related content (team, blog, events, sermons).
-            </div>
+            <article class="cms-card" id="agActivitiesEditor">
+                <div class="cms-card__head">
+                    <h2 class="cms-card__title">Homepage Activities</h2>
+                </div>
+                @if ($canManage)
+                    <form method="POST" action="{{ route('website.activities.update') }}" class="cms-card__body" style="display:grid;gap:18px">
+                        @csrf
+                        @method('PUT')
+                        @include('website.activities._activity-fields', [
+                            'activities' => $homepageActivities ?? [],
+                        ])
+                        <div>
+                            <button type="submit" class="cms-btn cms-btn--primary"><i class="fas fa-save"></i> Save Activities</button>
+                        </div>
+                    </form>
+                @else
+                    <div class="cms-card__body">
+                        <p class="cms-help">You can view website pages, but you need website edit access to change Activities.</p>
+                    </div>
+                @endif
+            </article>
+
+            <article class="cms-card" id="agWorshipEditor">
+                <div class="cms-card__head">
+                    <h2 class="cms-card__title">Our Worship</h2>
+                </div>
+                @if ($canManage)
+                    <form method="POST" action="{{ route('website.worship.update') }}" class="cms-card__body" style="display:grid;gap:18px">
+                        @csrf
+                        @method('PUT')
+                        @include('website.worship._program-fields', [
+                            'programs' => $worshipPrograms ?? [],
+                            'location' => $worshipLocation ?? [],
+                        ])
+                        <div>
+                            <button type="submit" class="cms-btn cms-btn--primary"><i class="fas fa-save"></i> Save Our Worship</button>
+                        </div>
+                    </form>
+                @else
+                    <div class="cms-card__body">
+                        <p class="cms-help">You can view website pages, but you need website edit access to change Our Worship.</p>
+                    </div>
+                @endif
+            </article>
 
             @php $hero = $bootstrap['ag']['hero'] ?? []; @endphp
             <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6 space-y-4">
@@ -62,7 +103,16 @@
                                 <td class="py-3 pr-4 text-gray-600 dark:text-gray-300">{{ $meta['description'] }}</td>
                                 <td class="py-3 whitespace-nowrap">
                                     @if ($canManage)
-                                        <a href="{{ route('website.pages.edit', $key) }}" class="inline-flex px-3 py-1.5 bg-indigo-600 text-white rounded-md text-xs font-semibold">Manage</a>
+                                        @php
+                                            $manageUrl = ! empty($meta['manage_route']) && \Illuminate\Support\Facades\Route::has($meta['manage_route'])
+                                                ? route($meta['manage_route'])
+                                                : route('website.pages.edit', $key);
+                                        @endphp
+                                        <a href="{{ $manageUrl }}" class="inline-flex px-3 py-1.5 bg-indigo-600 text-white rounded-md text-xs font-semibold">Manage</a>
+                                    @endif
+                                    @if ($key === 'home' && $canManage)
+                                        <a href="{{ route('website.worship.edit') }}" class="ml-2 inline-flex px-3 py-1.5 border rounded-md text-xs font-semibold">Our Worship</a>
+                                        <a href="{{ route('website.activities.edit') }}" class="ml-2 inline-flex px-3 py-1.5 border rounded-md text-xs font-semibold">Homepage Activities</a>
                                     @endif
                                     @if (! empty($meta['public_route']) && \Illuminate\Support\Facades\Route::has($meta['public_route']))
                                         <a href="{{ route($meta['public_route']) }}" target="_blank" rel="noopener" class="ml-2 text-gray-500 hover:underline text-xs">View live</a>

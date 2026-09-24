@@ -13,62 +13,92 @@
 
 <div class="reading-progress" id="readingProgress" aria-hidden="true"><span></span></div>
 
-<div class="container-fluid py-5">
-    <div class="container py-5">
+<section class="container-fluid sermon-detail py-5">
+    <div class="container py-4">
         <div class="row g-4">
             <div class="col-lg-8">
-                <img src="{{ $sermon['image_url'] }}" class="img-fluid rounded mb-4 w-100" style="max-height:420px;object-fit:cover" alt="{{ $sermon['title'] }}">
-                <div class="d-flex flex-wrap gap-3 text-muted small mb-3">
-                    @if (! empty($sermon['date_display']))
-                        <span>{{ $sermon['date_display'] }}</span>
+                <article class="sermon-detail-main">
+                    @if (! empty($sermon['video_file_url']))
+                        <div class="sermon-detail-player">
+                            <video class="w-100" controls playsinline preload="metadata" @if (! empty($sermon['image_url'])) poster="{{ $sermon['image_url'] }}" @endif src="{{ $sermon['video_file_url'] }}"></video>
+                        </div>
+                    @elseif (! empty($sermon['youtube_embed_url']))
+                        <div class="sermon-detail-player ratio ratio-16x9">
+                            <iframe src="{{ $sermon['youtube_embed_url'] }}" title="{{ $sermon['title'] }}" allowfullscreen loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                        </div>
+                    @elseif (! empty($sermon['vimeo_embed_url']))
+                        <div class="sermon-detail-player ratio ratio-16x9">
+                            <iframe src="{{ $sermon['vimeo_embed_url'] }}" title="{{ $sermon['title'] }}" allowfullscreen loading="lazy"></iframe>
+                        </div>
+                    @else
+                        <div class="sermon-detail-cover">
+                            <img src="{{ $sermon['image_url'] }}" alt="{{ $sermon['title'] }}">
+                        </div>
                     @endif
-                    @if (! empty($sermon['minister_name']))
-                        <span>{{ $sermon['minister_name'] }}</span>
-                    @endif
-                    @if (! empty($sermon['scripture_refs']))
-                        <span>{{ $sermon['scripture_refs'] }}</span>
-                    @endif
-                </div>
-                @if (! empty($sermon['description']))
-                    <p class="lead">{{ $sermon['description'] }}</p>
-                @endif
 
-                @if (! empty($sermon['youtube_url']))
-                    <div class="ratio ratio-16x9 mb-4">
-                        <iframe src="{{ $sermon['youtube_url'] }}" title="{{ $sermon['title'] }}" allowfullscreen loading="lazy"></iframe>
+                    <div class="sermon-library-chips mb-3">
+                        @if (! empty($sermon['has_video']))<span class="sermon-library-chip sermon-library-chip--accent">Video</span>@endif
+                        @if (! empty($sermon['has_audio']))<span class="sermon-library-chip">Audio</span>@endif
+                        @if (! empty($sermon['has_pdf']))<span class="sermon-library-chip">Notes</span>@endif
                     </div>
-                @elseif (! empty($sermon['audio_stream_url']) || ! empty($sermon['audio_file_path']))
-                    <audio class="w-100 mb-4" controls src="{{ $sermon['audio_stream_url'] ?: asset('site/'.$sermon['audio_file_path']) }}"></audio>
-                @endif
 
-                <div class="blog-body">
-                    {!! $sermon['content_html'] !!}
-                </div>
+                    <h1 class="sermon-detail-title">{{ $sermon['title'] }}</h1>
+                    <p class="sermon-library-meta sermon-library-meta--lg">
+                        @if (! empty($sermon['date_display']))<span><i class="fa fa-calendar-alt"></i>{{ $sermon['date_display'] }}</span>@endif
+                        @if (! empty($sermon['minister_name']))<span><i class="fa fa-user"></i>{{ $sermon['minister_name'] }}</span>@endif
+                        @if (! empty($sermon['scripture_refs']))<span><i class="fa fa-book-open"></i>{{ $sermon['scripture_refs'] }}</span>@endif
+                    </p>
 
-                @if (! empty($sermon['pdf_file_path']))
-                    <p class="mt-4"><a class="btn btn-outline-primary" href="{{ asset('site/'.$sermon['pdf_file_path']) }}" target="_blank" rel="noopener">Download notes (PDF)</a></p>
-                @endif
+                    @if (! empty($sermon['description']))
+                        <p class="lead sermon-detail-lead">{{ $sermon['description'] }}</p>
+                    @endif
 
-                <div class="mt-5">
-                    <a href="{{ route('public.sermons') }}" class="btn btn-outline-primary">Back to sermons</a>
-                </div>
+                    @if (! empty($sermon['audio_url']))
+                        <div class="sermon-detail-audio">
+                            <p>Listen</p>
+                            <audio class="w-100" controls src="{{ $sermon['audio_url'] }}"></audio>
+                        </div>
+                    @endif
+
+                    @if (! empty($sermon['content_html']))
+                        <div class="blog-body sermon-detail-body">
+                            {!! $sermon['content_html'] !!}
+                        </div>
+                    @endif
+
+                    @if (! empty($sermon['pdf_url']))
+                        <p class="mt-4 mb-0">
+                            <a class="btn btn-primary" href="{{ $sermon['pdf_url'] }}" target="_blank" rel="noopener">Download notes (PDF)</a>
+                        </p>
+                    @endif
+                </article>
             </div>
             <div class="col-lg-4">
-                @if (! empty($related))
-                    <aside class="bg-light rounded p-4">
-                        <h2 class="h5 mb-3">Related sermons</h2>
-                        @foreach ($related as $item)
-                            <div class="mb-3">
-                                <a href="{{ route('public.sermons.show', $item['slug']) }}" class="fw-semibold text-dark">{{ $item['title'] }}</a>
-                                <div class="small text-muted">{{ $item['date_display'] ?? '' }}</div>
-                            </div>
-                        @endforeach
-                    </aside>
-                @endif
+                <aside class="sermon-detail-aside">
+                    <h2>Related sermons</h2>
+                    @if (! empty($related))
+                        <ul class="sermon-detail-related">
+                            @foreach ($related as $item)
+                                <li>
+                                    <a href="{{ $item['url'] }}">
+                                        <img src="{{ $item['image_url'] }}" alt="">
+                                        <span>
+                                            <strong>{{ $item['title'] }}</strong>
+                                            <small>{{ $item['date_display'] ?? '' }}</small>
+                                        </span>
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="mb-0">More messages will appear here as they are published.</p>
+                    @endif
+                    <a class="btn btn-outline-primary w-100 mt-4" href="{{ route('public.sermons') }}">Back to sermons</a>
+                </aside>
             </div>
         </div>
     </div>
-</div>
+</section>
 
 @include('public.partials.footer')
 @endsection

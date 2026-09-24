@@ -127,7 +127,7 @@ final class ReportWriteService
         $range = $this->reports->resolvePeriod($type, $period, $options);
         $payload = $this->buildReportPayload($type, $range);
         $rowCount = (int) ($payload['row_count'] ?? 0);
-        // Empty datasets are allowed so every CMS report type stays usable.
+        // Empty datasets are allowed so every report type stays usable.
         $body = $this->renderPayload($payload, $format);
         $extension = $format === 'docx' ? 'docx' : $format;
 
@@ -267,12 +267,13 @@ final class ReportWriteService
 
         return [
             'title' => 'Membership Report — '.$range['label'],
-            'headers' => ['Member Code', 'Full Name', 'Email', 'Phone', 'Department', 'Status', 'Joined Date'],
+            'headers' => ['Member Code', 'Full Name', 'Email', 'Phone', 'Occupation', 'Department', 'Status', 'Joined Date'],
             'rows' => array_map(static fn (array $row): array => [
                 $row['member_code'] ?? '',
                 $row['full_name'] ?? '',
                 $row['email'] ?? '',
                 $row['phone'] ?? '',
+                $row['occupation'] ?? '',
                 $row['department'] ?? '',
                 $row['status'] ?? '',
                 $row['joined_date'] ?? '',

@@ -1,14 +1,16 @@
 {{-- Roles & Permissions management panel --}}
 @php
-    $selectedAdmin = $rbac['selected_admin'] ?? null;
-    $selectedRoleIds = $selectedAdmin['role_ids'] ?? [];
+    /** @var array<string, mixed> $rbacPanel */
+    $rbacPanel = is_array($rbacPanel ?? null) ? $rbacPanel : [];
+    $selectedAdmin = is_array($rbacPanel['selected_admin'] ?? null) ? $rbacPanel['selected_admin'] : null;
+    $selectedRoleIds = is_array($selectedAdmin['role_ids'] ?? null) ? $selectedAdmin['role_ids'] : [];
 @endphp
 
 <article class="cms-card" style="margin-bottom:16px">
     <div class="cms-card__head"><h2 class="cms-card__title">1. Access control mode</h2></div>
     <div class="cms-card__body">
         <p style="color:var(--cms-text-muted);margin:0 0 16px">
-            When enforcement is <strong>off</strong>, every admin can open the full CMS (safe default).
+            When enforcement is <strong>off</strong>, every admin can open the full portal (safe default).
             When it is <strong>on</strong>, each admin only sees sidebar links and pages allowed by their role permissions.
             Turn it on only after roles and assignments below look correct.
         </p>
@@ -43,20 +45,20 @@
 <article class="cms-card" style="margin-bottom:16px">
     <div class="cms-card__head" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px">
         <h2 class="cms-card__title" style="margin:0">2. Assign roles to an administrator</h2>
-        <span style="font-size:0.85rem;color:var(--cms-text-muted)">{{ number_format(count($rbac['admins'] ?? [])) }} admins · {{ number_format(count($rbac['roles'] ?? [])) }} roles</span>
+        <span style="font-size:0.85rem;color:var(--cms-text-muted)">{{ number_format(count($rbacPanel['admins'] ?? [])) }} admins · {{ number_format(count($rbacPanel['roles'] ?? [])) }} roles</span>
     </div>
     <div class="cms-card__body">
         <p style="color:var(--cms-text-muted);margin:0 0 16px">
             Pick an admin, tick the roles they should have, then save. One admin can hold multiple roles.
         </p>
 
-        @if ($canManageRbac && ! empty($rbac['admins']))
+        @if ($canManageRbac && ! empty($rbacPanel['admins']))
             <form method="GET" action="{{ route('settings.index') }}" style="margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:end">
                 <input type="hidden" name="tab" value="roles">
                 <div class="cms-field" style="min-width:260px;flex:1">
                     <label for="assign_admin">Administrator</label>
                     <select id="assign_admin" name="assign_admin" onchange="this.form.submit()">
-                        @foreach ($rbac['admins'] as $adminOption)
+                        @foreach ($rbacPanel['admins'] as $adminOption)
                             <option value="{{ $adminOption['id'] }}" @selected((int) ($selectedAdmin['id'] ?? 0) === (int) $adminOption['id'])>
                                 {{ $adminOption['full_name'] }} ({{ $adminOption['email'] }})
                             </option>
@@ -74,9 +76,9 @@
                         <div style="font-weight:600">{{ $selectedAdmin['full_name'] }}</div>
                         <div style="font-size:0.85rem;color:var(--cms-text-muted)">{{ $selectedAdmin['email'] }} · account role: {{ $selectedAdmin['role'] }}</div>
                         @if (! empty($selectedAdmin['role_names']))
-                            <div style="margin-top:8px;display:flex;flex-wrap:gap:6px">
+                            <div style="margin-top:8px;display:flex;flex-wrap:wrap">
                                 @foreach ($selectedAdmin['role_names'] as $roleName)
-                                    <span class="cms-badge" style="background:rgba(201,162,39,.15);color:var(--cms-gold,#c9a227);padding:2px 8px;border-radius:999px;font-size:0.75rem">{{ $roleName }}</span>
+                                    <span class="cms-badge" style="background:rgba(201,162,39,.15);color:var(--cms-gold,#c9a227);padding:2px 8px;border-radius:999px;font-size:0.75rem;margin:0 6px 6px 0">{{ $roleName }}</span>
                                 @endforeach
                             </div>
                         @else
@@ -85,7 +87,7 @@
                     </div>
 
                     <div style="display:grid;gap:8px;max-height:320px;overflow:auto;padding-right:4px;margin-bottom:14px">
-                        @foreach ($rbac['roles'] as $roleOption)
+                        @foreach ($rbacPanel['roles'] as $roleOption)
                             <label style="display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid var(--cms-border,rgba(255,255,255,.08));border-radius:8px;cursor:pointer">
                                 <input
                                     type="checkbox"
@@ -98,7 +100,6 @@
                                     <strong>{{ $roleOption['name'] }}</strong>
                                     <span style="display:block;font-size:0.8rem;color:var(--cms-text-muted)">
                                         {{ $roleOption['dashboard_label'] }}
-                                        · {{ strtoupper($roleOption['platform'] ?? 'ag') }}
                                         · {{ number_format((int) $roleOption['permission_count']) }} permissions
                                         @if (! empty($roleOption['is_system'])) · system @endif
                                     </span>
@@ -128,7 +129,7 @@
     <div class="cms-card__body">
         <p style="color:var(--cms-text-muted);margin:0 0 16px">
             Edit a role to choose its dashboard and tick the permissions it grants.
-            Catalog: <strong>{{ number_format((int) ($rbac['permission_count'] ?? 0)) }}</strong> permissions available.
+            Catalog: <strong>{{ number_format((int) ($rbacPanel['permission_count'] ?? 0)) }}</strong> permissions available.
         </p>
 
         <div class="cms-table-wrap">
@@ -136,7 +137,6 @@
                 <thead>
                     <tr>
                         <th>Role</th>
-                        <th>Platform</th>
                         <th>Dashboard</th>
                         <th>Admins</th>
                         <th>Permissions</th>
@@ -145,13 +145,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse (($rbac['roles'] ?? []) as $roleRow)
+                    @forelse (($rbacPanel['roles'] ?? []) as $roleRow)
                         <tr>
                             <td>
                                 <strong>{{ $roleRow['name'] }}</strong>
                                 <div style="font-size:0.78rem;color:var(--cms-text-muted);font-family:monospace">{{ $roleRow['slug'] }}</div>
                             </td>
-                            <td>{{ strtoupper($roleRow['platform'] ?? 'ag') }}</td>
                             <td>{{ $roleRow['dashboard_label'] }}</td>
                             <td>{{ number_format((int) $roleRow['admin_count']) }}</td>
                             <td>{{ number_format((int) $roleRow['permission_count']) }}</td>
