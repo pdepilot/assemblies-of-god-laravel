@@ -16,7 +16,13 @@ final class PublicAssetResolver
             return '';
         }
 
-        if (preg_match('#^(https?:)?//#i', $path) === 1) {
+        if ($this->isLegacyLoopbackUrl($path)) {
+            $path = $this->normalizeStoredPath($path);
+        }
+
+        // Genuine remote URLs stay as-is. Leftover XAMPP hosts must never
+        // short-circuit back to the browser after a failed prefix strip.
+        if ($this->isRemoteAbsoluteUrl($path)) {
             return $path;
         }
 
@@ -91,12 +97,12 @@ final class PublicAssetResolver
 
         $legacyAdminBase = rtrim((string) config('portal.legacy_admin_base'), '/');
         if ($legacyAdminBase !== '') {
-            return $legacyAdminBase.'/'.$path;
+            return $this->rejectLegacyBrowserUrl($legacyAdminBase.'/'.$path, 'site/'.$path);
         }
 
         $mediaBase = rtrim((string) config('portal.media_base'), '/');
 
-        return $mediaBase.'/portal/'.$path;
+        return $this->rejectLegacyBrowserUrl($mediaBase.'/portal/'.$path, 'site/'.$path);
     }
 
     private function portalTreeUrl(string $relative): string
@@ -119,12 +125,19 @@ final class PublicAssetResolver
             return asset('portal/'.$relative);
         }
 
+        $sameOrigin = str_starts_with($relative, 'uploads/')
+            ? 'site/'.$relative
+            : 'portal/'.$relative;
+
         $legacyAdminBase = rtrim((string) config('portal.legacy_admin_base'), '/');
         if ($legacyAdminBase !== '') {
-            return $legacyAdminBase.'/'.$relative;
+            return $this->rejectLegacyBrowserUrl($legacyAdminBase.'/'.$relative, $sameOrigin);
         }
 
-        return rtrim((string) config('portal.media_base'), '/').'/portal/'.$relative;
+        return $this->rejectLegacyBrowserUrl(
+            rtrim((string) config('portal.media_base'), '/').'/portal/'.$relative,
+            $sameOrigin
+        );
     }
 
     private function siteFallback(string $relative): string
@@ -143,6 +156,15 @@ final class PublicAssetResolver
             return '';
         }
 
+        $stripped = preg_replace(
+            '#^(?:https?:)?//(?:localhost|127\.0\.0\.1)(?::\d+)?/AG_IKENEGBU_CHURCH_WEBSITE/?#i',
+            '',
+            $path
+        );
+        if (is_string($stripped) && $stripped !== $path) {
+            $path = ltrim($stripped, '/');
+        }
+
         foreach ($this->localLegacyPrefixes() as $prefix) {
             if ($prefix !== '' && strncasecmp($path, $prefix, strlen($prefix)) === 0) {
                 return ltrim(substr($path, strlen($prefix)), '/');
@@ -150,6 +172,36 @@ final class PublicAssetResolver
         }
 
         return $path;
+    }
+
+    private function isRemoteAbsoluteUrl(string $path): bool
+    {
+        if (preg_match('#^(https?:)?//#i', $path) !== 1) {
+            return false;
+        }
+
+        return ! $this->isLegacyLoopbackUrl($path);
+    }
+
+    private function isLegacyLoopbackUrl(string $url): bool
+    {
+        if (PortalPublicUrl::isLocalLegacyBase($url)) {
+            return true;
+        }
+
+        return (bool) preg_match(
+            '#^(?:https?:)?//(?:localhost|127\.0\.0\.1)(?::\d+)?/AG_IKENEGBU_CHURCH_WEBSITE(?:/|$)#i',
+            $url
+        );
+    }
+
+    private function rejectLegacyBrowserUrl(string $candidate, string $sameOriginRelative): string
+    {
+        if ($this->isLegacyLoopbackUrl($candidate)) {
+            return asset($sameOriginRelative);
+        }
+
+        return $candidate;
     }
 
     /** @return list<string> */

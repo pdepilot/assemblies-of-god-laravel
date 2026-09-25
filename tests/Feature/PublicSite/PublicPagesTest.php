@@ -70,3 +70,24 @@ test('asset resolver rewrites stored localhost media URLs to the Laravel origin'
     expect($event)->not->toContain('localhost/AG_IKENEGBU_CHURCH_WEBSITE');
     expect($event)->toContain('uploads/events/250d2aa4581313b6313c326d8f54e0a5.jpg');
 });
+
+test('stored church_events localhost image is converted to a public site asset', function () {
+    config(['app.url' => 'https://agcikenegbu.org']);
+    \Illuminate\Support\Facades\URL::forceRootUrl('https://agcikenegbu.org');
+    \Illuminate\Support\Facades\URL::forceScheme('https');
+    config([
+        'portal.media_base' => 'http://localhost/AG_IKENEGBU_CHURCH_WEBSITE',
+        'portal.legacy_admin_base' => 'http://localhost/AG_IKENEGBU_CHURCH_WEBSITE/portal',
+        'portal.legacy_public_base' => 'http://localhost/AG_IKENEGBU_CHURCH_WEBSITE',
+    ]);
+
+    $resolver = app(\App\Services\PublicSite\PublicAssetResolver::class);
+    $stored = 'http://localhost/AG_IKENEGBU_CHURCH_WEBSITE/portal/uploads/events/250d2aa4581313b6313c326d8f54e0a5.jpg';
+    $url = $resolver->url($stored);
+
+    expect($url)->not->toContain('localhost');
+    expect($url)->not->toContain('127.0.0.1');
+    expect($url)->not->toContain('AG_IKENEGBU_CHURCH_WEBSITE');
+    expect($url)->toEndWith('/site/uploads/events/250d2aa4581313b6313c326d8f54e0a5.jpg');
+    expect($resolver->url('https://example.com/image.jpg'))->toBe('https://example.com/image.jpg');
+});
