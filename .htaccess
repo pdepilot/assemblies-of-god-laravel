@@ -1,0 +1,63 @@
+DirectoryIndex index.php index.html
+
+<IfModule mod_negotiation.c>
+    Options -MultiViews -Indexes
+</IfModule>
+
+Options -Indexes
+
+<IfModule mod_authz_core.c>
+    <FilesMatch "^(\.env.*|composer\.json|composer\.lock|artisan)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+    <FilesMatch "^(\.env.*|composer\.json|composer\.lock|artisan)$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Handle X-XSRF-Token Header
+    RewriteCond %{HTTP:x-xsrf-token} .
+    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
+
+    # Never expose Laravel internals, even when the files exist on disk.
+    RewriteRule (?:^|/)\.env - [F,L]
+    RewriteRule ^(?:composer\.json|composer\.lock|artisan|phpunit\.xml)$ - [F,L]
+    RewriteRule ^(?:app|bootstrap|config|database|resources|routes|vendor|tests|tools|node_modules)(?:/|$) - [F,L]
+    RewriteRule ^(?:\.git|\.github)(?:/|$) - [F,L]
+
+    # Member/public disk lives at public/storage. Map it before denying
+    # the real Laravel storage/ directory at the application root.
+    RewriteCond %{DOCUMENT_ROOT}/public/storage/$1 -f
+    RewriteRule ^storage/(.*)$ public/storage/$1 [L]
+    RewriteRule ^storage(?:/|$) - [F,L]
+
+    # Preserve existing URLs: /site, /portal, /build, favicon, robots, etc.
+    # Files stay in Laravel public/; Hostinger serves public_html, so map
+    # those URLs without copying uploads or relying on symlinks.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f [OR]
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -d
+    RewriteRule ^(.*)$ public/$1 [L]
+
+    # Redirect trailing slashes if not a folder
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Send remaining requests to the public_html front controller
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>

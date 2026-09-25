@@ -7,6 +7,10 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Hostinger (agcikenegbu.org)
+
+The live host cannot change the domain document root. Production uses the application root as `public_html`, with root `index.php` and `.htaccess`. Public assets stay in `public/site`, `public/portal`, and `public/build`. See [HOSTINGER.md](HOSTINGER.md).
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

@@ -1,3 +1,8 @@
+# Used by php artisan serve and any host whose document root is public/.
+# Hostinger Web Hosting cannot point at public/; production uses the
+# application-root index.php and .htaccess instead. Do not move site/,
+# portal/, or build/ out of this directory.
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
