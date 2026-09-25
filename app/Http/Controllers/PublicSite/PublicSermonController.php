@@ -46,7 +46,7 @@ final class PublicSermonController extends Controller
             $seo['og_image'] = (string) $sermon['featured_image'];
         }
 
-        $payload = $this->homepage->payload();
+        $payload = $this->homepage->chrome();
 
         return view('public.sermons.show', [
             'church' => $payload['church'],

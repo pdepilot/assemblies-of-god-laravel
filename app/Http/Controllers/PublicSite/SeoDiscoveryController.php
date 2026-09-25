@@ -161,7 +161,7 @@ final class SeoDiscoveryController extends Controller
 
     public function htmlSitemap(): View
     {
-        $payload = $this->homepage->payload();
+        $payload = $this->homepage->chrome();
         $items = $this->sitemaps->htmlSitemapGroups();
         $groups = [];
         foreach ($items as $item) {

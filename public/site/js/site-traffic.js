@@ -135,7 +135,8 @@
                 credentials: crossOrigin ? 'omit' : 'same-origin',
                 mode: crossOrigin ? 'cors' : 'same-origin',
                 keepalive: !!isExit,
-                cache: 'no-store'
+                cache: 'no-store',
+                priority: 'low'
             }).catch(function () {});
         } catch (e) { /* ignore */ }
     }

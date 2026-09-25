@@ -38,7 +38,12 @@ final class CmsPageController extends Controller
         }
 
         $page = $this->hydratePage($this->pages->getPage($pageKey));
-        $payload = $this->homepage->payload();
+        $payload = match ($pageKey) {
+            'activity' => $this->homepage->chromeWith(['activities']),
+            'event' => $this->homepage->chromeWith(['events']),
+            'sermons' => $this->homepage->chromeWith(['sermons']),
+            default => $this->homepage->chrome(),
+        };
         $canonical = null;
         try {
             $routeName = (string) ($catalog['public_route'] ?? '');

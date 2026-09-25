@@ -24,7 +24,7 @@ final class AboutController extends Controller
     {
         $brandShortName = (string) config('identity.public.short_name', 'AGC Ikenegbu');
         $about = $this->resolveMedia($this->content->getSection('about_page'));
-        $payload = $this->homepage->payload();
+        $payload = $this->homepage->chromeWith(['team']);
         $page = $this->hydratePageChrome($this->pages->getPage('about'));
         $seo = $this->seo->forKey('about', url('/about'));
         $defaultHeading = (string) ($this->pages->defaultPageContent('about')['heading'] ?? 'About');

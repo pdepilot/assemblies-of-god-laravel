@@ -55,7 +55,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return null;
             }
 
-            $payload = app(\App\Services\PublicSite\PublicHomepageReadService::class)->payload();
+            $payload = app(\App\Services\PublicSite\PublicHomepageReadService::class)->chrome();
             $seo = app(\App\Services\Website\SeoReadService::class)->forKey('home', url('/'));
             $seo['title'] = 'Page Not Found | '.config('identity.public.short_name', 'AGC Ikenegbu');
             $seo['meta_description'] = 'The page you requested could not be found on the church website.';

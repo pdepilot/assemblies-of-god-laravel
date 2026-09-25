@@ -11,11 +11,55 @@ use Illuminate\Support\Facades\Schema;
 
 final class PublicHomepageReadService
 {
+    /** @var array<string, bool> */
+    private array $tableExists = [];
+
+    /** @var array<string, mixed>|null */
+    private ?array $churchMemo = null;
+
     public function __construct(
         private readonly PublicAssetResolver $assets,
         private readonly WorshipReadService $worship,
         private readonly ActivityReadService $activities,
     ) {}
+
+    /**
+     * Layout chrome for inner public pages (footer/topbar/traffic). Skips homepage sections.
+     *
+     * @return array<string, mixed>
+     */
+    public function chrome(): array
+    {
+        return [
+            'church' => $this->church(),
+            'legacy_base' => url('/'),
+            'legacy_api_base' => rtrim(url('/api'), '/'),
+            'asset_base' => asset('site'),
+            'traffic_beacon_url' => url('/api/track-traffic'),
+        ];
+    }
+
+    /**
+     * Chrome plus selected homepage sections (e.g. team on /about).
+     *
+     * @param  list<string>  $sections
+     * @return array<string, mixed>
+     */
+    public function chromeWith(array $sections): array
+    {
+        $data = $this->chrome();
+        foreach ($sections as $section) {
+            $data[$section] = match ($section) {
+                'team' => $this->team(),
+                'activities' => $this->activities->published(),
+                'events' => $this->events(),
+                'sermons' => $this->sermons(),
+                default => null,
+            };
+        }
+
+        return $data;
+    }
 
     /** @return array<string, mixed> */
     public function payload(): array
@@ -38,8 +82,7 @@ final class PublicHomepageReadService
             return $slide;
         }, $slides);
 
-        return [
-            'church' => $this->church(),
+        return $this->chrome() + [
             'preloader' => is_array($homepage['preloader'] ?? null)
                 ? $homepage['preloader']
                 : $this->defaultHomepageContent()['preloader'],
@@ -52,11 +95,6 @@ final class PublicHomepageReadService
             'team' => $this->team(),
             'worshipPrograms' => $this->worship->programs(),
             'worshipLocation' => $this->worship->location(),
-            'legacy_base' => url('/'),
-            // Browser JS posts to Laravel /api (proxied). Do not expose PORTAL_LEGACY_API_BASE.
-            'legacy_api_base' => rtrim(url('/api'), '/'),
-            'asset_base' => asset('site'),
-            'traffic_beacon_url' => url('/api/track-traffic'),
         ];
     }
 
@@ -223,6 +261,10 @@ final class PublicHomepageReadService
     /** @return array<string, mixed> */
     private function church(): array
     {
+        if ($this->churchMemo !== null) {
+            return $this->churchMemo;
+        }
+
         $publicIdentity = config('identity.public');
         $defaults = [
             'church_name' => (string) ($publicIdentity['site_name'] ?? 'AGC Ikenegbu Assemblies of God'),
@@ -245,13 +287,13 @@ final class PublicHomepageReadService
             ],
         ];
 
-        if (! Schema::hasTable('contact_settings')) {
-            return $defaults;
+        if (! $this->hasTable('contact_settings')) {
+            return $this->churchMemo = $defaults;
         }
 
         $row = DB::table('contact_settings')->orderBy('id')->first();
         if (! $row) {
-            return $defaults;
+            return $this->churchMemo = $defaults;
         }
 
         $data = (array) $row;
@@ -271,7 +313,7 @@ final class PublicHomepageReadService
 
         $name = trim((string) ($data['church_name'] ?? ''));
 
-        return [
+        return $this->churchMemo = [
             'church_name' => $name !== '' ? $name : $defaults['church_name'],
             'short_name' => $defaults['short_name'],
             'phone' => $phoneTel !== '' ? $phoneTel : $defaults['phone'],
@@ -328,7 +370,7 @@ final class PublicHomepageReadService
             ],
         ];
 
-        if (! Schema::hasTable('ag_site_content')) {
+        if (! $this->hasTable('ag_site_content')) {
             return $this->resolveAboutMedia($defaults);
         }
 
@@ -365,7 +407,7 @@ final class PublicHomepageReadService
     /** @return list<array<string, mixed>> */
     private function events(): array
     {
-        if (! Schema::hasTable('church_events')) {
+        if (! $this->hasTable('church_events')) {
             return [];
         }
 
@@ -400,7 +442,7 @@ final class PublicHomepageReadService
             'cards' => [],
         ];
 
-        if (! Schema::hasTable('sermons')) {
+        if (! $this->hasTable('sermons')) {
             $section['cards'] = $this->fallbackSermonCards();
 
             return $section;
@@ -508,7 +550,7 @@ final class PublicHomepageReadService
             'title' => 'Meet Our Church Leadership',
         ];
 
-        if (! Schema::hasTable('site_team_members')) {
+        if (! $this->hasTable('site_team_members')) {
             return ['settings' => $settings, 'featured' => null, 'members' => []];
         }
 
@@ -541,5 +583,10 @@ final class PublicHomepageReadService
             'featured' => $featured,
             'members' => $members,
         ];
+    }
+
+    private function hasTable(string $table): bool
+    {
+        return $this->tableExists[$table] ??= Schema::hasTable($table);
     }
 }

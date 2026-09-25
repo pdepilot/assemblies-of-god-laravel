@@ -22,7 +22,7 @@ final class DonateController extends Controller
 
     public function show(): View
     {
-        $payload = $this->homepage->payload();
+        $payload = $this->homepage->chrome();
         $payments = $this->paymentPublicConfig();
         $categories = array_values(array_filter(
             $this->donations->listCategories(true),

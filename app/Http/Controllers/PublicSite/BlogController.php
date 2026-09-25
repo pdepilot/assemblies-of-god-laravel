@@ -74,7 +74,7 @@ final class BlogController extends Controller
             $adjacent['next'] = $this->hydratePost($adjacent['next']);
         }
 
-        $payload = $this->homepage->payload();
+        $payload = $this->homepage->chrome();
         $canonical = url('/blog/'.$slug);
         $seo = $this->seo->forKey('blog', $canonical);
         $seoTitle = trim((string) ($post['seo_title'] ?? ''));
@@ -117,7 +117,7 @@ final class BlogController extends Controller
         $pageNum = max(1, (int) $request->query('page', 1));
         $query = trim((string) $request->query('q', ''));
         $posts = $this->blog->listPublished($query, $category, $pageNum, 9, $tag);
-        $payload = $this->homepage->payload();
+        $payload = $this->homepage->chrome();
         $page = $this->hydratePageChrome($this->pages->getPage('blog'));
         $posts['items'] = array_map(fn (array $post) => $this->hydratePost($post), $posts['items']);
 

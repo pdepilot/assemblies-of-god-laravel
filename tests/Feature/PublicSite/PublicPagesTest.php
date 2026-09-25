@@ -10,12 +10,12 @@ test('public homepage still renders with brand content', function () {
     $response->assertSee(asset('site'), false);
 });
 
-test('public about route is registered and responds', function () {
-    // Bridge needs legacy host; accept either rewritten HTML or fallback page.
-    $response = $this->get('/about');
-
-    $response->assertOk();
-    $response->assertSee('AG', false);
+test('inner public pages render without requiring the full homepage payload', function () {
+    $this->get('/about')->assertOk();
+    $this->get('/event')->assertOk();
+    $this->get('/blog')->assertOk();
+    $this->get('/privacy')->assertOk();
+    $this->get('/leadership')->assertOk();
 });
 
 test('asset resolver falls back to media base when local file is missing', function () {

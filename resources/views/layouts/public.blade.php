@@ -108,19 +108,19 @@
 
     @include('public.partials.cookie-banner')
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ asset('site/lib/wow/wow.min.js') }}"></script>
-    <script src="{{ asset('site/lib/easing/easing.min.js') }}"></script>
-    <script src="{{ asset('site/lib/waypoints/waypoints.min.js') }}"></script>
-    <script src="{{ asset('site/lib/owlcarousel/owl.carousel.min.js') }}"></script>
-    <script src="{{ asset('site/js/preloader.js') }}"></script>
-    <script src="{{ asset('site/js/testimony-display.js') }}"></script>
-    <script src="{{ asset('site/js/testimony-form.js') }}"></script>
-    <script src="{{ asset('site/js/main.js') }}"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" defer></script>
+    <script src="{{ asset('site/lib/wow/wow.min.js') }}" defer></script>
+    <script src="{{ asset('site/lib/easing/easing.min.js') }}" defer></script>
+    <script src="{{ asset('site/lib/waypoints/waypoints.min.js') }}" defer></script>
+    <script src="{{ asset('site/lib/owlcarousel/owl.carousel.min.js') }}" defer></script>
+    <script src="{{ asset('site/js/preloader.js') }}" defer></script>
+    <script src="{{ asset('site/js/testimony-display.js') }}" defer></script>
+    <script src="{{ asset('site/js/testimony-form.js') }}" defer></script>
+    <script src="{{ asset('site/js/main.js') }}" defer></script>
     <script src="{{ asset('site/js/newsletter.js') }}" defer></script>
-    <script src="{{ asset('site/js/ag-promotion-banner.js') }}"></script>
-    <script src="{{ asset('site/js/ag-cookie-banner.js') }}"></script>
+    <script src="{{ asset('site/js/ag-promotion-banner.js') }}" defer></script>
+    <script src="{{ asset('site/js/ag-cookie-banner.js') }}" defer></script>
     <script>
         window.AG_SITE_TRAFFIC = window.AG_SITE_TRAFFIC || {
             endpoint: document.body.getAttribute('data-traffic-endpoint')

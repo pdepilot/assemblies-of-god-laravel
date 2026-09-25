@@ -61,9 +61,12 @@ The public homepage `data-api-base` uses Laravel `url('/api')` (same origin). Mi
 Then:
 
 ```
-php artisan config:clear
 php artisan config:cache
+php artisan route:cache
+php artisan view:cache
 ```
+
+Do not cache config until the server `.env` is correct (`APP_DEBUG=false`, `APP_URL=https://agcikenegbu.org`). After changing `.env`, run `php artisan config:clear` then `config:cache` again.
 
 ## Deploy from GitHub
 
@@ -77,5 +80,7 @@ On the server, application root = `public_html`.
 6. `php artisan migrate --force`
 7. `php artisan storage:link` if member photos use `/storage/` (optional if everything is under `public/site/uploads`)
 8. `php artisan config:cache`
+9. `php artisan route:cache`
+10. `php artisan view:cache`
 
 Local `php artisan serve` is unchanged: it still uses `public/`.

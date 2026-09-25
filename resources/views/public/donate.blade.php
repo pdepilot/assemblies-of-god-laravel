@@ -472,6 +472,6 @@
 @endsection
 
 @push('scripts')
-    <script src="{{ asset('site/js/giving-story-form.js') }}"></script>
-    <script src="{{ asset('site/js/donate.js') }}"></script>
+    <script src="{{ asset('site/js/giving-story-form.js') }}" defer></script>
+    <script src="{{ asset('site/js/donate.js') }}" defer></script>
 @endpush

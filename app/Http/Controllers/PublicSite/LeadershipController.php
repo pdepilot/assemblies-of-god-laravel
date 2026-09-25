@@ -25,7 +25,7 @@ final class LeadershipController extends Controller
         $brandShortName = (string) config('identity.public.short_name', 'AGC Ikenegbu');
         $page = $this->pages->getPage('leadership');
         $members = $this->team->listMembers('ag');
-        $payload = $this->homepage->payload();
+        $payload = $this->homepage->chrome();
         $seo = $this->seo->forKey('leadership', route('public.leadership'));
         if (trim((string) ($seo['title'] ?? '')) === '') {
             $seo['title'] = trim((string) ($page['heading'] ?? '')) !== ''

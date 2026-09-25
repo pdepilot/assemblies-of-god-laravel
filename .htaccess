@@ -6,6 +6,14 @@ DirectoryIndex index.php index.html
 
 Options -Indexes
 
+# Browser cache for immutable public static files (CSS/JS/images/fonts/video).
+# HTML and PHP remain uncached via the front controller.
+<IfModule mod_headers.c>
+    <FilesMatch "\.(?i:css|js|mjs|map|jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|eot|otf|mp4|webm|mp3)$">
+        Header set Cache-Control "public, max-age=2592000, immutable"
+    </FilesMatch>
+</IfModule>
+
 <IfModule mod_authz_core.c>
     <FilesMatch "^(\.env.*|composer\.json|composer\.lock|artisan)$">
         Require all denied

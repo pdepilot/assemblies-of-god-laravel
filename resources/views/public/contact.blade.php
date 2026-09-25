@@ -139,5 +139,5 @@
 @endsection
 
 @push('scripts')
-    <script src="{{ asset('site/js/contact-form.js') }}?v={{ is_file(public_path('site/js/contact-form.js')) ? filemtime(public_path('site/js/contact-form.js')) : time() }}"></script>
+    <script src="{{ asset('site/js/contact-form.js') }}?v={{ is_file(public_path('site/js/contact-form.js')) ? filemtime(public_path('site/js/contact-form.js')) : time() }}" defer></script>
 @endpush
