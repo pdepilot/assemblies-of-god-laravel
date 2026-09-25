@@ -13,10 +13,10 @@
         $seoDescription = $seo['meta_description'] ?? null;
         $seoCanonical = $seo['canonical'] ?? url()->current();
         $seoOgImage = trim((string) ($seo['og_image'] ?? ''));
-        $defaultTitle = (string) ($publicIdentity['default_title'] ?? 'AGC Ikenegbu | Assemblies of God Church Owerri — Worship & Community');
-        $defaultDescription = (string) ($publicIdentity['default_description'] ?? 'AGC Ikenegbu Assemblies of God in Owerri, Nigeria — spirit-filled worship, Bible teaching, family ministries, and community outreach. Join us Sundays 8:00 AM & 10:30 AM.');
-        $defaultOgTitle = (string) ($publicIdentity['default_og_title'] ?? 'AGC Ikenegbu | Assemblies of God Church Owerri');
-        $defaultOgDescription = (string) ($publicIdentity['default_og_description'] ?? 'Spirit-filled worship, Bible teaching, and community outreach in Owerri, Nigeria.');
+        $defaultTitle = (string) ($publicIdentity['default_title'] ?? 'AGC Ikenegbu | Assemblies of God Church, Owerri');
+        $defaultDescription = (string) ($publicIdentity['default_description'] ?? 'AGC Ikenegbu is an Assemblies of God church in Ikenegbu, Owerri, Imo State. Join us for Sunday worship, sermons, ministries, events, and a welcoming Christian community.');
+        $defaultOgTitle = (string) ($publicIdentity['default_og_title'] ?? 'AGC Ikenegbu | Assemblies of God Church, Owerri');
+        $defaultOgDescription = (string) ($publicIdentity['default_og_description'] ?? 'Sunday worship, sermons, ministries, and church events at AGC Ikenegbu in Ikenegbu, Owerri, Imo State.');
         $defaultLogo = asset('site/'.ltrim((string) ($publicIdentity['logo_path'] ?? 'images/ag-logo.jpeg'), '/'));
         if ($seoOgImage !== '' && ! str_starts_with($seoOgImage, 'http')) {
             $seoOgImage = app(\App\Services\PublicSite\PublicAssetResolver::class)->url($seoOgImage);

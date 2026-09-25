@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->trustProxies(at: '*');
+        $middleware->prependToGroup('web', \App\Http\Middleware\AlignPublicRootUrl::class);
+        $middleware->prependToGroup('api', \App\Http\Middleware\AlignPublicRootUrl::class);
         $middleware->appendToGroup('api', \App\Http\Middleware\TrafficBeaconCors::class);
         $middleware->alias([
             'admin.idle' => \App\Http\Middleware\EnforceAdminIdleTimeout::class,

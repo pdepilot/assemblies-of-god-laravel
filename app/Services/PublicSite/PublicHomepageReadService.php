@@ -53,7 +53,8 @@ final class PublicHomepageReadService
             'worshipPrograms' => $this->worship->programs(),
             'worshipLocation' => $this->worship->location(),
             'legacy_base' => url('/'),
-            'legacy_api_base' => rtrim((string) config('portal.legacy_api_base'), '/'),
+            // Browser JS posts to Laravel /api (proxied). Do not expose PORTAL_LEGACY_API_BASE.
+            'legacy_api_base' => rtrim(url('/api'), '/'),
             'asset_base' => asset('site'),
             'traffic_beacon_url' => url('/api/track-traffic'),
         ];

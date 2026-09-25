@@ -45,11 +45,12 @@ final class ChurchEmailBrandingService
     {
         $church = $this->platformSettings->getEditableGroups()['church'] ?? [];
         $logoUrl = trim((string) ($church['logo_url'] ?? ''));
+        $resolver = app(\App\Services\PublicSite\PublicAssetResolver::class);
         if ($logoUrl !== '') {
-            return $logoUrl;
+            return $resolver->url($logoUrl);
         }
 
-        return rtrim((string) config('portal.media_base', config('app.url')), '/').'/images/ag-logo.jpeg';
+        return $resolver->url('images/ag-logo.jpeg');
     }
 
     /**

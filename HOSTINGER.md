@@ -42,6 +42,29 @@ Do **not** set Laravel’s public path to `public_html` itself. `php artisan sto
 
 Keep `public/index.php` for `php artisan serve` locally.
 
+## Runtime URLs (APP_URL and PORTAL_*)
+
+Set these in the **server** `.env` (never commit `.env`):
+
+```
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://agcikenegbu.org
+PORTAL_MEDIA_BASE=https://agcikenegbu.org
+PORTAL_LEGACY_ADMIN_BASE=https://agcikenegbu.org/portal
+```
+
+Do not set `PORTAL_LEGACY_PUBLIC_BASE` or `PORTAL_LEGACY_API_BASE` to this same Laravel origin (the member-portal proxy would loop). Public pages use `url('/api')` even if those vars still mention localhost.
+
+The public homepage `data-api-base` uses Laravel `url('/api')` (same origin). Missing media no longer falls back to `http://localhost/AG_IKENEGBU_CHURCH_WEBSITE` when the visitor host is not loopback.
+
+Then:
+
+```
+php artisan config:clear
+php artisan config:cache
+```
+
 ## Deploy from GitHub
 
 On the server, application root = `public_html`.

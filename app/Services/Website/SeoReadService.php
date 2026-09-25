@@ -154,8 +154,8 @@ final class SeoReadService
         $identity = config('identity.public');
         $shortName = (string) ($identity['short_name'] ?? 'AGC Ikenegbu');
         $siteName = (string) ($identity['site_name'] ?? 'AGC Ikenegbu Assemblies of God');
-        $defaultTitle = (string) ($identity['default_title'] ?? 'AGC Ikenegbu | Assemblies of God Church Owerri — Worship & Community');
-        $defaultDescription = (string) ($identity['default_description'] ?? 'AGC Ikenegbu Assemblies of God in Owerri, Nigeria — spirit-filled worship, Bible teaching, family ministries, and community outreach. Join us Sundays 8:00 AM & 10:30 AM.');
+        $defaultTitle = (string) ($identity['default_title'] ?? 'AGC Ikenegbu | Assemblies of God Church, Owerri');
+        $defaultDescription = (string) ($identity['default_description'] ?? 'AGC Ikenegbu is an Assemblies of God church in Ikenegbu, Owerri, Imo State. Join us for Sunday worship, sermons, ministries, events, and a welcoming Christian community.');
 
         $page = static fn (string $key, string $title, string $description): array => [
             'key' => $key,

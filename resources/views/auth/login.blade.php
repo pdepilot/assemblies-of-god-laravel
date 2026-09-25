@@ -51,7 +51,7 @@
             </button>
 
             <p class="auth-form__footer">
-                Protected by enterprise encryption · <a href="{{ rtrim((string) config('portal.media_base'), '/') }}/">Return to {{ config('identity.public.short_name', 'Website') }}</a>
+                Protected by enterprise encryption · <a href="{{ url('/') }}">Return to {{ config('identity.public.short_name', 'Website') }}</a>
             </p>
         </form>
     </div>

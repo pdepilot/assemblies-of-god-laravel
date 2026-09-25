@@ -20,7 +20,8 @@ final class CmsShellBootService
     {
         $platform = RbacPlatform::normalize($platform, RbacPlatform::AG);
         $identity = $this->identityForPlatform($platform);
-        $mediaBase = rtrim((string) config('portal.media_base'), '/');
+        $assets = app(\App\Services\PublicSite\PublicAssetResolver::class);
+        $mediaBase = $assets->browserMediaBase();
         $logoVideoPath = ltrim((string) $identity['logo_video_path'], '/');
         $faviconPath = ltrim((string) $identity['favicon_path'], '/');
 
@@ -30,9 +31,9 @@ final class CmsShellBootService
         $cmsConfig['brand'] = [
             'name' => $identity['brand_name'],
             'subtitle' => $identity['brand_subtitle'],
-            'logo_video_url' => $mediaBase.'/'.$logoVideoPath,
+            'logo_video_url' => $assets->url($logoVideoPath),
             'logo_video_path' => $logoVideoPath,
-            'favicon_url' => $mediaBase.'/'.$faviconPath,
+            'favicon_url' => $assets->url($faviconPath),
             'search_placeholder' => $identity['search_placeholder'],
             'platform' => $platform,
         ];
@@ -50,9 +51,9 @@ final class CmsShellBootService
         return [
             'platform' => $platform,
             'identity' => $identity,
-            'favicon_url' => $mediaBase.'/'.$faviconPath,
+            'favicon_url' => $assets->url($faviconPath),
             'config' => $cmsConfig,
-            'media_base' => config('portal.media_base'),
+            'media_base' => $mediaBase,
             'admin_base' => $adminBase,
             'dashboard_handler_url' => $adminBase.'/handlers/dashboard-handler',
             'legacy_admin_base' => config('portal.legacy_admin_base'),

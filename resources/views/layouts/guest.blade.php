@@ -1,5 +1,5 @@
 @php
-    $mediaBase = config('portal.media_base');
+    $assets = app(\App\Services\PublicSite\PublicAssetResolver::class);
     $portalCss = asset('portal/css');
     $portalJs = asset('portal/js');
     $adminIdentity = config('identity.admin');
@@ -8,6 +8,8 @@
     $primarySubtitle = $adminIdentity['login_primary_subtitle'] ?? 'Church Management Platform';
     $faviconPath = ltrim((string) ($adminIdentity['favicon_path'] ?? 'images/ag-logo.jpeg'), '/');
     $primaryVideoPath = ltrim((string) ($adminIdentity['primary_logo_video_path'] ?? 'videos/Create_a_cinematic_D_animatio.mp4'), '/');
+    $faviconUrl = $assets->url($faviconPath);
+    $primaryVideoUrl = $assets->url($primaryVideoPath);
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -24,7 +26,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="{{ $portalCss }}/auth.css">
     <link rel="stylesheet" href="{{ $portalCss }}/admin-auth.css">
-    <link rel="icon" href="{{ rtrim((string) $mediaBase, '/') }}/{{ $faviconPath }}" type="image/jpeg">
+    <link rel="icon" href="{{ $faviconUrl }}" type="image/jpeg">
 </head>
 <body class="auth-page">
     <a href="#authForm" class="auth-skip">Skip to login form</a>
@@ -54,7 +56,7 @@
             <header class="auth-brand auth-glass" style="padding: 24px;">
                 <div class="auth-brand__logos">
                     <div class="auth-logo-video auth-logo-video--ag" aria-label="{{ $primaryLabel }} 3D logo">
-                        <video class="auth-logo-video__el" src="{{ rtrim((string) $mediaBase, '/') }}/{{ $primaryVideoPath }}" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+                        <video class="auth-logo-video__el" src="{{ $primaryVideoUrl }}" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
                     </div>
                 </div>
                 <div class="auth-brand__titles">

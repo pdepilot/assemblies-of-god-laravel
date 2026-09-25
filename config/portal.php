@@ -5,7 +5,10 @@ return [
     |--------------------------------------------------------------------------
     | Legacy portal static media (videos, images outside public/portal)
     |--------------------------------------------------------------------------
-    | Points at the XAMPP public site during local strangler-fig migration.
+    | Local default points at the XAMPP public site during strangler-fig
+    | migration. Production .env should set these to APP_URL (see .env.example).
+    | Browser HTML still rewrites leftover localhost values via
+    | App\Support\PortalPublicUrl and PublicAssetResolver.
     */
     'media_base' => rtrim((string) env('PORTAL_MEDIA_BASE', 'http://localhost/AG_IKENEGBU_CHURCH_WEBSITE'), '/'),
 

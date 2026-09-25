@@ -2,6 +2,17 @@
 
 use App\Models\Admin;
 
+beforeEach(function () {
+    $path = storage_path('app/website/seo-pages-ag.json');
+    $this->seoPagesSnapshot = is_file($path) ? (string) file_get_contents($path) : null;
+});
+
+afterEach(function () {
+    if (is_string($this->seoPagesSnapshot ?? null)) {
+        file_put_contents(storage_path('app/website/seo-pages-ag.json'), $this->seoPagesSnapshot);
+    }
+});
+
 test('content editor can view and save about content editor', function () {
     /** @var \Tests\TestCase $this */
     $admin = Admin::factory()->create(['role' => 'content_editor']);

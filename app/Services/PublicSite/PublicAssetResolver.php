@@ -2,6 +2,8 @@
 
 namespace App\Services\PublicSite;
 
+use App\Support\PortalPublicUrl;
+
 /**
  * Resolve public media paths without breaking when a file exists only on the legacy host.
  */
@@ -9,7 +11,7 @@ final class PublicAssetResolver
 {
     public function url(string $path): string
     {
-        $path = trim(str_replace('\\', '/', $path));
+        $path = $this->normalizeStoredPath($path);
         if ($path === '') {
             return '';
         }
@@ -27,9 +29,12 @@ final class PublicAssetResolver
 
         $relative = ltrim($path, '/');
 
-        // Strip accidental site/ prefix once for local lookup variants.
         if (str_starts_with($relative, 'site/')) {
             $relative = substr($relative, 5);
+        }
+
+        if (str_starts_with($relative, 'portal/')) {
+            return $this->portalTreeUrl(substr($relative, 7));
         }
 
         if (str_starts_with($relative, 'uploads/')) {
@@ -41,14 +46,22 @@ final class PublicAssetResolver
             return asset('site/'.$relative);
         }
 
-        $mediaBase = rtrim((string) config('portal.media_base'), '/');
+        return $this->siteFallback($relative);
+    }
 
-        return $mediaBase.'/'.$relative;
+    public function browserMediaBase(): string
+    {
+        if (PortalPublicUrl::prefersSameOriginMedia()) {
+            return rtrim(asset('site'), '/');
+        }
+
+        return rtrim((string) config('portal.media_base'), '/');
     }
 
     /** Resolve admin-uploaded media (events, etc.). */
     public function uploadUrl(string $path): string
     {
+        $path = $this->normalizeStoredPath($path);
         $path = ltrim(str_replace('\\', '/', trim($path)), '/');
         if ($path === '') {
             return '';
@@ -56,6 +69,10 @@ final class PublicAssetResolver
 
         if (str_starts_with($path, 'site/')) {
             $path = substr($path, 5);
+        }
+
+        if (str_starts_with($path, 'portal/')) {
+            return $this->portalTreeUrl(substr($path, 7));
         }
 
         $siteLocal = public_path('site/'.$path);
@@ -68,6 +85,10 @@ final class PublicAssetResolver
             return asset('storage/'.$path);
         }
 
+        if (PortalPublicUrl::prefersSameOriginMedia()) {
+            return asset('site/'.$path);
+        }
+
         $legacyAdminBase = rtrim((string) config('portal.legacy_admin_base'), '/');
         if ($legacyAdminBase !== '') {
             return $legacyAdminBase.'/'.$path;
@@ -76,5 +97,82 @@ final class PublicAssetResolver
         $mediaBase = rtrim((string) config('portal.media_base'), '/');
 
         return $mediaBase.'/portal/'.$path;
+    }
+
+    private function portalTreeUrl(string $relative): string
+    {
+        $relative = ltrim($relative, '/');
+        $portalLocal = public_path('portal/'.$relative);
+        if (is_file($portalLocal)) {
+            return asset('portal/'.$relative);
+        }
+
+        if (str_starts_with($relative, 'uploads/') && is_file(public_path('site/'.$relative))) {
+            return asset('site/'.$relative);
+        }
+
+        if (PortalPublicUrl::prefersSameOriginMedia()) {
+            if (str_starts_with($relative, 'uploads/')) {
+                return asset('site/'.$relative);
+            }
+
+            return asset('portal/'.$relative);
+        }
+
+        $legacyAdminBase = rtrim((string) config('portal.legacy_admin_base'), '/');
+        if ($legacyAdminBase !== '') {
+            return $legacyAdminBase.'/'.$relative;
+        }
+
+        return rtrim((string) config('portal.media_base'), '/').'/portal/'.$relative;
+    }
+
+    private function siteFallback(string $relative): string
+    {
+        if (PortalPublicUrl::prefersSameOriginMedia()) {
+            return asset('site/'.$relative);
+        }
+
+        return rtrim((string) config('portal.media_base'), '/').'/'.$relative;
+    }
+
+    private function normalizeStoredPath(string $path): string
+    {
+        $path = trim(str_replace('\\', '/', $path));
+        if ($path === '') {
+            return '';
+        }
+
+        foreach ($this->localLegacyPrefixes() as $prefix) {
+            if ($prefix !== '' && strncasecmp($path, $prefix, strlen($prefix)) === 0) {
+                return ltrim(substr($path, strlen($prefix)), '/');
+            }
+        }
+
+        return $path;
+    }
+
+    /** @return list<string> */
+    private function localLegacyPrefixes(): array
+    {
+        $prefixes = [
+            'http://localhost/AG_IKENEGBU_CHURCH_WEBSITE/',
+            'http://127.0.0.1/AG_IKENEGBU_CHURCH_WEBSITE/',
+            'https://localhost/AG_IKENEGBU_CHURCH_WEBSITE/',
+            'https://127.0.0.1/AG_IKENEGBU_CHURCH_WEBSITE/',
+        ];
+
+        foreach ([
+            config('portal.media_base'),
+            config('portal.legacy_public_base'),
+            config('portal.legacy_admin_base'),
+        ] as $base) {
+            $base = rtrim((string) $base, '/');
+            if ($base !== '' && PortalPublicUrl::isLocalLegacyBase($base)) {
+                $prefixes[] = $base.'/';
+            }
+        }
+
+        return array_values(array_unique($prefixes));
     }
 }
