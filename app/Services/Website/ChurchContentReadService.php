@@ -65,9 +65,42 @@ final class ChurchContentReadService
     /** @return array<string, mixed> */
     public function getSection(string $sectionKey): array
     {
-        $content = $this->getSiteContent();
+        $defaults = $this->defaults();
+        if (! array_key_exists($sectionKey, $defaults)) {
+            return [];
+        }
 
-        return $content[$sectionKey] ?? [];
+        $stored = $this->storedSection($sectionKey);
+
+        // If About Page has never been saved, inherit shared body fields from the
+        // Homepage About section so editor changes are not "lost" on /about.
+        if ($sectionKey === 'about_page' && $stored === null) {
+            $homepage = $this->storedSection('homepage_about');
+            if ($homepage !== null) {
+                $stored = $this->sharedBodyFrom($homepage);
+            }
+        }
+
+        if ($stored === null) {
+            return $defaults[$sectionKey];
+        }
+
+        return array_replace_recursive($defaults[$sectionKey], $stored);
+    }
+
+    /** @return array<string, mixed>|null */
+    private function storedSection(string $sectionKey): ?array
+    {
+        $row = DB::table('ag_site_content')
+            ->where('section_key', $sectionKey)
+            ->first(['section_key', 'content_json']);
+        if ($row === null) {
+            return null;
+        }
+
+        $decoded = json_decode((string) ($row->content_json ?? ''), true);
+
+        return is_array($decoded) ? $decoded : null;
     }
 
     /** @return array<string, mixed> */
