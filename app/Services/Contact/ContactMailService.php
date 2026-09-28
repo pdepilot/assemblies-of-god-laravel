@@ -150,8 +150,7 @@ final class ContactMailService
             $row = DB::table('contact_settings')->orderBy('id')->first();
             if ($row) {
                 $data = (array) $row;
-
-                return [
+                $defaults = array_merge($defaults, [
                     'church_name' => (string) ($data['church_name'] ?? $defaults['church_name']),
                     'phone' => (string) ($data['phone'] ?? ''),
                     'phone_display' => (string) ($data['phone_display'] ?? ''),
@@ -159,20 +158,30 @@ final class ContactMailService
                     'sunday_worship' => (string) ($data['sunday_worship'] ?? ''),
                     'midweek_service' => (string) ($data['midweek_service'] ?? ''),
                     'prayer_meeting' => (string) ($data['prayer_meeting'] ?? ''),
-                ];
+                ]);
             }
         }
 
-        $church = $this->platformSettings->getGroup('church');
+        $overlaid = $this->platformSettings->overlayPublicChurch([
+            'church_name' => $defaults['church_name'],
+            'phone' => $defaults['phone'],
+            'phone_display' => $defaults['phone_display'] !== '' ? $defaults['phone_display'] : $defaults['phone'],
+            'phone_tel' => $defaults['phone'],
+            'email' => $defaults['email'],
+            'sunday_worship' => $defaults['sunday_worship'],
+            'midweek_service' => $defaults['midweek_service'],
+            'prayer_meeting' => $defaults['prayer_meeting'],
+            'social' => [],
+        ]);
 
         return [
-            'church_name' => (string) ($church['name'] ?? $defaults['church_name']),
-            'phone' => (string) ($church['phone'] ?? ''),
-            'phone_display' => (string) ($church['phone'] ?? ''),
-            'email' => (string) ($church['email'] ?? ''),
-            'sunday_worship' => (string) ($church['service_sunday'] ?? ''),
-            'midweek_service' => (string) ($church['service_midweek'] ?? ''),
-            'prayer_meeting' => '',
+            'church_name' => (string) ($overlaid['church_name'] ?? $defaults['church_name']),
+            'phone' => (string) ($overlaid['phone'] ?? $defaults['phone']),
+            'phone_display' => (string) ($overlaid['phone_display'] ?? $defaults['phone_display']),
+            'email' => (string) ($overlaid['email'] ?? $defaults['email']),
+            'sunday_worship' => (string) ($overlaid['sunday_worship'] ?? $defaults['sunday_worship']),
+            'midweek_service' => (string) ($overlaid['midweek_service'] ?? $defaults['midweek_service']),
+            'prayer_meeting' => (string) ($overlaid['prayer_meeting'] ?? $defaults['prayer_meeting']),
         ];
     }
 

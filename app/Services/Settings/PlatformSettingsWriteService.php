@@ -78,14 +78,24 @@ final class PlatformSettingsWriteService
             throw new InvalidArgumentException('Unable to encode settings.');
         }
 
-        DB::table('platform_setting_groups')->updateOrInsert(
-            ['group_key' => $groupKey],
-            [
-                'settings' => $json,
-                'updated_by' => $adminId,
-                'updated_at' => now(),
-            ]
-        );
+        try {
+            DB::transaction(function () use ($groupKey, $json, $adminId, $merged): void {
+                DB::table('platform_setting_groups')->updateOrInsert(
+                    ['group_key' => $groupKey],
+                    [
+                        'settings' => $json,
+                        'updated_by' => $adminId,
+                        'updated_at' => now(),
+                    ]
+                );
+
+                if ($groupKey === 'church') {
+                    $this->syncContactSettings($merged);
+                }
+            });
+        } finally {
+            $this->read->forgetMemo();
+        }
 
         return $merged;
     }
@@ -109,6 +119,55 @@ final class PlatformSettingsWriteService
             'ui_mode' => $mode,
             'updated_at' => now(),
         ]);
+    }
+
+    /**
+     * Keep legacy public contact_settings in sync so contact mail and older readers
+     * see the same Church Profile values as the public site chrome.
+     *
+     * @param  array<string, mixed>  $church
+     */
+    private function syncContactSettings(array $church): void
+    {
+        if (! Schema::hasTable('contact_settings')) {
+            return;
+        }
+
+        $phone = trim((string) ($church['phone'] ?? ''));
+        $mapped = [
+            'church_name' => trim((string) ($church['name'] ?? '')),
+            'email' => trim((string) ($church['email'] ?? '')),
+            'phone' => $phone,
+            'phone_display' => $phone,
+            'address_line1' => trim((string) ($church['address'] ?? '')),
+            'city' => trim((string) ($church['city'] ?? '')),
+            'state' => trim((string) ($church['state'] ?? '')),
+            'sunday_worship' => trim((string) ($church['service_sunday'] ?? '')),
+            'midweek_service' => trim((string) ($church['service_midweek'] ?? '')),
+            'facebook_url' => trim((string) ($church['social_facebook'] ?? '')),
+            'instagram_url' => trim((string) ($church['social_instagram'] ?? '')),
+            'youtube_url' => trim((string) ($church['social_youtube'] ?? '')),
+            'updated_at' => now(),
+        ];
+
+        $columns = array_flip(Schema::getColumnListing('contact_settings'));
+        $payload = array_intersect_key($mapped, $columns);
+        if ($payload === []) {
+            return;
+        }
+
+        $existingId = DB::table('contact_settings')->orderBy('id')->value('id');
+        if ($existingId) {
+            DB::table('contact_settings')->where('id', $existingId)->update($payload);
+
+            return;
+        }
+
+        if (isset($columns['created_at'])) {
+            $payload['created_at'] = now();
+        }
+
+        DB::table('contact_settings')->insert($payload);
     }
 
     private function storeLogo(UploadedFile $image): string

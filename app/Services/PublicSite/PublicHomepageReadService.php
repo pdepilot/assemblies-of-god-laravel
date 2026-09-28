@@ -2,6 +2,7 @@
 
 namespace App\Services\PublicSite;
 
+use App\Services\Settings\PlatformSettingsReadService;
 use App\Services\Website\ActivityReadService;
 use App\Services\Website\WebsitePagesReadService;
 use App\Services\Website\WorshipReadService;
@@ -21,6 +22,7 @@ final class PublicHomepageReadService
         private readonly PublicAssetResolver $assets,
         private readonly WorshipReadService $worship,
         private readonly ActivityReadService $activities,
+        private readonly PlatformSettingsReadService $platformSettings,
     ) {}
 
     /**
@@ -288,12 +290,12 @@ final class PublicHomepageReadService
         ];
 
         if (! $this->hasTable('contact_settings')) {
-            return $this->churchMemo = $defaults;
+            return $this->churchMemo = $this->platformSettings->overlayPublicChurch($defaults);
         }
 
         $row = DB::table('contact_settings')->orderBy('id')->first();
         if (! $row) {
-            return $this->churchMemo = $defaults;
+            return $this->churchMemo = $this->platformSettings->overlayPublicChurch($defaults);
         }
 
         $data = (array) $row;
@@ -313,7 +315,7 @@ final class PublicHomepageReadService
 
         $name = trim((string) ($data['church_name'] ?? ''));
 
-        return $this->churchMemo = [
+        $fromContact = [
             'church_name' => $name !== '' ? $name : $defaults['church_name'],
             'short_name' => $defaults['short_name'],
             'phone' => $phoneTel !== '' ? $phoneTel : $defaults['phone'],
@@ -333,6 +335,8 @@ final class PublicHomepageReadService
                 'linkedin' => trim((string) ($data['linkedin_url'] ?? '')) ?: '#',
             ],
         ];
+
+        return $this->churchMemo = $this->platformSettings->overlayPublicChurch($fromContact);
     }
 
     /** @return array<string, mixed> */

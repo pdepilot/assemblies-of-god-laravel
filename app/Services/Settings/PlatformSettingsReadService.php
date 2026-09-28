@@ -7,13 +7,101 @@ use Illuminate\Support\Facades\Schema;
 
 final class PlatformSettingsReadService
 {
+    /** @var array<string, array<string, mixed>> */
+    private array $groupMemo = [];
+
+    private ?bool $groupsTableExists = null;
+
+    /** @var array<string, array<string, mixed>> */
+    private array $storedMemo = [];
+
     /** @return array<string, mixed> */
     public function getGroup(string $groupKey): array
     {
+        if (isset($this->groupMemo[$groupKey])) {
+            return $this->groupMemo[$groupKey];
+        }
+
         $defaults = $this->defaults()[$groupKey] ?? [];
         $stored = $this->readStored($groupKey);
 
-        return array_replace_recursive($defaults, $stored);
+        return $this->groupMemo[$groupKey] = array_replace_recursive($defaults, $stored);
+    }
+
+    /**
+     * Overlay Admin → Settings → Church Profile onto the public chrome church array.
+     * Non-empty platform fields win; empty fields keep the existing (contact_settings/default) value.
+     *
+     * @param  array<string, mixed>  $profile
+     * @return array<string, mixed>
+     */
+    public function overlayPublicChurch(array $profile): array
+    {
+        $church = $this->readStored('church');
+
+        $name = trim((string) ($church['name'] ?? ''));
+        if ($name !== '') {
+            $profile['church_name'] = $name;
+        }
+
+        $short = trim((string) ($church['short_name'] ?? ''));
+        if ($short !== '') {
+            $profile['short_name'] = $short;
+        }
+
+        $email = trim((string) ($church['email'] ?? ''));
+        if ($email !== '') {
+            $profile['email'] = $email;
+        }
+
+        $phone = trim((string) ($church['phone'] ?? ''));
+        if ($phone !== '') {
+            $profile['phone_display'] = $phone;
+            $tel = preg_replace('/[^\d+]/', '', $phone) ?: $phone;
+            $profile['phone'] = $tel;
+            $profile['phone_tel'] = $tel;
+        }
+
+        $street = trim((string) ($church['address'] ?? ''));
+        if ($street !== '') {
+            $addressParts = array_filter([
+                $street,
+                $church['city'] ?? '',
+                $church['state'] ?? '',
+            ], static fn ($part) => trim((string) $part) !== '');
+            $profile['address_full'] = implode(', ', $addressParts);
+        }
+
+        $sunday = trim((string) ($church['service_sunday'] ?? ''));
+        if ($sunday !== '') {
+            $profile['sunday_worship'] = $sunday;
+        }
+
+        $midweek = trim((string) ($church['service_midweek'] ?? ''));
+        if ($midweek !== '') {
+            $profile['midweek_service'] = $midweek;
+        }
+
+        $social = is_array($profile['social'] ?? null) ? $profile['social'] : [];
+        foreach ([
+            'facebook' => 'social_facebook',
+            'instagram' => 'social_instagram',
+            'youtube' => 'social_youtube',
+        ] as $publicKey => $platformKey) {
+            $url = trim((string) ($church[$platformKey] ?? ''));
+            if ($url !== '') {
+                $social[$publicKey] = $url;
+            }
+        }
+        $profile['social'] = $social;
+
+        return $profile;
+    }
+
+    public function forgetMemo(): void
+    {
+        $this->groupMemo = [];
+        $this->storedMemo = [];
     }
 
     /**
@@ -112,22 +200,26 @@ final class PlatformSettingsReadService
     /** @return array<string, mixed> */
     private function readStored(string $groupKey): array
     {
-        if (! Schema::hasTable('platform_setting_groups')) {
-            return [];
+        if (array_key_exists($groupKey, $this->storedMemo)) {
+            return $this->storedMemo[$groupKey];
+        }
+
+        if (! ($this->groupsTableExists ??= Schema::hasTable('platform_setting_groups'))) {
+            return $this->storedMemo[$groupKey] = [];
         }
 
         $raw = DB::table('platform_setting_groups')->where('group_key', $groupKey)->value('settings');
         if (! is_string($raw) || $raw === '') {
-            return [];
+            return $this->storedMemo[$groupKey] = [];
         }
 
         try {
             $decoded = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
         } catch (\Throwable) {
-            return [];
+            return $this->storedMemo[$groupKey] = [];
         }
 
-        return is_array($decoded) ? $decoded : [];
+        return $this->storedMemo[$groupKey] = is_array($decoded) ? $decoded : [];
     }
 
     /** @return array<string, array<string, mixed>> */
