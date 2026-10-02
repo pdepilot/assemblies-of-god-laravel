@@ -235,6 +235,7 @@ final class LegacyHtmlBridge
         // 2) Relative asset paths.
         $html = preg_replace('#\b(href|src|data-src|poster)=([\'"])\.\./(css|js|lib|images|img|videos|uploads)/#i', '$1=$2'.$siteAsset.'/$3/', $html) ?? $html;
         $html = preg_replace('#\b(href|src|data-src|poster)=([\'"])(css|js|lib|images|img|videos|uploads)/#i', '$1=$2'.$siteAsset.'/$3/', $html) ?? $html;
+        $html = preg_replace('#\b(href|src|data-src|poster)=([\'"])/(css|js|lib|images|img|videos|uploads)/#i', '$1=$2/site/$3/', $html) ?? $html;
         // sermon-library local assets (style.css / script.js next to index)
         $html = preg_replace('#\b(href|src)=([\'"])(style\.css|script\.js)\2#i', '$1=$2'.$siteAsset.'/sermon-library/$3$2', $html) ?? $html;
         $html = preg_replace('#url\(([\'"]?)\.\./(images|img|videos)/#i', 'url($1'.$siteAsset.'/$2/', $html) ?? $html;
