@@ -2010,6 +2010,25 @@ body.contact-popup-open {
     background: rgba(251, 254, 6, 0.85);
 }
 
+.team .team-img {
+    height: auto;
+    max-height: 260px;
+    padding: 10px;
+}
+
+.team .team-img img {
+    height: 240px;
+    object-fit: cover;
+    object-position: top center;
+}
+
+.team .team-item > img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    object-position: top center;
+}
+
 /* Testimonials — header, spacing, quote badge */
 .ag-testimonial-header {
     max-width: 720px;

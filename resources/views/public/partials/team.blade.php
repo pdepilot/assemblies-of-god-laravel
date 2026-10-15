@@ -25,7 +25,7 @@
                     <div class="team-item wow fadeIn" data-wow-delay="0.1s">
                         <h1>{{ $featured['full_name'] ?? '' }}</h1>
                         @if (! empty($featured['role_title']))
-                            <h5 class="fw-normal fst-italic text-primary mb-4">{{ $featured['role_title'] }}</h5>
+                            <h5 class="fw-normal fst-italic text-dark mb-4">{{ $featured['role_title'] }}</h5>
                         @endif
                         @if (! empty($featured['bio']))
                             <p class="mb-4">{{ $featured['bio'] }}</p>
@@ -47,7 +47,7 @@
                                         @endif
                                         <h4>{{ $member['full_name'] ?? '' }}</h4>
                                         @if (! empty($member['role_title']))
-                                            <p class="text-primary mb-0">{{ $member['role_title'] }}</p>
+                                            <p class="text-dark mb-0">{{ $member['role_title'] }}</p>
                                         @endif
                                     </div>
                                 </div>
@@ -66,7 +66,7 @@
                                     @endif
                                     <h4>{{ $member['full_name'] ?? '' }}</h4>
                                     @if (! empty($member['role_title']))
-                                        <p class="text-primary mb-0">{{ $member['role_title'] }}</p>
+                                        <p class="text-dark mb-0">{{ $member['role_title'] }}</p>
                                     @endif
                                 </div>
                             </div>
