@@ -50,6 +50,7 @@ final class TeamController
     public function store(Request $request): RedirectResponse
     {
         $this->policy->requireManageWebsite($this->admin());
+        $this->validateMemberType($request);
 
         try {
             $this->write->saveMember(
@@ -59,15 +60,18 @@ final class TeamController
                 $request->file('photo'),
             );
         } catch (InvalidArgumentException $e) {
-            return back()->withInput()->withErrors(['full_name' => $e->getMessage()]);
+            return back()->withInput()->withErrors([$this->errorField($e) => $e->getMessage()]);
         }
 
         return redirect()->route('website.team.index')->with('status', 'Team member saved.');
     }
 
-    public function edit(SiteTeamMember $member): View
+    public function edit(SiteTeamMember $member): View|RedirectResponse
     {
         $this->policy->requireManageWebsite($this->admin());
+        if (! $this->isAgMember($member)) {
+            return $this->otherSiteRedirect();
+        }
         $data = $member->toArray();
         $path = trim((string) ($data['photo_path'] ?? ''));
         $data['photo_url'] = $path !== '' ? $this->assets->url($path) : null;
@@ -78,6 +82,10 @@ final class TeamController
     public function update(Request $request, SiteTeamMember $member): RedirectResponse
     {
         $this->policy->requireManageWebsite($this->admin());
+        if (! $this->isAgMember($member)) {
+            return $this->otherSiteRedirect();
+        }
+        $this->validateMemberType($request);
 
         $data = $request->only([
             'full_name', 'role_title', 'bio', 'member_type', 'sort_order', 'is_active',
@@ -92,10 +100,47 @@ final class TeamController
                 $request->boolean('remove_photo'),
             );
         } catch (InvalidArgumentException $e) {
-            return back()->withInput()->withErrors(['full_name' => $e->getMessage()]);
+            return back()->withInput()->withErrors([$this->errorField($e) => $e->getMessage()]);
         }
 
         return redirect()->route('website.team.index')->with('status', 'Team member updated.');
+    }
+
+    private function validateMemberType(Request $request): void
+    {
+        $request->validate([
+            'member_type' => [
+                'nullable',
+                'string',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (TeamSectionWriteService::normalizeMemberType($value) === null) {
+                        $fail('Member type must be Featured Leader or Grid Member.');
+                    }
+                },
+            ],
+        ]);
+    }
+
+    private function isAgMember(SiteTeamMember $member): bool
+    {
+        return (string) $member->site === 'ag';
+    }
+
+    private function otherSiteRedirect(): RedirectResponse
+    {
+        return redirect()->route('website.team.index')
+            ->withErrors(['member' => 'That team member belongs to another site and cannot be edited here.']);
+    }
+
+    private function errorField(InvalidArgumentException $e): string
+    {
+        $message = $e->getMessage();
+
+        return match (true) {
+            str_starts_with($message, 'Member type') => 'member_type',
+            str_starts_with($message, 'Photo') => 'photo',
+            default => 'full_name',
+        };
     }
 
     private function admin(): Admin

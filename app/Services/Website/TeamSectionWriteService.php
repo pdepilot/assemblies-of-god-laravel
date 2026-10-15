@@ -10,6 +10,11 @@ use RuntimeException;
 
 final class TeamSectionWriteService
 {
+    /** Must match the production `site_team_members.member_type` ENUM('featured','member'). */
+    public const MEMBER_TYPES = ['featured', 'member'];
+
+    public const SITES = ['ag', 'sdtg'];
+
     private const MAX_IMAGE_BYTES = 5242880;
 
     private const ALLOWED_IMAGE_TYPES = [
@@ -30,9 +35,30 @@ final class TeamSectionWriteService
             throw new InvalidArgumentException('Team member name is required.');
         }
 
-        $existing = $id > 0
-            ? DB::table('site_team_members')->where('id', $id)->first()
-            : null;
+        $site = strtolower(trim((string) ($data['site'] ?? 'ag')));
+        if (! in_array($site, self::SITES, true)) {
+            throw new InvalidArgumentException('Invalid team site.');
+        }
+
+        $existing = null;
+        if ($id > 0) {
+            $existing = DB::table('site_team_members')
+                ->where('id', $id)
+                ->where('site', $site)
+                ->first();
+            if ($existing === null) {
+                throw new InvalidArgumentException('Team member not found.');
+            }
+        }
+
+        $memberType = self::normalizeMemberType($data['member_type'] ?? $existing?->member_type ?? 'member');
+        if ($memberType === null) {
+            throw new InvalidArgumentException('Member type must be Featured Leader or Grid Member.');
+        }
+        if ($site === 'sdtg') {
+            $memberType = 'member';
+        }
+
         $photoPath = $existing?->photo_path ? (string) $existing->photo_path : null;
 
         if ($photo !== null) {
@@ -49,8 +75,8 @@ final class TeamSectionWriteService
         }
 
         $payload = [
-            'site' => (string) ($data['site'] ?? 'ag'),
-            'member_type' => (string) ($data['member_type'] ?? 'member'),
+            'site' => $site,
+            'member_type' => $memberType,
             'full_name' => $fullName,
             'role_title' => trim((string) ($data['role_title'] ?? '')),
             'bio' => (string) ($data['bio'] ?? ''),
@@ -61,7 +87,7 @@ final class TeamSectionWriteService
         ];
 
         if ($id > 0) {
-            DB::table('site_team_members')->where('id', $id)->update($payload);
+            DB::table('site_team_members')->where('id', $id)->where('site', $site)->update($payload);
         } else {
             DB::table('site_team_members')->insert($payload + [
                 'created_at' => now(),
@@ -72,6 +98,16 @@ final class TeamSectionWriteService
         $row = DB::table('site_team_members')->where('id', $id)->first();
 
         return $row ? (array) $row : ['id' => $id];
+    }
+
+    public static function normalizeMemberType(mixed $value): ?string
+    {
+        $type = strtolower(trim((string) $value));
+        if ($type === '') {
+            $type = 'member';
+        }
+
+        return in_array($type, self::MEMBER_TYPES, true) ? $type : null;
     }
 
     private function storePhoto(UploadedFile $image): string

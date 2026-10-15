@@ -5,6 +5,9 @@
             @if (session('status'))
                 <div class="rounded-md bg-green-50 dark:bg-green-900/30 p-4 text-sm text-green-800 dark:text-green-200">{{ session('status') }}</div>
             @endif
+            @error('member')
+                <div class="rounded-md bg-red-50 dark:bg-red-900/30 p-4 text-sm text-red-800 dark:text-red-200">{{ $message }}</div>
+            @enderror
             @include('website._nav', ['canManage' => $canManage])
             @if ($canManage)
                 <a href="{{ route('website.team.create') }}" class="inline-block px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-semibold">Add member</a>

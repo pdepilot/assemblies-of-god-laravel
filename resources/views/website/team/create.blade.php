@@ -13,8 +13,14 @@
                     <input name="role_title" value="{{ old('role_title') }}" class="mt-1 w-full rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium">Member type</label>
-                    <input name="member_type" value="{{ old('member_type', 'member') }}" class="mt-1 w-full rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                    @php($memberType = old('member_type', 'member'))
+                    <label class="block text-sm font-medium" for="member_type">Member type</label>
+                    <select id="member_type" name="member_type" class="mt-1 w-full rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                        <option value="member" @selected($memberType !== 'featured')>Grid Member</option>
+                        <option value="featured" @selected($memberType === 'featured')>Featured Leader</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Layout role on the homepage team section. Put titles such as Pastor in Role title.</p>
+                    @error('member_type')<p class="text-sm text-red-600 mt-1">{{ $message }}</p>@enderror
                 </div>
                 <div>
                     <label class="block text-sm font-medium">Bio</label>
