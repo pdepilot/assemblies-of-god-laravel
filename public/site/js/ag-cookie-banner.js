@@ -53,26 +53,55 @@
         }, 15000);
     }
 
+    function revealBanner(banner) {
+        if (!banner || banner.classList.contains('is-visible') || banner.classList.contains('is-dismissed')) {
+            return;
+        }
+        banner.classList.remove('is-breaking');
+        banner.classList.add('is-visible');
+        banner.setAttribute('aria-hidden', 'false');
+    }
+
     function grandEntrance(breakEl, banner) {
         if (reducedMotion) {
-            banner.classList.add('is-visible');
-            banner.setAttribute('aria-hidden', 'false');
+            revealBanner(banner);
             return;
         }
 
-        breakEl.classList.add('is-active');
+        if (breakEl) {
+            breakEl.classList.add('is-active');
+        }
         banner.classList.add('is-breaking');
         banner.setAttribute('aria-hidden', 'false');
 
+        var settled = false;
+        function settle() {
+            if (settled) {
+                return;
+            }
+            settled = true;
+            revealBanner(banner);
+        }
+
+        // Ignore bubbled child animation events; some mobile browsers never
+        // fire animationend for off-screen transforms — timeout is the safety net.
         banner.addEventListener('animationend', function onEnd(e) {
-            if (e.animationName !== 'agBannerRise') return;
+            if (e.target !== banner) {
+                return;
+            }
+            if (e.animationName && e.animationName !== 'agBannerRise') {
+                return;
+            }
             banner.removeEventListener('animationend', onEnd);
-            banner.classList.remove('is-breaking');
-            banner.classList.add('is-visible');
+            settle();
         });
 
+        setTimeout(settle, 1200);
+
         setTimeout(function () {
-            breakEl.classList.remove('is-active');
+            if (breakEl) {
+                breakEl.classList.remove('is-active');
+            }
         }, 900);
     }
 
@@ -180,11 +209,13 @@
         }
 
         whenPageReady(function () {
+            if (getStored()) {
+                return;
+            }
             if (breakEl) {
                 grandEntrance(breakEl, banner);
             } else {
-                banner.classList.add('is-visible');
-                banner.setAttribute('aria-hidden', 'false');
+                revealBanner(banner);
             }
         });
 
