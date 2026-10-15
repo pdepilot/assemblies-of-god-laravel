@@ -4,7 +4,7 @@
 @endphp
 <div class="navbar-nav ms-lg-auto mx-xl-auto">
     <a href="{{ route('public.home') }}" class="{{ $navClass('home') }}">Home</a>
-    <a href="{{ route('public.about') }}" class="{{ $navClass('about') }}">About Us</a>
+    <a href="{{ route('public.about') }}" class="{{ $navClass('about') }}">About</a>
     <a href="{{ route('public.activity') }}" class="{{ $navClass('ministries') }}">Activities</a>
     <a href="{{ route('public.event') }}" class="{{ $navClass('events') }}">Events</a>
     <a href="{{ route('public.blog') }}" class="{{ $navClass('blog') }}">Blog</a>
