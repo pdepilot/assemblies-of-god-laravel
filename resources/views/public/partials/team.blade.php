@@ -20,6 +20,21 @@
                             <img src="{{ $featured['photo_url'] }}" class="img-fluid" alt="{{ $featured['full_name'] ?? '' }}">
                         @endif
                     </div>
+                    @if (count($members) > 0)
+                        <div class="team-under-featured mt-4">
+                            @foreach ($members as $i => $member)
+                                <div class="team-item wow fadeIn {{ $i > 0 ? 'mt-4' : '' }}" data-wow-delay="{{ 0.2 + ($i * 0.1) }}s">
+                                    @if (! empty($member['photo_url']))
+                                        <img src="{{ $member['photo_url'] }}" class="img-fluid mb-3" alt="{{ $member['full_name'] ?? '' }}">
+                                    @endif
+                                    <h4>{{ $member['full_name'] ?? '' }}</h4>
+                                    @if (! empty($member['role_title']))
+                                        <p class="text-dark mb-0">{{ $member['role_title'] }}</p>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
                 <div class="col-lg-8 col-xl-7">
                     <div class="team-item wow fadeIn" data-wow-delay="0.1s">
@@ -37,23 +52,6 @@
                             <a class="btn btn-primary btn-lg-square me-2" href="{{ $featured['social_linkedin'] ?? '#' }}"><i class="fab fa-linkedin-in"></i></a>
                         </div>
                     </div>
-                    @if (count($members) > 0)
-                        <div class="row g-4">
-                            @foreach ($members as $i => $member)
-                                <div class="col-md-6">
-                                    <div class="team-item wow fadeIn" data-wow-delay="{{ 0.2 + ($i * 0.1) }}s">
-                                        @if (! empty($member['photo_url']))
-                                            <img src="{{ $member['photo_url'] }}" class="img-fluid mb-3" alt="{{ $member['full_name'] ?? '' }}">
-                                        @endif
-                                        <h4>{{ $member['full_name'] ?? '' }}</h4>
-                                        @if (! empty($member['role_title']))
-                                            <p class="text-dark mb-0">{{ $member['role_title'] }}</p>
-                                        @endif
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
                 </div>
             @else
                 <div class="col-12">

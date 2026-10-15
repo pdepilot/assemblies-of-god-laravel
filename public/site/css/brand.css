@@ -2012,12 +2012,12 @@ body.contact-popup-open {
 
 .team .team-img {
     height: auto;
-    max-height: 260px;
+    max-height: 220px;
     padding: 10px;
 }
 
 .team .team-img img {
-    height: 240px;
+    height: 200px;
     object-fit: cover;
     object-position: top center;
 }
